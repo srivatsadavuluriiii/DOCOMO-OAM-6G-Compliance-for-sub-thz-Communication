@@ -221,9 +221,14 @@ class OAM_Env(gym.Env):
         # Optional: handover optimization parameters
         if 'handover_optimization' in config:
             ho = config['handover_optimization']
-            self.min_steps_between_switches = int(ho.get('min_handover_interval', self.min_steps_between_switches))
-            self.time_to_trigger_steps = int(ho.get('time_to_trigger_steps', self.time_to_trigger_steps))
-            self.sinr_hysteresis_db = float(ho.get('handover_hysteresis_db', self.sinr_hysteresis_db))
+            # Use safe defaults if attributes are not yet initialized
+            current_min_interval = getattr(self, 'min_steps_between_switches', 8)
+            current_ttt = getattr(self, 'time_to_trigger_steps', 8)
+            current_hyst = getattr(self, 'sinr_hysteresis_db', 2.0)
+
+            self.min_steps_between_switches = int(ho.get('min_handover_interval', current_min_interval))
+            self.time_to_trigger_steps = int(ho.get('time_to_trigger_steps', current_ttt))
+            self.sinr_hysteresis_db = float(ho.get('handover_hysteresis_db', current_hyst))
 
         # Reward parameters are now handled by the reward calculator
         # No need to update them here since the reward calculator is initialized with the config

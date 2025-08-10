@@ -6,8 +6,14 @@ Test script to validate atmospheric absorption implementation.
 import numpy as np
 import matplotlib.pyplot as plt
 import os
+import sys
 
-# Use centralized path management instead of sys.path.append
+# Ensure project root is on sys.path before importing project modules
+PROJECT_ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+if PROJECT_ROOT not in sys.path:
+    sys.path.insert(0, PROJECT_ROOT)
+
+# Use centralized path management
 from utils.path_utils import ensure_project_root_in_path
 ensure_project_root_in_path()
 

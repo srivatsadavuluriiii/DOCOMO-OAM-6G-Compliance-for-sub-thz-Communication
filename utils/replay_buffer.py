@@ -2,11 +2,14 @@ import numpy as np
 import torch
 from collections import deque
 import random
-from typing import Tuple, List, Dict, Any, Optional
-from models.replay_buffer_interface import ReplayBufferInterface
+from typing import Tuple, List, Dict, Any, Optional, TYPE_CHECKING
+
+# Avoid circular import at runtime: only import interface for type checking
+if TYPE_CHECKING:
+    from models.replay_buffer_interface import ReplayBufferInterface
 
 
-class ReplayBuffer(ReplayBufferInterface):
+class ReplayBuffer:
     """
     Experience replay buffer for storing and sampling transitions.
     
