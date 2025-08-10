@@ -1,0 +1,49 @@
+# OAM 6G Extended Training Configuration
+# Inherits from rl_config_new.yaml
+# Contains ONLY extended training-specific parameters
+
+# Extended training parameters (extended training-specific)
+training:
+  num_episodes: 2000          # Extended training episodes
+  max_steps_per_episode: 1000 # Extended steps per episode
+  batch_size: 256             # Larger batch size for extended training
+  learning_rate: 0.00005      # Lower learning rate for extended training
+  gamma: 0.99                 # Discount factor
+  target_update_freq: 20      # Less frequent target updates for extended training
+
+# Extended exploration parameters (extended training-specific)
+exploration:
+  epsilon_start: 1.0          # Initial exploration rate
+  epsilon_end: 0.005          # Lower final exploration rate
+  epsilon_decay: 0.995        # Slower decay for extended training
+
+# Extended replay buffer parameters (extended training-specific)
+replay_buffer:
+  capacity: 100000            # Larger replay buffer for extended training
+  min_samples_to_learn: 2000  # More samples before learning starts
+
+# Extended evaluation parameters (extended training-specific)
+evaluation:
+  eval_episodes: 20           # More evaluation episodes
+  eval_frequency: 100         # Less frequent evaluations
+  save_model_frequency: 100   # Less frequent model saves
+
+# Extended network parameters (extended training-specific)
+network:
+  hidden_layers: [256, 256]   # Larger network for extended training
+  activation: "relu"          # Activation function
+
+# Extended reward parameters (extended training-specific)
+reward:
+  throughput_factor: 2.0       # Moderate weight for extended training
+  handover_penalty: 0.3        # Moderate penalty for handovers
+  outage_penalty: 2.0          # Moderate penalty for outages
+  sinr_threshold: -5.0         # SINR threshold for outage (dB)
+
+# Note: The following parameters are inherited from rl_config_new.yaml:
+# - training: num_episodes, max_steps_per_episode, batch_size, learning_rate, gamma, target_update_freq
+# - system: frequency, bandwidth, tx_power_dBm, noise_figure_dB, noise_temp
+# - oam: min_mode, max_mode, mode_spacing, beam_width
+# - environment: pointing_error_std, rician_k_factor, turbulence_strength, humidity, temperature, pressure
+# - enhanced_params: antenna_efficiency, implementation_loss_dB
+# - mobility: max_speed, min_speed, direction_change_prob 

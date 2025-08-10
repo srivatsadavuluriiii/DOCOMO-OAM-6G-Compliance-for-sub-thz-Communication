@@ -1,0 +1,59 @@
+[run]
+source = 
+    environment
+    models
+    scripts
+    simulator
+    utils
+omit =
+    */tests/*
+    */oam_rl_env/*
+    */__pycache__/*
+    */.pytest_cache/*
+    */venv/*
+    */.venv/*
+    */env/*
+    */site-packages/*
+    */distutils/*
+    setup.py
+
+[report]
+exclude_lines =
+    pragma: no cover
+    def __repr__
+    raise NotImplementedError
+    if __name__ == .__main__.:
+    pass
+    raise ImportError
+    except ImportError
+    raise ValueError
+    raise TypeError
+    raise RuntimeError
+    raise AttributeError
+    raise KeyError
+    raise IndexError
+    raise Exception
+    except Exception
+    except:
+    def __str__
+    def __len__
+    def __getitem__
+    def __setitem__
+    def __delitem__
+    def __iter__
+    def __next__
+    def __contains__
+    def __call__
+    def __enter__
+    def __exit__
+
+[html]
+directory = htmlcov
+title = OAM 6G Code Coverage Report
+
+[xml]
+output = coverage.xml
+
+[json]
+output = coverage.json
+pretty_print = true

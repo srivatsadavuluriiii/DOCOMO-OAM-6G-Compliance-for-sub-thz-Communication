@@ -1,0 +1,50 @@
+# Python virtual environment
+oam_rl_env/
+venv/
+env/
+
+# Python cache files
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+
+# Distribution / packaging
+dist/
+build/
+*.egg-info/
+
+# Jupyter Notebook
+.ipynb_checkpoints
+
+# IDE files
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# OS specific files
+.DS_Store
+Thumbs.db
+
+# Logs and databases
+*.log
+*.sqlite
+
+# Training results that might be large
+# Uncomment if you want to exclude these
+results/
+
+# Analysis outputs
+analysis/images/*.png
+analysis/images/*.jpg
+analysis/images/*.pdf
+
+# Test outputs
+tests/debug/*.log
+tests/unit/*.log
+tests/integration/*.log
+
+# Temporary files
+*.tmp release/

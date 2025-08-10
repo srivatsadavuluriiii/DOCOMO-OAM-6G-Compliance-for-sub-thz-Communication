@@ -1,0 +1,137 @@
+# OAM 6G Hybrid Configuration
+# Inherits from base_config_new.yaml
+# Contains hybrid system parameters for multi-band operation
+
+# Hybrid system parameters
+hybrid_system:
+  # Band selection strategy
+  band_selection:
+    strategy: "adaptive"  # adaptive, distance_based, performance_based
+    min_band_switch_interval: 10  # Minimum steps between band switches
+    band_switch_hysteresis: 0.2   # Hysteresis to prevent ping-pong
+    
+  # Distance-based band selection thresholds
+  distance_thresholds:
+    mmwave_max_distance: 300.0    # Use mmWave up to 300m
+    sub_thz_low_max_distance: 100.0  # Use 140 GHz up to 100m
+    sub_thz_high_max_distance: 50.0  # Use 300 GHz up to 50m
+  
+  # Performance-based band selection
+  performance_thresholds:
+    throughput_threshold_gbps: 5.0  # Switch bands if throughput < 5 Gbps
+    sinr_threshold_dB: -10.0        # Switch bands if SINR < -10 dB
+    
+  # Environment-based band selection
+  environment_adaptation:
+    indoor_preference: "sub_thz_high"  # Prefer 300 GHz indoors
+    outdoor_preference: "sub_thz_low"  # Prefer 140 GHz outdoors
+    urban_preference: "mmwave"         # Prefer mmWave in urban areas
+
+# Band-specific distance optimization
+distance_optimization_bands:
+  mmwave:
+    near_threshold: 50.0
+    medium_threshold: 150.0
+    far_threshold: 300.0
+    near_modes: [1, 2, 3]
+    medium_modes: [4, 5, 6]
+    far_modes: [7, 8]
+  
+  sub_thz_low:
+    near_threshold: 10.0
+    medium_threshold: 50.0
+    far_threshold: 100.0
+    near_modes: [1, 2, 3]
+    medium_modes: [4, 5]
+    far_modes: [6, 7, 8]
+  
+  sub_thz_high:
+    near_threshold: 5.0
+    medium_threshold: 25.0
+    far_threshold: 50.0
+    near_modes: [1, 2]
+    medium_modes: [3, 4]
+    far_modes: [5, 6]
+
+# Multi-band training parameters
+training:
+  num_episodes: 2000         # More episodes for complex hybrid system
+  max_steps_per_episode: 300 # Shorter episodes for faster band switching
+  batch_size: 256            # Larger batch for complex state space
+  learning_rate: 0.0001      # Slightly lower learning rate
+  gamma: 0.99                # Discount factor
+  target_update_freq: 5      # More frequent target updates
+  
+  # Band-specific exploration
+  exploration:
+    epsilon_start: 1.0
+    epsilon_end: 0.01
+    epsilon_decay: 0.995     # Slower decay for complex system
+    
+  # Band switching exploration
+  band_exploration:
+    initial_band_switch_prob: 0.3  # 30% chance to switch bands initially
+    final_band_switch_prob: 0.05   # 5% chance to switch bands at end
+    band_switch_decay: 0.999       # Decay rate for band switching
+
+# Multi-band reward parameters
+reward:
+  # Base rewards
+  throughput_factor: 1.0
+  handover_penalty: 0.2
+  outage_penalty: 1.0
+  
+  # Band-specific rewards
+  band_rewards:
+    mmwave:
+      throughput_bonus: 0.0      # No bonus for mmWave
+      range_bonus: 0.1          # Bonus for longer range
+    sub_thz_low:
+      throughput_bonus: 0.2      # 20% bonus for 140 GHz throughput
+      range_bonus: 0.05         # Small bonus for range
+    sub_thz_high:
+      throughput_bonus: 0.5      # 50% bonus for 300 GHz throughput
+      range_bonus: 0.0          # No range bonus (short range)
+  
+  # Band switching penalties
+  band_switch_penalty: 0.5      # Penalty for switching bands
+  band_switch_success_bonus: 0.3 # Bonus if band switch improves performance
+
+# Multi-band evaluation parameters
+evaluation:
+  eval_episodes: 20            # More episodes for complex evaluation
+  eval_frequency: 100          # Evaluate every 100 episodes
+  save_model_frequency: 100    # Save every 100 episodes
+  
+  # Band-specific evaluation metrics
+  metrics:
+    throughput_by_band: true
+    band_switch_frequency: true
+    distance_performance: true
+    power_efficiency: true
+
+# Physics model parameters for sub-THz
+physics:
+  # Atmospheric absorption coefficients (dB/km)
+  atmospheric_absorption:
+    mmwave: 0.1               # Minimal absorption at 28 GHz
+    sub_thz_low: 2.0          # Moderate absorption at 140 GHz
+    sub_thz_high: 15.0        # High absorption at 300 GHz
+  
+  # Path loss exponents
+  path_loss_exponents:
+    mmwave: 2.5               # Standard urban path loss
+    sub_thz_low: 3.0          # Higher path loss for 140 GHz
+    sub_thz_high: 3.5         # Highest path loss for 300 GHz
+  
+  # Beamforming parameters
+  beamforming:
+    mmwave:
+      beam_width: 0.03        # 30 mrad
+      pointing_accuracy: 0.005 # 5 mrad
+    sub_thz_low:
+      beam_width: 0.006       # 6 mrad
+      pointing_accuracy: 0.002 # 2 mrad
+    sub_thz_high:
+      beam_width: 0.003       # 3 mrad
+      pointing_accuracy: 0.001 # 1 mrad 

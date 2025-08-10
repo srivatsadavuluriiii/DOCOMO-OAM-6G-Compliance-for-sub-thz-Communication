@@ -1,0 +1,24 @@
+# OAM 6G RL Training Configuration
+# Inherits from base_config_new.yaml
+# Contains ONLY RL-specific parameters
+
+# Training parameters (RL-specific)
+training:
+  num_episodes: 1000         # Number of training episodes
+  max_steps_per_episode: 500 # Maximum steps per episode
+  batch_size: 128            # Batch size for training
+  learning_rate: 0.0001      # Learning rate
+  gamma: 0.99                # Discount factor
+  target_update_freq: 10     # Episodes between target network updates
+
+# Note: The following parameters are inherited from base_config_new.yaml:
+# - system: frequency, bandwidth, tx_power_dBm, noise_figure_dB, noise_temp
+# - oam: min_mode, max_mode, mode_spacing, beam_width
+# - environment: pointing_error_std, rician_k_factor, turbulence_strength, humidity, temperature, pressure
+# - enhanced_params: antenna_efficiency, implementation_loss_dB
+# - mobility: max_speed, min_speed, direction_change_prob
+# - rl_base.network: action_dim, hidden_layers, activation
+# - rl_base.replay_buffer: capacity, min_samples_to_learn
+# - rl_base.exploration: epsilon_start, epsilon_end, epsilon_decay
+# - rl_base.evaluation: eval_episodes, eval_frequency, save_model_frequency
+# - rl_base.reward: throughput_factor, handover_penalty, outage_penalty, sinr_threshold 

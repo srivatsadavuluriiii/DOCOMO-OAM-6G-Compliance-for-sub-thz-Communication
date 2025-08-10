@@ -1,0 +1,53 @@
+# OAM 6G Simulation Parameters Configuration
+
+system:
+  frequency: 28.0e9          # 28 GHz mmWave
+  bandwidth: 400e6           # 400 MHz
+  tx_power_dBm: 30.0         # 30 dBm transmit power
+  noise_figure_dB: 8.0       # 8 dB noise figure
+  noise_temp: 290.0          # 290 K noise temperature
+
+oam:
+  min_mode: 1                # Minimum OAM mode
+  max_mode: 8                # Maximum OAM mode (standardized to match base config)
+  mode_spacing: 1            # Mode spacing
+  beam_width: 0.03           # 30 mrad beam width
+
+environment:
+  pointing_error_std: 0.005  # 5 mrad pointing error
+  rician_k_factor: 8.0       # 8 dB Rician K-factor
+  turbulence_strength: 1e-14 # Cn² value (typical clear air)
+  humidity: 50.0             # Relative humidity (%)
+  temperature: 20.0          # Temperature (°C)
+  pressure: 101.3            # Atmospheric pressure (kPa)
+
+enhanced_params:
+  antenna_efficiency: 0.75   # 75% antenna efficiency
+  implementation_loss_dB: 3.0 # 3 dB implementation losses
+
+# RL Training Parameters
+training:
+  num_episodes: 1000         # Increased from 100
+  max_steps_per_episode: 500 # Increased from 200
+  learning_rate: 0.0001      # Decreased for more stable learning
+  batch_size: 128            # Increased for more stable learning
+  target_update_interval: 10 # Episodes between target network updates
+
+# Exploration Parameters
+exploration:
+  epsilon_start: 1.0
+  epsilon_end: 0.01
+  epsilon_decay: 0.99        # Slower decay for more exploration
+  
+# Reward Parameters
+reward:
+  throughput_factor: 1.0     # Weight for throughput in reward
+  handover_penalty: 0.2      # Penalty for handovers
+  outage_penalty: 1.0        # Penalty for outages
+  sinr_threshold: -5.0       # -5 dB SINR threshold
+  
+# User Mobility
+mobility:
+  max_speed: 5.0             # 5 m/s maximum speed (walking/slow vehicle)
+  min_speed: 0.5             # 0.5 m/s minimum speed
+  direction_change_prob: 0.1 # 10% probability of direction change per step 

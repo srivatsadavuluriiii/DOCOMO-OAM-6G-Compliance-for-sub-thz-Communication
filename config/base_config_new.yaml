@@ -1,0 +1,110 @@
+# OAM 6G Base Configuration
+# This file contains ONLY the truly common parameters used across all configurations
+# All other configurations inherit from this base
+
+# System parameters (common across all simulations)
+system:
+  # Multi-band frequency configuration
+  frequency_bands:
+    mmwave: 28.0e9          # 28 GHz mmWave (existing)
+    sub_thz_low: 140.0e9    # 140 GHz sub-THz (new)
+    sub_thz_high: 300.0e9   # 300 GHz sub-THz (new)
+  
+  # Bandwidth configuration per band
+  bandwidth_bands:
+    mmwave: 400e6            # 400 MHz (existing)
+    sub_thz_low: 4e9         # 4 GHz (new)
+    sub_thz_high: 10e9       # 10 GHz (new)
+  
+  # Transmit power per band (higher for sub-THz due to path loss)
+  tx_power_dBm:
+    mmwave: 30.0
+    sub_thz_low: 40.0        # Higher power for 140 GHz
+    sub_thz_high: 45.0       # Highest power for 300 GHz
+  
+  # Maximum throughput per band
+  max_throughput_gbps:
+    mmwave: 2.0
+    sub_thz_low: 20.0
+    sub_thz_high: 100.0
+  
+  # Common parameters
+  noise_figure_dB: 8.0       # 8 dB noise figure
+  noise_temp: 290.0          # 290 K noise temperature
+
+# OAM parameters (common across all configurations)
+oam:
+  min_mode: 1                # Minimum OAM mode
+  max_mode: 8                # Maximum OAM mode (single source of truth)
+  mode_spacing: 1            # Mode spacing
+  beam_width: 0.03           # 30 mrad beam width (mmWave)
+  
+  # Band-specific beam widths (tighter at higher frequencies)
+  beam_width_bands:
+    mmwave: 0.03             # 30 mrad for 28 GHz
+    sub_thz_low: 0.006       # 6 mrad for 140 GHz
+    sub_thz_high: 0.003      # 3 mrad for 300 GHz
+
+# Environment parameters (common across all simulations)
+environment:
+  pointing_error_std: 0.005  # 5 mrad pointing error
+  rician_k_factor: 8.0       # 8 dB Rician K-factor
+  turbulence_strength: 1e-14 # Cn² value (typical clear air)
+  humidity: 50.0             # Relative humidity (%)
+  temperature: 20.0          # Temperature (°C)
+  pressure: 101.3            # Atmospheric pressure (kPa)
+
+# Enhanced parameters (common across all simulations)
+enhanced_params:
+  antenna_efficiency: 0.75   # 75% antenna efficiency
+  implementation_loss_dB: 3.0 # 3 dB implementation losses
+
+# Handover optimization (mmWave baseline defaults)
+handover_optimization:
+  min_handover_interval: 10     # steps between executed switches
+  time_to_trigger_steps: 8      # consecutive same-direction requests
+  handover_hysteresis_db: 2.0   # SINR improvement needed to switch
+
+# User Mobility (common across all configurations)
+mobility:
+  max_speed: 5.0             # 5 m/s maximum speed (walking/slow vehicle)
+  min_speed: 0.5             # 0.5 m/s minimum speed
+  direction_change_prob: 0.1 # 10% probability of direction change per step
+  
+  # Band-specific area sizes (smaller for higher frequencies)
+  area_size_bands:
+    mmwave: [500.0, 500.0]   # 500m x 500m for mmWave
+    sub_thz_low: [200.0, 200.0]  # 200m x 200m for 140 GHz
+    sub_thz_high: [100.0, 100.0] # 100m x 100m for 300 GHz
+
+# Common RL network architecture (inherited by all RL configs)
+rl_base:
+  network:
+    action_dim: 5            # [STAY, UP, DOWN, SWITCH_BAND_UP, SWITCH_BAND_DOWN]
+    hidden_layers: [128, 128] # Hidden layer sizes
+    activation: "relu"       # Activation function
+
+# Common replay buffer parameters (inherited by all RL configs)
+  replay_buffer:
+    capacity: 50000          # Replay buffer capacity
+    min_samples_to_learn: 1000 # Minimum samples before learning starts
+
+# Common exploration parameters (inherited by all RL configs)
+  exploration:
+    epsilon_start: 1.0       # Initial exploration rate
+    epsilon_end: 0.01        # Final exploration rate
+    epsilon_decay: 0.99      # Exploration decay rate
+
+# Common evaluation parameters (inherited by all RL configs)
+  evaluation:
+    eval_episodes: 10        # Number of episodes for evaluation
+    eval_frequency: 50       # Episodes between evaluations
+    save_model_frequency: 50 # Episodes between model saves
+
+# Common reward parameters (inherited by all RL configs)
+reward:
+  throughput_factor: 1.0   # Weight for throughput in reward
+  handover_penalty: 0.2    # Penalty for handovers
+  outage_penalty: 1.0      # Penalty for outages
+  sinr_threshold: -5.0     # SINR threshold for outage (dB)
+  band_switch_penalty: 0.5 # Penalty for frequency band switches 

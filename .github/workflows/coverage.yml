@@ -1,0 +1,47 @@
+name: Coverage
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  coverage:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.10'
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        if [ -f config/requirements.txt ]; then pip install -r config/requirements.txt; fi
+        pip install pytest pytest-cov codecov
+        pip install -e .
+    - name: Generate coverage report for unit tests
+      run: |
+        pytest tests/unit/ --cov=. --cov-report=xml:coverage-unit.xml
+    - name: Generate coverage report for integration tests
+      run: |
+        pytest tests/integration/ --cov=. --cov-append --cov-report=xml:coverage-integration.xml
+    - name: Generate coverage report for physics tests
+      run: |
+        pytest tests/physics/ --cov=. --cov-append --cov-report=xml:coverage-physics.xml
+    - name: Generate combined coverage report
+      run: |
+        coverage combine coverage-unit.xml coverage-integration.xml coverage-physics.xml
+        coverage xml
+        coverage html
+    - name: Upload coverage to Codecov
+      uses: codecov/codecov-action@v3
+      with:
+        file: ./coverage.xml
+        fail_ci_if_error: true
+    - name: Upload HTML coverage report
+      uses: actions/upload-artifact@v3
+      with:
+        name: coverage-report
+        path: htmlcov/

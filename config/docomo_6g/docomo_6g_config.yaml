@@ -1,0 +1,271 @@
+# DOCOMO-Aligned 6G Configuration
+# Complete system configuration for 1 Tbps peak performance
+# Aligned with NTT DOCOMO 6G research roadmap
+
+docomo_6g_system:
+  version: "2025.1"
+  compliance_target: "docomo_6g_kpi_2030"
+  research_alignment: "ntt_docomo_white_paper_2025"
+  
+  # DOCOMO 6G Key Performance Indicators (Official Targets)
+  kpi_targets:
+    peak_data_rate_tbps: 1.0              # 1 Tbps peak data rate
+    user_data_rate_gbps: 100.0            # 100 Gbps per user experience
+    latency_ms: 0.1                       # 0.1 ms end-to-end latency
+    reliability: 0.9999999                # 99.99999% ultra-high reliability
+    mobility_kmh: 500.0                   # 500 km/h extreme mobility
+    connection_density_per_km2: 10000000  # 10M devices per km²
+    energy_efficiency_improvement: 100    # 100x improvement vs 5G
+    spectrum_efficiency_improvement: 10   # 10x improvement vs 5G
+    coverage_improvement: 100             # 100% seamless coverage
+    sensing_accuracy_cm: 1.0              # 1 cm sensing accuracy
+
+  # Enhanced Multi-Band Frequency Configuration (DOCOMO Standard)
+  frequency_bands:
+    # Coverage Layer - Sub-6 GHz
+    sub_6ghz:
+      frequency: 6.0e9
+      bandwidth: 100.0e6
+      max_range_km: 10.0
+      target_throughput_gbps: 1.0
+      target_latency_ms: 1.0
+      antenna_gain_dbi: 15.0
+      tx_power_dbm: 46.0
+      deployment: "macro_cell"
+      oam_modes: [1, 2, 3]
+      
+    # Capacity Layer - mmWave
+    mmwave_28:
+      frequency: 28.0e9  
+      bandwidth: 800.0e6
+      max_range_km: 1.0
+      target_throughput_gbps: 10.0
+      target_latency_ms: 0.5
+      antenna_gain_dbi: 25.0
+      tx_power_dbm: 30.0
+      deployment: "micro_cell"
+      oam_modes: [1, 2, 3, 4]
+      
+    mmwave_39:
+      frequency: 39.0e9
+      bandwidth: 800.0e6
+      max_range_km: 0.8
+      target_throughput_gbps: 15.0
+      target_latency_ms: 0.3
+      antenna_gain_dbi: 28.0
+      tx_power_dbm: 30.0
+      deployment: "micro_cell"
+      oam_modes: [1, 2, 3, 4, 5]
+      
+    mmwave_60:
+      frequency: 60.0e9
+      bandwidth: 2.0e9
+      max_range_km: 0.5
+      target_throughput_gbps: 30.0
+      target_latency_ms: 0.2
+      antenna_gain_dbi: 30.0
+      tx_power_dbm: 25.0
+      deployment: "pico_cell"
+      oam_modes: [1, 2, 3, 4, 5, 6]
+      
+    # Extreme Capacity Layer - Sub-THz
+    sub_thz_100:
+      frequency: 100.0e9
+      bandwidth: 15.0e9
+      max_range_km: 0.2
+      target_throughput_gbps: 100.0
+      target_latency_ms: 0.15
+      antenna_gain_dbi: 41.0
+      tx_power_dbm: 20.0
+      deployment: "femto_cell"
+      oam_modes: [1, 2, 3, 4, 5, 6, 7, 8]
+      
+    sub_thz_140:
+      frequency: 140.0e9
+      bandwidth: 10.0e9
+      max_range_km: 0.15
+      target_throughput_gbps: 200.0
+      target_latency_ms: 0.1
+      antenna_gain_dbi: 45.0
+      tx_power_dbm: 15.0
+      deployment: "femto_cell"
+      oam_modes: [1, 2, 3, 4, 5, 6, 7, 8]
+      
+    sub_thz_220:
+      frequency: 220.0e9
+      bandwidth: 20.0e9
+      max_range_km: 0.1
+      target_throughput_gbps: 500.0
+      target_latency_ms: 0.08
+      antenna_gain_dbi: 49.0
+      tx_power_dbm: 10.0
+      deployment: "atto_cell"
+      oam_modes: [1, 2, 3, 4, 5, 6, 7, 8]
+      
+    sub_thz_300:
+      frequency: 300.0e9
+      bandwidth: 20.0e9
+      max_range_km: 0.05
+      target_throughput_gbps: 1000.0
+      target_latency_ms: 0.05
+      antenna_gain_dbi: 53.0
+      tx_power_dbm: 5.0
+      deployment: "atto_cell"
+      oam_modes: [1, 2, 3, 4, 5, 6, 7, 8]
+      
+    # Future THz Layer
+    thz_600:
+      frequency: 600.0e9
+      bandwidth: 100.0e9
+      max_range_km: 0.01
+      target_throughput_gbps: 2000.0
+      target_latency_ms: 0.01
+      antenna_gain_dbi: 55.0
+      tx_power_dbm: 0.0
+      deployment: "zepto_cell"
+      oam_modes: [1, 2, 3, 4, 5, 6, 7, 8]
+
+  # Enhanced OAM System Configuration
+  oam_system:
+    min_mode: 1
+    max_mode: 16                          # Extended for higher capacity
+    beam_width_range: [0.001, 0.1]       # Wider range for THz frequencies
+    mode_switching_time_us: 10            # Ultra-fast switching (DOCOMO req)
+    beam_tracking_accuracy_deg: 0.05      # High precision tracking
+    crosstalk_threshold: -20              # dB, improved isolation
+    mode_prediction_enabled: true         # AI-based prediction
+    adaptive_mode_selection: true         # Context-aware selection
+    
+  # Ultra-High Mobility Model (500 km/h DOCOMO Target)
+  mobility:
+    max_speed_kmh: 500.0                  # DOCOMO extreme mobility target
+    acceleration_max_ms2: 10.0            # High acceleration scenarios
+    prediction_horizon_ms: 50.0           # Predictive capability
+    doppler_compensation: true            # Advanced Doppler handling
+    beam_prediction_enabled: true         # Predictive beam steering
+    handover_prediction_ms: 20.0          # Early handover decisions
+    mobility_state_estimation: true       # Kalman filter tracking
+    
+  # Enhanced Atmospheric Modeling (DOCOMO Requirements)
+  atmospheric:
+    enhanced_absorption_model: "itu_r_p676_13"  # Latest ITU standard
+    molecular_absorption: true            # Sub-THz molecular effects
+    scintillation_model: "strong_turbulence"    # Advanced turbulence
+    weather_adaptation: true              # Weather-aware operation
+    seasonal_variations: true             # Seasonal atmospheric changes
+    urban_effects: true                   # Urban propagation effects
+    rain_attenuation: true               # Rain fade mitigation
+    fog_scattering: true                 # Fog effects for THz
+    
+  # Multi-Objective Reinforcement Learning Configuration  
+  reinforcement_learning:
+    agent_type: "docomo_multi_objective_dqn"
+    state_dimension: 20                   # Enhanced state representation
+    action_dimension: 8                   # Extended action space
+    
+    # Enhanced Neural Network Architecture
+    network_architecture:
+      hidden_layers: [512, 512, 256, 256] # Deeper networks
+      physics_informed: true              # Physics-constrained learning
+      batch_normalization: true           # Training stability
+      dropout_rate: 0.1                   # Regularization
+      activation: "swish"                  # Advanced activation
+      
+    # Advanced Training Configuration
+    training:
+      learning_rate: 1.0e-4               # Optimized learning rate
+      batch_size: 1024                    # Larger batches for stability
+      buffer_capacity: 200000             # Large experience buffer
+      target_update_frequency: 1000       # Frequent target updates
+      gradient_clipping: 1.0              # Gradient stability
+      lr_scheduler: "cosine_annealing"    # Learning rate scheduling
+      high_freq_start_prob: 0.99          # Prefer starting on sub-THz bands (further increased)
+      optimal_start_band: true            # Start on optimal band for initial distance
+      
+    # DOCOMO Multi-Objective Weights
+    objectives:
+          throughput_weight: 0.50
+          latency_weight: 0.25
+          energy_weight: 0.08
+          reliability_weight: 0.10
+          mobility_weight: 0.05
+          spectrum_weight: 0.02
+      
+  # Advanced Validation and Benchmarking
+  validation:
+    kpi_compliance_threshold: 0.97        # 97% compliance required (raised)
+  # Band switch optimization (stabilize high-band selection)
+  band_switch_optimization:
+    min_interval_steps: 28
+    time_to_trigger_steps: 16
+    sinr_hysteresis_db: 2.0
+    min_gain_gbps: 26.0
+    min_dwell_steps: 35
+    stickiness_window: 35
+    stickiness_bonus: 0.15
+    early_exemption_steps: 20
+    docomo_benchmarks: true               # DOCOMO compliance testing
+    kpi_compliance_threshold: 0.95        # 95% compliance required
+    # Raise threshold to reflect new stability
+    # Note: actual gating uses this under KPI tracker compliance
+    physics_validation: true              # Physics model validation
+    real_world_scenarios: true            # Real deployment scenarios
+    stress_testing: true                  # Extreme condition testing
+    regression_testing: true              # Performance regression
+    
+  # Real-Time Performance Monitoring
+  monitoring:
+    kpi_tracking: true                    # Real-time KPI monitoring
+    real_time_analytics: true             # Live performance analytics
+    predictive_maintenance: true          # AI-based maintenance
+    energy_monitoring: true               # Power consumption tracking
+    compliance_reporting: true            # Regulatory compliance
+    anomaly_detection: true               # AI-based anomaly detection
+    
+  # Deployment Scenarios (DOCOMO Use Cases)
+  deployment_scenarios:
+    urban_dense:
+      user_density_per_km2: 10000000     # 10M users per km²
+      mobility_profile: "mixed_speed"     # 0-120 km/h
+      target_throughput_gbps: 100.0       # Per user
+      coverage_requirement: 0.99          # 99% coverage
+      
+    highway_mobility:
+      user_density_per_km2: 1000          # Sparse users
+      mobility_profile: "high_speed"      # Up to 500 km/h
+      target_throughput_gbps: 50.0        # High mobility
+      handover_frequency_max: 10          # Handovers per second
+      
+    indoor_hotspot:
+      user_density_per_km2: 100000        # Dense indoor
+      mobility_profile: "pedestrian"      # 0-10 km/h  
+      target_throughput_gbps: 1000.0      # 1 Tbps peak
+      latency_requirement_ms: 0.05        # Ultra-low latency
+      
+    industrial_iot:
+      user_density_per_km2: 1000000       # Massive IoT
+      mobility_profile: "stationary"      # No mobility
+      target_throughput_mbps: 1.0         # Low data rate
+      reliability_requirement: 0.9999999  # Ultra-high reliability
+      
+    extended_reality:
+      user_density_per_km2: 10000         # XR users
+      mobility_profile: "pedestrian"      # Walking speed
+      target_throughput_gbps: 500.0       # High bandwidth XR
+      latency_requirement_ms: 0.1         # Real-time interaction
+      sensing_accuracy_cm: 1.0           # Precise positioning
+
+# Simulation Parameters
+simulation:
+  max_episodes: 10000                     # Extended training
+  max_steps_per_episode: 2000            # Longer episodes
+  evaluation_frequency: 100              # Regular evaluation
+  checkpoint_frequency: 500              # Model checkpointing
+  early_stopping_patience: 1000         # Extended patience
+  
+# Hardware Requirements
+hardware_requirements:
+  gpu_memory_gb: 16                      # High-end GPU required
+  cpu_cores: 16                          # Multi-core processing
+  ram_gb: 64                             # Large memory for buffering
+  storage_gb: 1000                       # Large dataset storage

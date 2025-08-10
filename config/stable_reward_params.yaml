@@ -1,0 +1,48 @@
+# OAM 6G Stable Reward Configuration
+
+# Base configuration inherits from simulation_params.yaml
+# This file only contains additional parameters for the stable reward function
+
+stable_reward:
+  smoothing_factor: 0.7        # Exponential smoothing factor (0-1)
+  window_size: 10              # Size of moving average window
+  reward_scale: 2.0            # Scaling factor for reward
+  reward_min: -10.0            # Minimum reward value
+  reward_max: 10.0             # Maximum reward value
+  sinr_scaling_factor: 0.1     # Scale SINR contribution to reward
+
+# Modify reward parameters
+reward:
+  throughput_factor: 5.0       # Increased weight for throughput
+  handover_penalty: 0.5        # Penalty for mode handovers
+  outage_penalty: 5.0          # Penalty for SINR below threshold
+  sinr_threshold: -5.0         # SINR threshold for outage (dB)
+
+# RL Training Parameters
+training:
+  num_episodes: 1000          
+  max_steps_per_episode: 500
+  learning_rate: 0.0001
+  batch_size: 128
+  target_update_interval: 10
+
+# RL Network Parameters
+network:
+  hidden_layers: [128, 128]    # Hidden layer sizes
+
+# Replay Buffer Parameters
+replay_buffer:
+  capacity: 50000
+  min_samples_to_learn: 1000
+
+# Exploration Parameters
+exploration:
+  epsilon_start: 1.0
+  epsilon_end: 0.01
+  epsilon_decay: 0.99
+
+# Evaluation Parameters
+evaluation:
+  eval_episodes: 10
+  eval_frequency: 50
+  save_model_frequency: 50 
