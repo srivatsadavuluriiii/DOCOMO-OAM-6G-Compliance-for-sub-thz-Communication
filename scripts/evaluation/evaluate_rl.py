@@ -17,11 +17,9 @@ from utils.path_utils import ensure_project_root_in_path
 ensure_project_root_in_path()
 
 from models.agent import Agent
-from environment.oam_env import OAM_Env
-from environment.stable_oam_env import StableOAM_Env
-from environment.hybrid_oam_env import HybridOAM_Env
+from environment.docomo_6g_env import DOCOMO_6G_Environment
 from utils.visualization_unified import create_evaluation_dashboard, visualize_q_values
-from utils.config_utils import load_config
+# For DOCOMO config we load YAML directly (sanitizer does not know DOCOMO sections)
 import matplotlib.pyplot as plt
 
 
@@ -102,13 +100,16 @@ def evaluate(args: argparse.Namespace) -> None:
     plots_dir = os.path.join(output_dir, 'plots')
     os.makedirs(plots_dir, exist_ok=True)
     
-    # Load configuration
+    # Load configuration (DOCOMO config)
     if args.config is None:
         config_path = os.path.join(model_dir, "config.yaml")
     else:
         config_path = args.config
-    
-    config = load_config(config_path)
+    try:
+        with open(config_path, 'r') as f:
+            config = yaml.safe_load(f)
+    except Exception:
+        config = {}
     
     # Set device
     device = torch.device("cpu" if args.no_gpu or not torch.cuda.is_available() else "cuda")
@@ -132,19 +133,11 @@ def evaluate(args: argparse.Namespace) -> None:
     except Exception:
         pass
 
-    # Create environment matching the trained model
-    EnvClass = OAM_Env
-    if expected_action_dim is not None:
-        if expected_action_dim >= 5:
-            EnvClass = HybridOAM_Env
-        else:
-            EnvClass = OAM_Env
+    # Create DOCOMO environment
+    if args.config is not None:
+        env = DOCOMO_6G_Environment(config_path=args.config)
     else:
-        # Heuristic from config for hybrid
-        sys_cfg = config.get('system', {}) if isinstance(config, dict) else {}
-        if isinstance(sys_cfg.get('frequency_bands', None), dict):
-            EnvClass = HybridOAM_Env
-    env = EnvClass(config)
+        env = DOCOMO_6G_Environment(config=config)
     
     # Get state and action dimensions
     state_dim = env.observation_space.shape[0]
@@ -160,13 +153,28 @@ def evaluate(args: argparse.Namespace) -> None:
         device=device
     )
     
-    # Load trained model
-    # Determine model path (support both models/final and models/)
-    candidate_final = os.path.join(model_dir, "models", "final")
-    candidate_root = os.path.join(model_dir, "models")
-    model_path = candidate_final if os.path.isdir(candidate_final) else candidate_root
-    agent.load_models(model_path)
-    print(f"Loaded model from {model_path}")
+    # Load trained model: prefer best_model.pth in model_dir
+    best_model_path = os.path.join(model_dir, "best_model.pth")
+    if os.path.isfile(best_model_path):
+        try:
+            ckpt = torch.load(best_model_path, map_location=device, weights_only=False)
+            if 'policy_net_state_dict' in ckpt:
+                agent.policy_net.load_state_dict(ckpt['policy_net_state_dict'])
+            if 'target_net_state_dict' in ckpt:
+                agent.target_net.load_state_dict(ckpt['target_net_state_dict'])
+            print(f"Loaded best model from {best_model_path}")
+        except Exception as e:
+            print(f"Warning: Could not load best_model.pth: {e}")
+    else:
+        # Fallback to legacy structure if present
+        candidate_final = os.path.join(model_dir, "models", "final")
+        candidate_root = os.path.join(model_dir, "models")
+        model_path = candidate_final if os.path.isdir(candidate_final) else candidate_root
+        try:
+            agent.load_models(model_path)
+            print(f"Loaded model from {model_path}")
+        except Exception as e:
+            print(f"Warning: Could not load model from {model_path}: {e}")
     
     # Evaluation loop
     episode_rewards = []
@@ -211,11 +219,19 @@ def evaluate(args: argparse.Namespace) -> None:
             if args.render:
                 env.render()
         
-        # Store episode metrics from reward calculator stats
+        # Store episode metrics
         episode_rewards.append(episode_reward)
-        stats = env.reward_calculator.get_episode_stats()
-        episode_throughputs.append(stats.get('episode_throughput', 0.0))
-        episode_handovers.append(stats.get('episode_handovers', 0))
+        try:
+            # Prefer KPI tracker metrics
+            kpis = env.kpi_tracker.get_current_kpis()
+            episode_throughputs.append(kpis.get('current_throughput_gbps', 0.0) * 1e9)
+        except Exception:
+            episode_throughputs.append(0.0)
+        try:
+            ep_stats = getattr(env, 'episode_stats', {})
+            episode_handovers.append(int(ep_stats.get('handover_count', 0)))
+        except Exception:
+            episode_handovers.append(0)
         episode_sinrs.append(episode_sinr_values)
         episode_modes.append(episode_mode_values)
         episode_distances.append(episode_distance_values)
@@ -253,8 +269,8 @@ def evaluate(args: argparse.Namespace) -> None:
     # 1. Plot Q-values
     if action_dim == 3:
         action_names = ["STAY", "UP", "DOWN"]
-    elif action_dim == 5:
-        action_names = ["STAY", "UP", "DOWN", "SWITCH_BAND_UP", "SWITCH_BAND_DOWN"]
+    elif action_dim == 8:
+        action_names = ["STAY", "OAM_UP", "OAM_DOWN", "BAND_UP", "BAND_DOWN", "BEAM_TRACK", "PREDICT", "HANDOVER"]
     else:
         action_names = [f"A{i}" for i in range(action_dim)]
     q_plot_path = os.path.join(plots_dir, "q_values.png")

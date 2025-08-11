@@ -1,9 +1,8 @@
 """
-Environment package for OAM 6G RL environment.
+Environment package for DOCOMO 6G RL environment.
 """
 
-from .oam_env import OAM_Env
-from .stable_oam_env import StableOAM_Env
+from .docomo_6g_env import DOCOMO_6G_Environment
 
-__all__ = ['OAM_Env', 'StableOAM_Env']
+__all__ = ['DOCOMO_6G_Environment']
 
