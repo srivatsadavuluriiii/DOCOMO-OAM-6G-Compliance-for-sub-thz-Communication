@@ -7,6 +7,10 @@ import numpy as np
 import os
 import sys
 
+# Ensure project root is on sys.path before importing project modules
+PROJECT_ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+if PROJECT_ROOT not in sys.path:
+    sys.path.insert(0, PROJECT_ROOT)
 # Use centralized path management instead of sys.path.append
 from utils.path_utils import ensure_project_root_in_path
 ensure_project_root_in_path()
@@ -90,13 +94,11 @@ def test_critical_functions():
         print("✅ No undefined variables")
         print("✅ No missing return statements")
         
-        return True
-        
     except Exception as e:
         print(f"\n❌ RUNTIME ERROR DETECTED: {e}")
         print(f"   • Error type: {type(e).__name__}")
         print(f"   • Error location: {e.__traceback__.tb_frame.f_code.co_name}")
-        return False
+        assert False, f"Runtime error in critical functions: {e}"
 
 def test_edge_cases():
     """Test edge cases that might cause runtime errors."""
@@ -136,11 +138,10 @@ def test_edge_cases():
         print(f"   • Atmospheric loss (100% humidity): {atmospheric_loss_high:.2e}")
         
         print("\n🎉 ALL EDGE CASES HANDLED CORRECTLY!")
-        return True
         
     except Exception as e:
         print(f"\n❌ EDGE CASE ERROR: {e}")
-        return False
+        assert False, f"Edge case runtime error: {e}"
 
 if __name__ == "__main__":
     success1 = test_critical_functions()

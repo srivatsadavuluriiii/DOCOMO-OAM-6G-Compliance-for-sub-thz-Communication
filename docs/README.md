@@ -54,6 +54,15 @@ python scripts/training/train_distance_optimization.py --num-episodes 1000
 
 # Evaluate results
 python scripts/evaluation/evaluate_rl.py
+
+# Enable ML distance optimizer (optional)
+python scripts/training/train_distance_optimizer_ml.py \
+  --data results/tuples.jsonl \
+  --output results/ml_distance_optimizer/model.pt \
+  --features distance,throughput,current_mode,sinr_db
+
+# Enable analytics logging (optional)
+echo "analytics:\n  enable: true\n  backends: [jsonl]\n  interval: 1" >> config/local_overrides.yaml
 ```
 
 ### Training

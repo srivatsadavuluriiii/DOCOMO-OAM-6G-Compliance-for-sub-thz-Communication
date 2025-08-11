@@ -39,9 +39,35 @@ class RewardCalculator:
             self.outage_penalty = reward_config.get('outage_penalty', self.outage_penalty)
             self.sinr_threshold = reward_config.get('sinr_threshold', self.sinr_threshold)
         
+        # Multi-objective (optional)
+        self.multi_objective_enabled = False
+        self.mo_weights = {
+            'throughput': 0.0,
+            'stability': 0.0,
+            'energy': 0.0,
+            'handover': 0.0,
+        }
+
         # Episode tracking
         self.episode_throughput = 0.0
         self.episode_handovers = 0
+
+        # Read optional multi-objective weights
+        if isinstance(config, dict):
+            # Prefer rl_base.reward.multi_objective, also allow reward.multi_objective
+            mo_cfg = (
+                config.get('rl_base', {}).get('reward', {}).get('multi_objective')
+                if isinstance(config.get('rl_base', {}), dict) else None
+            )
+            if mo_cfg is None:
+                mo_cfg = config.get('reward', {}).get('multi_objective')
+            if isinstance(mo_cfg, dict) and any(k in mo_cfg for k in self.mo_weights.keys()):
+                self.multi_objective_enabled = True
+                for k in self.mo_weights.keys():
+                    try:
+                        self.mo_weights[k] = float(mo_cfg.get(k, self.mo_weights[k]))
+                    except Exception:
+                        pass
         
     def calculate_reward(self, throughput: float, sinr_dB: float, handover_occurred: bool) -> float:
         """
@@ -55,16 +81,31 @@ class RewardCalculator:
         Returns:
             Calculated reward
         """
-        # Start with throughput reward (normalized to Gbps)
-        reward = self.throughput_factor * (throughput / 1e9)
+        if self.multi_objective_enabled:
+            # Components
+            throughput_gbps = throughput / 1e9
+            stability_score = 0.0 if handover_occurred else 1.0
+            energy_cost = 0.0  # Placeholder; extend when energy metrics available
+
+            reward = (
+                self.mo_weights['throughput'] * throughput_gbps
+                + self.mo_weights['stability'] * stability_score
+                - self.mo_weights['handover'] * (1.0 if handover_occurred else 0.0)
+                - self.mo_weights['energy'] * energy_cost
+            )
+        else:
+            # Start with throughput reward (normalized to Gbps)
+            reward = self.throughput_factor * (throughput / 1e9)
+            # Apply handover penalty if mode was changed
+            if handover_occurred:
+                # Cap per-step handover penalty to be consistent
+                reward -= min(self.handover_penalty, 2.0)
         
-        # Apply handover penalty if mode was changed
+        # Track handovers consistently
         if handover_occurred:
-            # Cap per-step handover penalty to be consistent
-            reward -= min(self.handover_penalty, 2.0)
             self.episode_handovers += 1
         
-        # Apply outage penalty if SINR is below threshold
+        # Apply outage penalty if SINR is below threshold (applies to both paths)
         if sinr_dB < self.sinr_threshold:
             reward -= min(self.outage_penalty, 10.0)
             

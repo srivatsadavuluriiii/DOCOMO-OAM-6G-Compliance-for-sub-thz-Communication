@@ -158,3 +158,47 @@ class TestEnvironmentSimulatorIntegration:
                 state, info = env.reset()
             else:
                 state = next_state
+
+    def test_ml_distance_optimizer_flag(self, base_config):
+        """ML flag path initializes and falls back gracefully without a model."""
+        from environment.distance_optimized_env import DistanceOptimizedEnv
+        cfg = dict(base_config)
+        cfg['distance_optimization'] = {
+            'enabled_ml': True,
+            # Intentionally omit model_path to exercise graceful fallback
+            'features': ['distance', 'throughput', 'current_mode', 'sinr_db'],
+        }
+        env = DistanceOptimizedEnv(cfg)
+        state, info = env.reset()
+        action = env.action_space.sample()
+        next_state, reward, terminated, truncated, info = env.step(action)
+        assert next_state.shape == env.observation_space.shape
+        env.close()
+
+    def test_analytics_logging_smoke(self, base_config, tmp_path):
+        """Smoke test to ensure analytics JSONL is produced when enabled."""
+        from environment.distance_optimized_env import DistanceOptimizedEnv
+        import os
+        cfg = dict(base_config)
+        cfg['analytics'] = {
+            'enable': True,
+            'backends': ['jsonl'],
+            'interval': 1,
+        }
+        # Route results to temp dir
+        os.makedirs(tmp_path, exist_ok=True)
+        env = DistanceOptimizedEnv(cfg)
+        state, info = env.reset()
+        for _ in range(5):
+            action = env.action_space.sample()
+            env.step(action)
+        env.close()
+        # Check that a metrics.jsonl exists in default location
+        found = False
+        for root, dirs, files in os.walk('results'):
+            if 'metrics.jsonl' in files:
+                found = True
+                p = os.path.join(root, 'metrics.jsonl')
+                assert os.path.getsize(p) > 0
+                break
+        assert found

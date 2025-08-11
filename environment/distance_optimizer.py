@@ -10,6 +10,14 @@ import numpy as np
 from typing import Dict, Any, Tuple, List, Optional
 from dataclasses import dataclass
 import math
+import os
+
+try:
+    import torch
+    from torch import nn
+    TORCH_AVAILABLE = True
+except Exception:
+    TORCH_AVAILABLE = False
 
 
 @dataclass
@@ -390,3 +398,92 @@ class DistanceAwareRewardCalculator:
         }
         
         return final_reward, optimization_info 
+
+
+class MLDistanceOptimizer(DistanceOptimizer):
+    """
+    ML-based distance optimizer that uses a learned model to suggest modes.
+
+    Inference-only path: loads a Torch model from disk and maps input features
+    to a mode recommendation constrained by available modes.
+    """
+
+    def __init__(self, config: Optional[DistanceOptimizationConfig] = None,
+                 model_path: Optional[str] = None,
+                 feature_list: Optional[List[str]] = None,
+                 min_mode: int = 1,
+                 max_mode: int = 8):
+        super().__init__(config)
+        self.model_path = model_path
+        self.feature_list = feature_list or ["distance", "throughput", "current_mode", "sinr_db"]
+        self.min_mode = int(min_mode)
+        self.max_mode = int(max_mode)
+
+        self.model = None
+        if model_path:
+            self._load_model(model_path)
+
+    def _load_model(self, path: str) -> None:
+        if not TORCH_AVAILABLE:
+            raise ImportError("PyTorch not available but required for MLDistanceOptimizer")
+        if not os.path.exists(path):
+            raise FileNotFoundError(f"ML model file not found: {path}")
+        try:
+            self.model = torch.jit.load(path, map_location="cpu") if path.endswith(".pt") or path.endswith(".jit") else torch.load(path, map_location="cpu")
+            if hasattr(self.model, 'eval'):
+                self.model.eval()
+        except Exception as e:
+            raise ValueError(f"Failed to load ML model: {e}")
+
+    def _extract_features(self, distance: float, throughput: float, current_mode: int, sinr_db: float) -> List[float]:
+        values = {
+            'distance': float(distance),
+            'throughput': float(throughput),
+            'current_mode': float(current_mode),
+            'sinr_db': float(sinr_db),
+        }
+        return [values.get(name, 0.0) for name in self.feature_list]
+
+    def optimize_mode_selection(self, distance: float, current_throughput: float,
+                               current_mode: int, available_modes: List[int],
+                               mode_changes: int = 0, sinr_db: float = 0.0) -> Tuple[int, Dict[str, float]]:
+        # If no model loaded, fall back to parent strategy
+        if self.model is None:
+            return super().optimize_mode_selection(distance, current_throughput, current_mode, available_modes, mode_changes)
+
+        if not TORCH_AVAILABLE:
+            return super().optimize_mode_selection(distance, current_throughput, current_mode, available_modes, mode_changes)
+
+        # Prepare features tensor
+        feats = self._extract_features(distance, current_throughput, current_mode, sinr_db)
+        with torch.no_grad():
+            x = torch.tensor(feats, dtype=torch.float32).unsqueeze(0)
+            logits = self.model(x)  # expected shape: [1, num_modes]
+            if isinstance(logits, (list, tuple)):
+                logits = logits[0]
+            probs = torch.softmax(logits, dim=-1).squeeze(0).cpu().numpy()
+
+        # Map logits/probs to mode indices in [min_mode, max_mode]
+        candidate_modes = list(range(self.min_mode, self.max_mode + 1))
+        if len(probs) != len(candidate_modes):
+            # If mismatch, fallback gracefully
+            return super().optimize_mode_selection(distance, current_throughput, current_mode, available_modes, mode_changes)
+
+        # Filter to available modes and pick highest probability
+        best_mode = current_mode
+        best_score = -1.0
+        for mode, p in zip(candidate_modes, probs):
+            if mode in available_modes and p > best_score:
+                best_mode = mode
+                best_score = float(p)
+
+        # Build scores dict compatible with parent
+        scores = {
+            'distance_score': 0.0,
+            'throughput_score': 0.0,
+            'stability_score': 0.0,
+            'optimization_score': float(max(best_score, 0.0)),
+            'should_change': best_mode != current_mode,
+        }
+
+        return best_mode, scores

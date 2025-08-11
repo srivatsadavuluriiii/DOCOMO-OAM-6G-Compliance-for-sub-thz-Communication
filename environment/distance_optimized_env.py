@@ -89,8 +89,27 @@ class DistanceOptimizedEnv(OAM_Env):
                 distance_config.adaptive_threshold = adaptive.get('enabled', distance_config.adaptive_threshold)
                 distance_config.learning_rate = adaptive.get('learning_rate', distance_config.learning_rate)
         
-        # Initialize distance optimizer
-        self.distance_optimizer = DistanceOptimizer(distance_config)
+        # Initialize distance optimizer (optionally ML-based)
+        use_ml = False
+        model_path = None
+        feature_list = None
+        if config and 'distance_optimization' in config:
+            ml_cfg = config['distance_optimization']
+            use_ml = bool(ml_cfg.get('enabled_ml', False))
+            model_path = ml_cfg.get('model_path')
+            feature_list = ml_cfg.get('features')
+
+        if use_ml:
+            from .distance_optimizer import MLDistanceOptimizer
+            self.distance_optimizer = MLDistanceOptimizer(
+                distance_config,
+                model_path=model_path,
+                feature_list=feature_list,
+                min_mode=self.min_mode,
+                max_mode=self.max_mode,
+            )
+        else:
+            self.distance_optimizer = DistanceOptimizer(distance_config)
         
         # Initialize distance-aware reward calculator
         self.distance_aware_reward_calculator = DistanceAwareRewardCalculator(
@@ -115,6 +134,19 @@ class DistanceOptimizedEnv(OAM_Env):
                 handover_config = dist_opt_config['handover_optimization']
                 self.min_handover_interval = handover_config.get('min_handover_interval', self.min_handover_interval)
                 self.handover_hysteresis = handover_config.get('handover_hysteresis', self.handover_hysteresis)
+
+        # Analytics config
+        self.analytics_enabled = bool(config.get('analytics', {}).get('enable', False)) if config else False
+        self.analytics_backends = config.get('analytics', {}).get('backends', ["jsonl"]) if config else ["jsonl"]
+        self.analytics_interval = int(config.get('analytics', {}).get('interval', 1)) if config else 1
+        self._metrics_logger = None
+        if self.analytics_enabled:
+            from utils.visualization_unified import MetricsLogger
+            log_dir = os.path.join('results', 'analytics')
+            try:
+                self._metrics_logger = MetricsLogger(log_dir, backends=self.analytics_backends, flush_interval=self.analytics_interval)
+            except Exception:
+                self._metrics_logger = None
     
     @safe_calculation("distance_optimization", fallback_value=1)
     def _get_distance_optimized_mode(self, distance: float, current_throughput: float,
@@ -139,9 +171,17 @@ class DistanceOptimizedEnv(OAM_Env):
         recent_mode_changes = len([m for m in self.mode_change_history[-10:] if m])
         
         # Get distance-optimized mode
-        optimal_mode, optimization_scores = self.distance_optimizer.optimize_mode_selection(
-            distance, current_throughput, current_mode, available_modes, recent_mode_changes
-        )
+        # Provide SINR to ML optimizer if used
+        sinr_db = getattr(self, 'current_sinr', 0.0)
+        try:
+            optimal_mode, optimization_scores = self.distance_optimizer.optimize_mode_selection(
+                distance, current_throughput, current_mode, available_modes, recent_mode_changes, sinr_db=sinr_db
+            )
+        except TypeError:
+            # Backward compatibility with base optimizer signature
+            optimal_mode, optimization_scores = self.distance_optimizer.optimize_mode_selection(
+                distance, current_throughput, current_mode, available_modes, recent_mode_changes
+            )
         
         # Determine if mode change should occur
         should_change = False
@@ -240,6 +280,16 @@ class DistanceOptimizedEnv(OAM_Env):
         if len(self.mode_change_history) > 100:
             self.mode_change_history = self.mode_change_history[-50:]
         
+        # Analytics logging
+        if self._metrics_logger is not None and (self.steps % self.analytics_interval == 0):
+            try:
+                self._metrics_logger.log_scalar('sinr_db', float(self.current_sinr), self.steps)
+                self._metrics_logger.log_scalar('throughput', float(current_throughput), self.steps)
+                self._metrics_logger.log_scalar('mode', float(self.current_mode), self.steps)
+                self._metrics_logger.log_scalar('handovers', float(self.episode_handovers), self.steps)
+            except Exception:
+                pass
+
         return next_state, reward, done, truncated, info
     
     def reset(self, seed: Optional[int] = None, options: Optional[Dict[str, Any]] = None) -> Tuple[np.ndarray, Dict[str, Any]]:
@@ -266,7 +316,22 @@ class DistanceOptimizedEnv(OAM_Env):
         self.successful_distance_optimizations = 0
         
         # Call parent reset
-        return super().reset(seed=seed, options=options)
+        state, info = super().reset(seed=seed, options=options)
+        # Emit episode summary (previous episode), if logger exists and steps>0
+        if self._metrics_logger is not None and self.steps == 0:
+            try:
+                stats = self.reward_calculator.get_episode_stats()
+                summary = {
+                    'episode_reward': float(stats.get('episode_reward', 0.0)),
+                    'episode_throughput': float(stats.get('episode_throughput', 0.0)),
+                    'episode_handovers': int(stats.get('episode_handovers', 0)),
+                }
+                # Use a simple episode counter proxy
+                self._episode_counter = getattr(self, '_episode_counter', 0) + 1
+                self._metrics_logger.log_episode_summary(summary, self._episode_counter)
+            except Exception:
+                pass
+        return state, info
     
     def get_distance_optimization_stats(self) -> Dict[str, Any]:
         """

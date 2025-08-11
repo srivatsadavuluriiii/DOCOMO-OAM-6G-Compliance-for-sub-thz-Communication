@@ -181,3 +181,26 @@ class TestAgent:
                 break
         
         assert params_changed, "Target network parameters did not change after update"
+
+    def test_multi_objective_reward_defaults_unchanged(self, base_config):
+        """Default reward behavior remains reasonable without multi_objective config."""
+        from environment.reward_calculator import RewardCalculator
+        rc = RewardCalculator(base_config)
+        r = rc.calculate_reward(throughput=1e9, sinr_dB=10.0, handover_occurred=False)
+        assert r > 0
+        r2 = rc.calculate_reward(throughput=0.0, sinr_dB=-10.0, handover_occurred=True)
+        assert r2 <= 0
+
+    def test_multi_objective_reward_enabled(self, base_config):
+        from environment.reward_calculator import RewardCalculator
+        cfg = dict(base_config)
+        cfg.setdefault('rl_base', {}).setdefault('reward', {})['multi_objective'] = {
+            'throughput': 1.0,
+            'stability': 0.5,
+            'energy': 0.0,
+            'handover': 0.5,
+        }
+        rc = RewardCalculator(cfg)
+        r_stable = rc.calculate_reward(throughput=1e9, sinr_dB=10.0, handover_occurred=False)
+        r_handover = rc.calculate_reward(throughput=1e9, sinr_dB=10.0, handover_occurred=True)
+        assert r_stable > r_handover

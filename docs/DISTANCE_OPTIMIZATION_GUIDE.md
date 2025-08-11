@@ -383,13 +383,81 @@ The system is designed for easy extension:
 class CustomDistanceOptimizer(DistanceOptimizer):
     def optimize_mode_selection(self, distance, throughput, mode, available_modes):
         # Implement custom optimization logic
-        pass
+        return super().optimize_mode_selection(distance, throughput, mode, available_modes)
 
 # Custom reward calculation
 class CustomDistanceAwareRewardCalculator(DistanceAwareRewardCalculator):
     def calculate_distance_aware_reward(self, throughput, sinr, handover, distance, mode, available_modes):
-        # Implement custom reward logic
-        pass
+        # Implement custom reward logic on top of base
+        base_reward, info = super().calculate_distance_aware_reward(
+            throughput, sinr, handover, distance, mode, available_modes
+        )
+        # Example: small bonus for near range
+        if self.distance_optimizer.get_distance_category(distance) == 'near':
+            base_reward += 0.05
+        return base_reward, info
+```
+
+### ML Distance Optimizer (inference-only)
+
+Enable a learned mode-selection model with config flags and export a TorchScript model using the provided trainer.
+
+Config snippet:
+
+```yaml
+distance_optimization:
+  enabled_ml: true
+  model_path: results/ml_distance_optimizer/model.pt
+  features: [distance, throughput, current_mode, sinr_db]
+```
+
+Initialize env (auto-picks ML optimizer when enabled):
+
+```python
+from environment.distance_optimized_env import DistanceOptimizedEnv
+cfg = load_config('config/base_config_new.yaml')
+cfg['distance_optimization'] = {
+    'enabled_ml': True,
+    'model_path': 'results/ml_distance_optimizer/model.pt',
+    'features': ['distance','throughput','current_mode','sinr_db'],
+}
+env = DistanceOptimizedEnv(cfg)
+```
+
+Train/export model from logged tuples:
+
+```bash
+python scripts/training/train_distance_optimizer_ml.py \
+  --data results/tuples.jsonl \
+  --output results/ml_distance_optimizer/model.pt \
+  --features distance,throughput,current_mode,sinr_db
+```
+
+### Analytics Logging
+
+Enable JSONL/TensorBoard logging from the environment:
+
+```yaml
+analytics:
+  enable: true
+  backends: [jsonl, tensorboard]
+  interval: 1
+```
+
+This produces `results/analytics/metrics.jsonl` and TensorBoard events. Use `tensorboard --logdir results/analytics` to view.
+
+### Multi-Objective Reward
+
+Use a composite reward without changing code paths:
+
+```yaml
+rl_base:
+  reward:
+    multi_objective:
+      throughput: 1.0
+      stability: 0.5
+      handover: 0.5
+      energy: 0.0
 ```
 
 ## Conclusion
