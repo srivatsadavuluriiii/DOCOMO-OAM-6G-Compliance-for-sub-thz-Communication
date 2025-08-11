@@ -270,7 +270,7 @@ class DOCOMOKPITracker:
         """Log detected anomaly"""
         self.session_stats['error_count'] += 1
         if self.anomaly_log_enabled:
-            print(f"⚠️ ANOMALY DETECTED: {metric} Z-score: {z_score:.2f} at {measurement.timestamp}")
+            print(f" ANOMALY DETECTED: {metric} Z-score: {z_score:.2f} at {measurement.timestamp}")
     
     def _update_performance_trend(self):
         """Update overall performance trend"""
@@ -515,7 +515,7 @@ class DOCOMOKPITracker:
         with open(filepath, 'w') as f:
             json.dump(report, f, indent=2, default=str)
         
-        print(f"📊 DOCOMO compliance report saved to {filepath}")
+        print(f" DOCOMO compliance report saved to {filepath}")
 
     def reset_session(self):
         """Reset session tracking"""
@@ -539,4 +539,4 @@ class DOCOMOKPITracker:
             'error_count': 0
         }
         
-        print("🔄 DOCOMO KPI tracker session reset")
+        print(" DOCOMO KPI tracker session reset")

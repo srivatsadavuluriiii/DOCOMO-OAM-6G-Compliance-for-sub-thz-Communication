@@ -74,20 +74,20 @@ class DOCOMOTrainingManager:
         
         # Initialize device
         self.device = torch.device('cuda' if torch.cuda.is_available() and not args.no_gpu else 'cpu')
-        print(f"🖥️  Using device: {self.device}")
+        print(f"  Using device: {self.device}")
         
         # Load configuration
         self.config = self._load_config()
         
         # Initialize environment
-        print("🚀 Initializing DOCOMO 6G Environment...")
+        print(" Initializing DOCOMO 6G Environment...")
         self.env = DOCOMO_6G_Environment(config_path=config_path)
-        print(f"   📊 State space: {self.env.observation_space.shape}")
-        print(f"   🎯 Action space: {self.env.action_space.n}")
-        print(f"   📡 Frequency bands: {len(self.env.band_names)}")
+        print(f"    State space: {self.env.observation_space.shape}")
+        print(f"    Action space: {self.env.action_space.n}")
+        print(f"    Frequency bands: {len(self.env.band_names)}")
         
         # Initialize agent using existing Agent class
-        print("🧠 Initializing DQN Agent...")
+        print(" Initializing DQN Agent...")
         state_dim = self.env.observation_space.shape[0]
         action_dim = self.env.action_space.n
         
@@ -116,7 +116,7 @@ class DOCOMOTrainingManager:
         self.agent.policy_net.to(self.device)
         self.agent.target_net.to(self.device)
         
-        print(f"   ⚙️  Model parameters: {sum(p.numel() for p in self.agent.policy_net.parameters())}")
+        print(f"     Model parameters: {sum(p.numel() for p in self.agent.policy_net.parameters())}")
         
         # Initialize metrics tracking
         self.metrics_logger = MetricsLogger(log_dir=str(self.output_dir))
@@ -133,10 +133,10 @@ class DOCOMOTrainingManager:
         try:
             with open(self.config_path, 'r') as f:
                 config = yaml.safe_load(f)
-            print(f"✅ Loaded config from {self.config_path}")
+            print(f" Loaded config from {self.config_path}")
             return config
         except Exception as e:
-            print(f"❌ Error loading config: {e}")
+            print(f" Error loading config: {e}")
             # Return default config
             return {
                 'agent': {
@@ -172,7 +172,7 @@ class DOCOMOTrainingManager:
         if episodes is None:
             episodes = self.args.episodes
             
-        print(f"\n🎯 Starting DOCOMO 6G Training: {episodes} episodes")
+        print(f"\n Starting DOCOMO 6G Training: {episodes} episodes")
         print("="*60)
         
         training_start = time.time()
@@ -310,15 +310,15 @@ class DOCOMOTrainingManager:
         
         # Training summary
         print("\n" + "="*60)
-        print("🎉 DOCOMO 6G Training Completed!")
+        print(" DOCOMO 6G Training Completed!")
         if episodes > 0:
-            print(f"   ⏱️  Total time: {training_time:.2f}s ({training_time/episodes:.2f}s/episode)")
+            print(f"     Total time: {training_time:.2f}s ({training_time/episodes:.2f}s/episode)")
         else:
-            print(f"   ⏱️  Total time: {training_time:.2f}s (evaluation-only)")
-        print(f"   🏆 Best reward: {best_reward:.4f}")
-        print(f"   📊 Best DOCOMO compliance: {best_compliance:.1%}")
-        print(f"   🧠 Final epsilon: {self.epsilon:.4f}")
-        print(f"   📈 Buffer size: {len(self.agent.replay_buffer)}")
+            print(f"     Total time: {training_time:.2f}s (evaluation-only)")
+        print(f"    Best reward: {best_reward:.4f}")
+        print(f"    Best DOCOMO compliance: {best_compliance:.1%}")
+        print(f"    Final epsilon: {self.epsilon:.4f}")
+        print(f"    Buffer size: {len(self.agent.replay_buffer)}")
         
         # Final evaluation
         final_metrics = self._evaluate_agent(self.args.eval_episodes)
@@ -345,7 +345,7 @@ class DOCOMOTrainingManager:
     
     def _evaluate_agent(self, num_episodes: int) -> Dict[str, Any]:
         """Evaluate the trained agent"""
-        print(f"\n🔍 Evaluating agent over {num_episodes} episodes...")
+        print(f"\n Evaluating agent over {num_episodes} episodes...")
 
         # If a best model exists in the output directory, load it for evaluation
         try:
@@ -356,9 +356,9 @@ class DOCOMOTrainingManager:
                     self.agent.policy_net.load_state_dict(ckpt['policy_net_state_dict'])
                 if 'target_net_state_dict' in ckpt:
                     self.agent.target_net.load_state_dict(ckpt['target_net_state_dict'])
-                print(f"   🧠 Loaded best model for evaluation: {best_path}")
+                print(f"    Loaded best model for evaluation: {best_path}")
         except Exception as e:
-            print(f"   ⚠️  Could not load best model for evaluation: {e}")
+            print(f"     Could not load best model for evaluation: {e}")
         
         eval_rewards = []
         eval_kpis = []
@@ -439,9 +439,9 @@ class DOCOMOTrainingManager:
         if eval_episode_handovers:
             eval_metrics['avg_episode_handovers'] = float(np.mean(eval_episode_handovers))
         
-        print(f"   📊 Mean reward: {eval_metrics['mean_reward']:.4f} ± {eval_metrics['std_reward']:.4f}")
+        print(f"    Mean reward: {eval_metrics['mean_reward']:.4f} ± {eval_metrics['std_reward']:.4f}")
         if 'docomo_compliance' in eval_metrics:
-            print(f"   🎯 DOCOMO compliance: {eval_metrics['docomo_compliance']:.1%}")
+            print(f"    DOCOMO compliance: {eval_metrics['docomo_compliance']:.1%}")
         
         return eval_metrics
     
@@ -503,10 +503,10 @@ class DOCOMOTrainingManager:
         # Generate plots
         self._generate_plots()
         
-        print(f"\n💾 Results saved to: {self.output_dir}")
-        print("   📝 training_results.json - Complete training data")
-        print("   🧠 best_model.pth - Best performing model") 
-        print("   📊 plots/ - Training visualizations")
+        print(f"\n Results saved to: {self.output_dir}")
+        print("    training_results.json - Complete training data")
+        print("    best_model.pth - Best performing model") 
+        print("    plots/ - Training visualizations")
     
     def _generate_plots(self):
         """Generate training visualization plots"""
@@ -595,18 +595,18 @@ class DOCOMOTrainingManager:
             plt.savefig(plots_dir / "docomo_training_curves.png", dpi=300, bbox_inches='tight')
             plt.close()
             
-            print("   📈 docomo_training_curves.png - Training progress visualization")
+            print("    docomo_training_curves.png - Training progress visualization")
 
 def main():
     """Main training function"""
     args = parse_args()
     
-    print("🚀 DOCOMO 6G Professional Training System")
+    print(" DOCOMO 6G Professional Training System")
     print("="*60)
-    print(f"   📁 Config: {args.config}")
-    print(f"   💾 Output: {args.output_dir}")
-    print(f"   🎯 Episodes: {args.episodes}")
-    print(f"   🎲 Seed: {args.seed}")
+    print(f"    Config: {args.config}")
+    print(f"    Output: {args.output_dir}")
+    print(f"    Episodes: {args.episodes}")
+    print(f"    Seed: {args.seed}")
     
     # Initialize training manager
     trainer = DOCOMOTrainingManager(args.config, args.output_dir, args)
@@ -614,7 +614,7 @@ def main():
     # Start training
     final_metrics = trainer.train()
     
-    print("\n🎉 DOCOMO 6G Training Successfully Completed!")
+    print("\n DOCOMO 6G Training Successfully Completed!")
     print("System ready for production deployment!")
     
     return final_metrics

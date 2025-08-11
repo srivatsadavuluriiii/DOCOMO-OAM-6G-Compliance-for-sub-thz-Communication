@@ -7,82 +7,82 @@ This project implements a physics-based reinforcement learning framework for opt
 
 ### Core Components
 ```
-├── environment/           # RL environment implementations
-│   ├── oam_env.py       # Base OAM environment
-│   ├── stable_oam_env.py # Enhanced environment with stable rewards
-│   ├── distance_optimized_env.py # Distance-aware optimization
-│   ├── physics_calculator.py # Physics calculations
-│   ├── reward_calculator.py # Reward computation
-│   ├── mobility_model.py # User mobility simulation
-│   └── distance_optimizer.py # Distance optimization logic
-├── models/               # Neural network models
-│   ├── agent.py         # RL agent implementation
-│   └── dqn_model.py     # DQN neural network
-├── simulator/            # Channel simulation
-│   ├── channel_simulator.py # Main simulator
-│   └── optimized_channel_simulator.py # Optimized version
-├── utils/                # Utility functions
-│   ├── config_utils.py  # Configuration management
-│   ├── path_utils.py    # Path utilities
-│   ├── input_sanitizer.py # Input validation
-│   └── visualization_unified.py # Plotting utilities
+ environment/           # RL environment implementations
+    oam_env.py       # Base OAM environment
+    stable_oam_env.py # Enhanced environment with stable rewards
+    distance_optimized_env.py # Distance-aware optimization
+    physics_calculator.py # Physics calculations
+    reward_calculator.py # Reward computation
+    mobility_model.py # User mobility simulation
+    distance_optimizer.py # Distance optimization logic
+ models/               # Neural network models
+    agent.py         # RL agent implementation
+    dqn_model.py     # DQN neural network
+ simulator/            # Channel simulation
+    channel_simulator.py # Main simulator
+    optimized_channel_simulator.py # Optimized version
+ utils/                # Utility functions
+    config_utils.py  # Configuration management
+    path_utils.py    # Path utilities
+    input_sanitizer.py # Input validation
+    visualization_unified.py # Plotting utilities
 ```
 
 ### Configuration
 ```
-├── config/               # Configuration files
-│   ├── base_config_new.yaml # Base configuration
-│   ├── rl_config_new.yaml # RL-specific config
-│   ├── distance_optimization_config.yaml # Distance optimization
-│   └── stable_reward_config_new.yaml # Stable reward config
+ config/               # Configuration files
+    base_config_new.yaml # Base configuration
+    rl_config_new.yaml # RL-specific config
+    distance_optimization_config.yaml # Distance optimization
+    stable_reward_config_new.yaml # Stable reward config
 ```
 
 ### Scripts
 ```
-├── scripts/              # Executable scripts
-│   ├── training/        # Training scripts
-│   │   ├── train_distance_optimization.py
-│   │   └── train_stable_rl.py
-│   ├── analysis/        # Analysis scripts
-│   │   ├── analyze_distance_optimization.py
-│   │   └── analyze_three_way_relationship.py
-│   └── verification/    # Verification scripts
-│       └── verify_oam_physics.py
+ scripts/              # Executable scripts
+    training/        # Training scripts
+       train_distance_optimization.py
+       train_stable_rl.py
+    analysis/        # Analysis scripts
+       analyze_distance_optimization.py
+       analyze_three_way_relationship.py
+    verification/    # Verification scripts
+        verify_oam_physics.py
 ```
 
 ### Tests
 ```
-├── tests/                # Test suite
-│   ├── debug/           # Debug scripts
-│   │   └── debug_position.py
-│   ├── unit/            # Unit tests
-│   │   └── test_distance_categorization.py
-│   ├── integration/     # Integration tests
-│   │   └── test_distance_performance.py
-│   └── README.md        # Test documentation
+ tests/                # Test suite
+    debug/           # Debug scripts
+       debug_position.py
+    unit/            # Unit tests
+       test_distance_categorization.py
+    integration/     # Integration tests
+       test_distance_performance.py
+    README.md        # Test documentation
 ```
 
 ### Analysis
 ```
-├── analysis/             # Analysis outputs
-│   ├── images/          # Generated visualizations
-│   │   ├── three_way_relationship_analysis.png
-│   │   ├── throughput_handover_tradeoff_analysis.png
-│   │   └── README.md
-│   └── analyze_*.py     # Analysis scripts
+ analysis/             # Analysis outputs
+    images/          # Generated visualizations
+       three_way_relationship_analysis.png
+       throughput_handover_tradeoff_analysis.png
+       README.md
+    analyze_*.py     # Analysis scripts
 ```
 
 ### Documentation
 ```
-├── docs/                 # Documentation
-│   ├── DISTANCE_OPTIMIZATION_GUIDE.md
-│   └── API_REFERENCE.md
+ docs/                 # Documentation
+    DISTANCE_OPTIMIZATION_GUIDE.md
+    API_REFERENCE.md
 ```
 
 ### Results
 ```
-├── results/              # Training results
-│   └── distance_optimization_*/ # Timestamped results
+ results/              # Training results
+    distance_optimization_*/ # Timestamped results
 ```
 
 ## Key Features

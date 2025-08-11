@@ -47,7 +47,7 @@ pip install pytest pytest-cov coverage
 pip install -r config/requirements.txt
 
 # Verify installation
-python -c "import sys; sys.path.append('.'); from environment.oam_env import OAM_Env; print('✅ Ready')"
+python -c "import sys; sys.path.append('.'); from environment.oam_env import OAM_Env; print(' Ready')"
 
 # Train distance-optimized agent
 python scripts/training/train_distance_optimization.py --num-episodes 1000
@@ -132,51 +132,51 @@ python -m pytest tests/benchmarks/ -v
 ## Project Structure
 
 ```
-├── simulator/                 # Channel simulation modules
-│   └── channel_simulator.py   # Main physics-based simulator
-├── environment/               # RL environment
-│   ├── oam_env.py             # Base Gymnasium environment wrapper
-│   └── stable_oam_env.py      # Stable reward environment
-├── models/                    # Neural network models
-│   ├── dqn_model.py           # DQN architecture
-│   └── agent.py               # RL agent implementation
-├── config/                    # Configuration files
-│   ├── simulation_params.yaml # Simulation parameters
-│   ├── base_config_new.yaml   # Base configuration
-│   ├── rl_config_new.yaml     # RL configuration
-│   └── extended_training_config.yaml # Extended training configuration
-├── utils/                     # Utility functions
-│   ├── visualization.py       # Plotting and visualization
-│   ├── config_utils.py        # Configuration utilities
-│   └── hierarchical_config.py # Hierarchical configuration system
-├── tests/                     # Test suite
-│   ├── unit/                  # Unit tests
-│   ├── integration/           # Integration tests
-│   ├── physics/               # Physics tests
-│   └── regression/            # Regression tests
-├── plots/                     # 📊 All generated visualizations
-│   ├── enhanced_*.png         # Enhanced physics plots
-│   ├── physics/               # Physics validation plots
-│   ├── training/              # Training progress plots
-│   ├── evaluation/            # Model evaluation plots
-│   └── analysis/              # Performance analysis plots
-├── results/                   # Training results and logs
-├── docs/                      # Documentation
-│   ├── README.md              # Main documentation
-│   ├── CODE_COVERAGE.md       # Coverage documentation
-│   └── TESTING.md             # Testing documentation
-├── .github/workflows/         # CI/CD workflows
-│   ├── tests.yml              # Test workflow
-│   ├── coverage.yml           # Coverage workflow
-│   ├── lint.yml               # Linting workflow
-│   ├── physics.yml            # Physics validation workflow
-│   ├── docs.yml               # Documentation workflow
-│   ├── environment.yml        # Environment verification workflow
-│   └── benchmark.yml          # Performance benchmarking workflow
-├── main.py                    # Main entry point
-├── run_tests.sh               # Test runner script
-├── run_tests_with_coverage.sh # Coverage runner script
-└── .coveragerc                # Coverage configuration
+ simulator/                 # Channel simulation modules
+    channel_simulator.py   # Main physics-based simulator
+ environment/               # RL environment
+    oam_env.py             # Base Gymnasium environment wrapper
+    stable_oam_env.py      # Stable reward environment
+ models/                    # Neural network models
+    dqn_model.py           # DQN architecture
+    agent.py               # RL agent implementation
+ config/                    # Configuration files
+    simulation_params.yaml # Simulation parameters
+    base_config_new.yaml   # Base configuration
+    rl_config_new.yaml     # RL configuration
+    extended_training_config.yaml # Extended training configuration
+ utils/                     # Utility functions
+    visualization.py       # Plotting and visualization
+    config_utils.py        # Configuration utilities
+    hierarchical_config.py # Hierarchical configuration system
+ tests/                     # Test suite
+    unit/                  # Unit tests
+    integration/           # Integration tests
+    physics/               # Physics tests
+    regression/            # Regression tests
+ plots/                     #  All generated visualizations
+    enhanced_*.png         # Enhanced physics plots
+    physics/               # Physics validation plots
+    training/              # Training progress plots
+    evaluation/            # Model evaluation plots
+    analysis/              # Performance analysis plots
+ results/                   # Training results and logs
+ docs/                      # Documentation
+    README.md              # Main documentation
+    CODE_COVERAGE.md       # Coverage documentation
+    TESTING.md             # Testing documentation
+ .github/workflows/         # CI/CD workflows
+    tests.yml              # Test workflow
+    coverage.yml           # Coverage workflow
+    lint.yml               # Linting workflow
+    physics.yml            # Physics validation workflow
+    docs.yml               # Documentation workflow
+    environment.yml        # Environment verification workflow
+    benchmark.yml          # Performance benchmarking workflow
+ main.py                    # Main entry point
+ run_tests.sh               # Test runner script
+ run_tests_with_coverage.sh # Coverage runner script
+ .coveragerc                # Coverage configuration
 ```
 
 ## Plots Directory

@@ -26,7 +26,7 @@ class AtmosphericCondition(Enum):
 @dataclass
 class AtmosphericParameters:
     """Atmospheric propagation parameters"""
-    temperature_c: float = 20.0        # °C
+    temperature_c: float = 20.0        # C
     pressure_hpa: float = 1013.25      # hPa (sea level)
     humidity_percent: float = 50.0     # % relative humidity
     rain_rate_mm_h: float = 0.0       # mm/h

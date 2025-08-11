@@ -65,7 +65,7 @@ class ChannelSimulator:
         # Atmospheric parameters
         self.turbulence_strength = 1e-14  # Cn² value (typical clear air)
         self.humidity = 50.0  # Relative humidity (%)
-        self.temperature = 20.0  # Temperature (°C)
+        self.temperature = 20.0  # Temperature (C)
         self.pressure = 101.3  # Atmospheric pressure (kPa)
         # Optional override for specific attenuation (dB/km) from config
         self.atmospheric_absorption_dB_per_km: Optional[float] = None
@@ -249,7 +249,7 @@ class ChannelSimulator:
             errors.append(f"Humidity {self.humidity}% is outside reasonable range (0-100%)")
         
         if not (-50 <= self.temperature <= 50):
-            errors.append(f"Temperature {self.temperature}°C is outside reasonable range (-50 to 50°C)")
+            errors.append(f"Temperature {self.temperature}C is outside reasonable range (-50 to 50C)")
         
         # Accept either kPa (50-120) or Pa (~50000-120000) via auto-unit handling
         pressure_kpa = self.pressure
@@ -343,19 +343,19 @@ class ChannelSimulator:
         
         # Humidity vs temperature relationship
         if self.temperature < 0 and self.humidity > 50:
-            warnings.append(f"High humidity {self.humidity}% at low temperature {self.temperature}°C may cause ice formation")
+            warnings.append(f"High humidity {self.humidity}% at low temperature {self.temperature}C may cause ice formation")
         
         # 8. REPORT VALIDATION RESULTS
         
         if errors:
-            raise ValueError(f"Parameter validation failed:\n" + "\n".join(f"❌ {error}" for error in errors))
+            raise ValueError(f"Parameter validation failed:\n" + "\n".join(f" {error}" for error in errors))
         
         if warnings:
-            print("⚠️  Parameter validation warnings:")
+            print("  Parameter validation warnings:")
             for warning in warnings:
-                print(f"   ⚠️  {warning}")
+                print(f"     {warning}")
         
-        print("✅ All parameters validated successfully")
+        print(" All parameters validated successfully")
         
         # 9. LOG VALIDATION SUMMARY
         validation_summary = {
@@ -366,10 +366,10 @@ class ChannelSimulator:
             'oam_modes': f"{self.min_mode}-{self.max_mode}",
             'max_snr_dB': max_snr,
             'turbulence_strength': self.turbulence_strength,
-            'atmospheric_conditions': f"T={self.temperature}°C, P={self.pressure}kPa, H={self.humidity}%"
+            'atmospheric_conditions': f"T={self.temperature}C, P={self.pressure}kPa, H={self.humidity}%"
         }
         
-        print("📊 Validation Summary:")
+        print(" Validation Summary:")
         for key, value in validation_summary.items():
             print(f"   {key}: {value}")
 

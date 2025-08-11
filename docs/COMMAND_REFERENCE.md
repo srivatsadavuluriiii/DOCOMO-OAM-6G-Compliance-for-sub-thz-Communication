@@ -2,7 +2,7 @@
 
 This document provides a comprehensive guide to all available commands for the OAM 6G project, organized by category and use case.
 
-## 📋 Table of Contents
+##  Table of Contents
 
 1. [Setup and Installation](#setup-and-installation)
 2. [Training Commands](#training-commands)
@@ -17,7 +17,7 @@ This document provides a comprehensive guide to all available commands for the O
 
 ---
 
-## 🚀 Setup and Installation
+##  Setup and Installation
 
 ### Install Dependencies
 ```bash
@@ -31,18 +31,18 @@ python3.12 -m pip install -r config/requirements.txt
 ### Verify Installation
 ```bash
 # Test core imports
-python -c "import sys; sys.path.append('.'); from environment.oam_env import OAM_Env; print('✅ Core environment imported')"
+python -c "import sys; sys.path.append('.'); from environment.oam_env import OAM_Env; print(' Core environment imported')"
 
 # Test distance optimization
-python -c "import sys; sys.path.append('.'); from environment.distance_optimizer import DistanceOptimizer; print('✅ Distance optimization imported')"
+python -c "import sys; sys.path.append('.'); from environment.distance_optimizer import DistanceOptimizer; print(' Distance optimization imported')"
 
 # Test simulator
-python -c "import sys; sys.path.append('.'); from simulator.channel_simulator import ChannelSimulator; print('✅ Simulator imported')"
+python -c "import sys; sys.path.append('.'); from simulator.channel_simulator import ChannelSimulator; print(' Simulator imported')"
 ```
 
 ---
 
-## 🎯 Training Commands
+##  Training Commands
 
 ### Distance Optimization Training
 ```bash
@@ -94,7 +94,7 @@ python scripts/training/train_stable_rl.py --config extended_config_new
 
 ---
 
-## 📊 Analysis Commands
+##  Analysis Commands
 
 ### Three-Way Relationship Analysis
 ```bash
@@ -125,7 +125,7 @@ python scripts/analysis/analyze_distance_optimization.py --num-episodes 200
 
 ---
 
-## 🔍 Evaluation Commands
+##  Evaluation Commands
 
 ### RL Agent Evaluation
 ```bash
@@ -150,7 +150,7 @@ python scripts/evaluation/evaluate_rl.py --model-dir results/trained_models/ --c
 
 ---
 
-## ✅ Verification Commands
+##  Verification Commands
 
 ### Environment Verification
 ```bash
@@ -181,13 +181,13 @@ from utils.config_utils import load_config
 config = load_config('config/base_config_new.yaml')
 env = DistanceOptimizedEnv(config)
 agent = Agent(state_dim=8, action_dim=3)
-print('✅ All components integrated successfully')
+print(' All components integrated successfully')
 "
 ```
 
 ---
 
-## 🧪 Testing Commands
+##  Testing Commands
 
 ### Run All Tests
 ```bash
@@ -266,15 +266,15 @@ python -m pytest tests/regression/test_training.py -v
 
 ---
 
-## ⚙️ Configuration Commands
+##  Configuration Commands
 
 ### Validate Configuration
 ```bash
 # Validate base configuration
-python -c "from utils.config_utils import load_config; load_config('config/base_config_new.yaml'); print('✅ Config valid')"
+python -c "from utils.config_utils import load_config; load_config('config/base_config_new.yaml'); print(' Config valid')"
 
 # Validate distance optimization config
-python -c "from utils.config_utils import load_config; load_config('config/distance_optimization_config.yaml'); print('✅ Distance config valid')"
+python -c "from utils.config_utils import load_config; load_config('config/distance_optimization_config.yaml'); print(' Distance config valid')"
 
 # Validate all configurations
 python -c "
@@ -282,19 +282,19 @@ from utils.config_utils import load_config
 configs = ['base_config_new.yaml', 'rl_config_new.yaml', 'stable_reward_config_new.yaml', 'distance_optimization_config.yaml']
 for config in configs:
     load_config(f'config/{config}')
-    print(f'✅ {config} valid')
+    print(f' {config} valid')
 "
 ```
 
 ### Load Hierarchical Configuration
 ```bash
 # Load with inheritance
-python -c "from utils.hierarchical_config import load_hierarchical_config; config = load_hierarchical_config('rl_config_new'); print('✅ Hierarchical config loaded')"
+python -c "from utils.hierarchical_config import load_hierarchical_config; config = load_hierarchical_config('rl_config_new'); print(' Hierarchical config loaded')"
 ```
 
 ---
 
-## 🛠️ Utility Commands
+##  Utility Commands
 
 ### Path Management
 ```bash
@@ -325,7 +325,7 @@ python scripts/main.py --mode training --config base_config_new.yaml
 
 ---
 
-## 🔧 Development Commands
+##  Development Commands
 
 ### Code Quality Checks
 ```bash
@@ -368,7 +368,7 @@ python -m pytest --cov=. --cov-report=html
 
 ---
 
-## 🚨 Troubleshooting
+##  Troubleshooting
 
 ### Common Issues and Solutions
 
@@ -390,7 +390,7 @@ from utils.input_sanitizer import InputSanitizer
 config = load_config('config/base_config_new.yaml')
 sanitizer = InputSanitizer()
 sanitizer.validate_config(config)
-print('✅ Configuration validated')
+print(' Configuration validated')
 "
 ```
 
@@ -455,7 +455,7 @@ print(f'Simulator created: frequency={sim.frequency} Hz')
 
 ---
 
-## 📈 Monitoring and Logging
+##  Monitoring and Logging
 
 ### Training Monitoring
 ```bash
@@ -483,7 +483,7 @@ grep "Throughput" results/training.log | tail -10
 
 ---
 
-## 🎯 Quick Start Commands
+##  Quick Start Commands
 
 ### Complete Workflow
 ```bash
@@ -491,7 +491,7 @@ grep "Throughput" results/training.log | tail -10
 pip install -r config/requirements.txt
 
 # 2. Verify installation
-python -c "import sys; sys.path.append('.'); from environment.oam_env import OAM_Env; print('✅ Ready')"
+python -c "import sys; sys.path.append('.'); from environment.oam_env import OAM_Env; print(' Ready')"
 
 # 3. Run tests
 python -m pytest tests/unit/ -v
@@ -524,7 +524,7 @@ python scripts/evaluation/evaluate_rl.py
 
 ---
 
-## 📝 Notes
+##  Notes
 
 - All commands assume you're in the project root directory
 - Use `python3` instead of `python` if needed

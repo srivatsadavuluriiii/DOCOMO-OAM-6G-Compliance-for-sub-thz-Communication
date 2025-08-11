@@ -292,10 +292,10 @@ class DOCOMO_6G_Environment(gym.Env):
         # Apply initial band settings to simulator/physics
         self._apply_band_to_simulator()
 
-        print(f"🚀 DOCOMO 6G Environment initialized")
-        print(f"   📊 KPI Targets: {self.kpi_tracker.docomo_targets.user_data_rate_gbps} Gbps, {self.kpi_tracker.docomo_targets.latency_ms} ms")
-        print(f"   📡 Frequency Bands: {len(self.frequency_bands)} bands (6 GHz - 600 GHz)")
-        print(f"   🎯 Max Mobility: {self.mobility_model.max_speed_kmh} km/h")
+        print(f" DOCOMO 6G Environment initialized")
+        print(f"    KPI Targets: {self.kpi_tracker.docomo_targets.user_data_rate_gbps} Gbps, {self.kpi_tracker.docomo_targets.latency_ms} ms")
+        print(f"    Frequency Bands: {len(self.frequency_bands)} bands (6 GHz - 600 GHz)")
+        print(f"    Max Mobility: {self.mobility_model.max_speed_kmh} km/h")
     
     def reset(self, seed: Optional[int] = None, options: Optional[dict] = None) -> Tuple[np.ndarray, Dict[str, Any]]:
         """
@@ -1176,12 +1176,12 @@ class DOCOMO_6G_Environment(gym.Env):
             current_kpis = self.kpi_tracker.get_current_kpis()
             compliance = self.kpi_tracker.get_compliance_score()
             
-            print(f"\n📊 DOCOMO 6G Environment - Step {self.step_count}")
-            print(f"   🎯 Band: {self.current_band} | OAM Mode: {self.current_oam_mode}")
-            print(f"   📈 Throughput: {current_kpis.get('current_throughput_gbps', 0):.2f} Gbps")
-            print(f"   ⚡ Latency: {current_kpis.get('current_latency_ms', 0):.3f} ms") 
-            print(f"   🚀 Speed: {current_kpis.get('current_mobility_kmh', 0):.1f} km/h")
-            print(f"   ✅ Compliance: {compliance.get('overall_current', 0)*100:.1f}%")
+            print(f"\n DOCOMO 6G Environment - Step {self.step_count}")
+            print(f"    Band: {self.current_band} | OAM Mode: {self.current_oam_mode}")
+            print(f"    Throughput: {current_kpis.get('current_throughput_gbps', 0):.2f} Gbps")
+            print(f"    Latency: {current_kpis.get('current_latency_ms', 0):.3f} ms") 
+            print(f"    Speed: {current_kpis.get('current_mobility_kmh', 0):.1f} km/h")
+            print(f"    Compliance: {compliance.get('overall_current', 0)*100:.1f}%")
             
         return None
     

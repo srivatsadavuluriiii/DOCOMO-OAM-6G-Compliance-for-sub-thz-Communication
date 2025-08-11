@@ -26,11 +26,11 @@ RESET = '\033[0m'
 
 def print_success(message):
     """Print a success message in green."""
-    print(f"{GREEN}✓ {message}{RESET}")
+    print(f"{GREEN} {message}{RESET}")
 
 def print_error(message):
     """Print an error message in red."""
-    print(f"{RED}✗ {message}{RESET}")
+    print(f"{RED} {message}{RESET}")
 
 def print_warning(message):
     """Print a warning message in yellow."""
