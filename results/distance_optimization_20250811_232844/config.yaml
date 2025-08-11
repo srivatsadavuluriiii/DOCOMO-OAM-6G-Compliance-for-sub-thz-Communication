@@ -1,0 +1,168 @@
+adaptive_parameters:
+  enabled: true
+  learning_rate: 0.01
+  max_threshold: 400.0
+  min_threshold: 50.0
+distance_categories:
+  far:
+    characteristics:
+    - Wide coverage
+    - Higher crosstalk
+    - Lower throughput
+    - Robust to pointing errors
+    description: Long-range communication (150m+)
+    optimal_modes:
+    - 7
+    - 8
+  medium:
+    characteristics:
+    - Balanced performance
+    - Moderate crosstalk
+    - Good coverage
+    - Stable operation
+    description: Medium-range communication (50-150m)
+    optimal_modes:
+    - 4
+    - 5
+    - 6
+  near:
+    characteristics:
+    - High beam focus
+    - Low crosstalk
+    - High throughput potential
+    - Sensitive to pointing errors
+    description: Short-range communication (0-50m)
+    optimal_modes:
+    - 1
+    - 2
+    - 3
+distance_reward:
+  distance_bonus_factor: 0.1
+  distance_penalty_factor: 0.05
+  optimization_threshold: 0.7
+distance_sinr_thresholds:
+  far: -7.0
+  medium: -5.0
+  near: -3.0
+distance_thresholds:
+  far_threshold: 300.0
+  medium_threshold: 150.0
+  near_threshold: 50.0
+enhanced_params:
+  antenna_efficiency: 0.75
+  implementation_loss_dB: 3.0
+environment:
+  humidity: 50.0
+  pointing_error_std: 0.005
+  pressure: 101.3
+  rician_k_factor: 8.0
+  temperature: 20.0
+  turbulence_strength: 1e-14
+handover_optimization:
+  distance_based_handover_threshold: true
+  enable_distance_aware_handover: true
+  handover_hysteresis: 0.1
+  handover_hysteresis_db: 2.0
+  min_handover_interval: 5
+  time_to_trigger_steps: 8
+mobility:
+  area_size_bands:
+    mmwave:
+    - 500.0
+    - 500.0
+    sub_thz_high:
+    - 100.0
+    - 100.0
+    sub_thz_low:
+    - 200.0
+    - 200.0
+  direction_change_prob: 0.1
+  max_speed: 5.0
+  min_speed: 0.5
+mode_preferences:
+  far_modes:
+  - 7
+  - 8
+  medium_modes:
+  - 4
+  - 5
+  - 6
+  near_modes:
+  - 1
+  - 2
+  - 3
+oam:
+  beam_width: 0.03
+  beam_width_bands:
+    mmwave: 0.03
+    sub_thz_high: 0.003
+    sub_thz_low: 0.006
+  max_mode: 8
+  min_mode: 1
+  mode_spacing: 1
+optimization_strategies:
+  aggressive:
+    change_threshold: 0.5
+    description: Aggressive mode selection (maximize throughput)
+    throughput_weight: 0.7
+  balanced:
+    change_threshold: 0.7
+    description: Balanced mode selection (default)
+    distance_weight: 0.3
+    stability_weight: 0.2
+    throughput_weight: 0.5
+  conservative:
+    change_threshold: 0.8
+    description: Conservative mode selection (minimize handovers)
+    stability_weight: 0.4
+optimization_weights:
+  distance_weight: 0.3
+  stability_weight: 0.2
+  throughput_weight: 0.5
+performance_tracking:
+  enable_adaptive_learning: true
+  enable_history: true
+  history_length: 1000
+reward:
+  band_switch_penalty: 0.5
+  handover_penalty: 0.2
+  outage_penalty: 1.0
+  sinr_threshold: -5.0
+  throughput_factor: 1.0
+rl_base:
+  evaluation:
+    eval_episodes: 10
+    eval_frequency: 50
+    save_model_frequency: 50
+  exploration:
+    epsilon_decay: 0.99
+    epsilon_end: 0.01
+    epsilon_start: 1.0
+  network:
+    action_dim: 5
+    activation: relu
+    hidden_layers:
+    - 128
+    - 128
+  replay_buffer:
+    capacity: 50000
+    min_samples_to_learn: 1000
+system:
+  bandwidth_bands:
+    mmwave: 400e6
+    sub_thz_high: 10e9
+    sub_thz_low: 4e9
+  frequency_bands:
+    mmwave: 28.0e9
+    sub_thz_high: 300.0e9
+    sub_thz_low: 140.0e9
+  max_throughput_gbps:
+    mmwave: 2.0
+    sub_thz_high: 100.0
+    sub_thz_low: 20.0
+  noise_figure_dB: 8.0
+  noise_temp: 290.0
+  tx_power_dBm:
+    mmwave: 30.0
+    sub_thz_high: 45.0
+    sub_thz_low: 40.0

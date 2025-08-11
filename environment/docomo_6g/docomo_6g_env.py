@@ -34,7 +34,7 @@ try:
 except ImportError:
     # Fallback for different path configurations
     sys.path.insert(0, models_dir)
-    from multi_objective_reward import MultiObjectiveReward
+    from multi_objective_reward import MultiObjectiveReward #type: ignore
 
 # Import existing physics models (enhanced)
 sys.path.append(os.path.join(os.path.dirname(__file__), '..', '..'))
