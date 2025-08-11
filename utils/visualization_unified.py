@@ -16,7 +16,7 @@ import torch
 from torch.utils.tensorboard import SummaryWriter
 from scipy.special import assoc_laguerre
 
-# Import all functions from existing modules
+                                            
 from .visualization_consolidated import (
     plot_training_curves,
     create_interactive_dashboard,
@@ -26,10 +26,10 @@ from .visualization_consolidated import (
     plot_heatmap
 )
 
-# Create alias for evaluation dashboard
+                                       
 create_evaluation_dashboard = create_interactive_dashboard
 
-# Advanced metrics logger with JSONL + optional TensorBoard
+                                                           
 class MetricsLogger:
     """
     Metrics logger supporting JSONL and optional TensorBoard backends.
@@ -57,14 +57,14 @@ class MetricsLogger:
         self._buffered = 0
 
     def log_scalar(self, tag: str, value: float, step: int) -> None:
-        # JSONL
+               
         entry = {"type": "scalar", "tag": tag, "value": float(value), "step": int(step)}
         self._jsonl_fh.write(f"{__import__('json').dumps(entry)}\n")
         self._buffered += 1
         if self._buffered >= self.flush_interval:
             self._jsonl_fh.flush()
             self._buffered = 0
-        # TensorBoard
+                     
         if self._tb_writer is not None:
             try:
                 self._tb_writer.add_scalar(tag, float(value), int(step))
@@ -75,7 +75,7 @@ class MetricsLogger:
         entry = {"type": "episode", "episode": int(episode), **{k: (float(v) if isinstance(v, (int, float)) else v) for k, v in summary.items()}}
         self._jsonl_fh.write(f"{__import__('json').dumps(entry)}\n")
         self._jsonl_fh.flush()
-        # Optionally log a few common scalars
+                                             
         if self._tb_writer is not None:
             for k in ("episode_reward", "episode_throughput", "episode_handovers"):
                 if k in summary:
@@ -94,12 +94,12 @@ class MetricsLogger:
             finally:
                 self._jsonl_fh.close()
 
-# Export all functions
+                      
 __all__ = [
-    # Metrics logging
+                     
     'MetricsLogger',
     
-    # Training visualization
+                            
     'plot_training_curves',
     'create_interactive_dashboard',
     'visualize_q_values',
@@ -107,6 +107,6 @@ __all__ = [
     'plot_metrics_grid',
     'plot_heatmap',
     
-    # Evaluation dashboard
+                          
     'create_evaluation_dashboard',
 ] 

@@ -4,25 +4,25 @@ import torch.nn as nn
 import torch.optim as optim
 import random
 from typing import List, Tuple, Dict, Any, Optional
-# import os
-# import sys
+           
+            
 
-# # Use centralized path management instead of sys.path.append
-# from utils.path_utils import ensure_project_root_in_path
-# ensure_project_root_in_path()
+                                                              
+                                                          
+                               
 
 
 import sys
 import os
 
-# Ensure project root is on sys.path before importing project modules
+                                                                     
 ROOT_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 if ROOT_DIR not in sys.path:
     sys.path.insert(0, ROOT_DIR)
 from utils.path_utils import ensure_project_root_in_path
 ensure_project_root_in_path()
 
-# Support both package and script execution
+                                           
 try:
     from .dqn_model import DQN
     from .replay_buffer_interface import ReplayBufferInterface
@@ -82,38 +82,38 @@ class Agent:
             ...     batch_size=128
             ... )  # Custom configuration
         """
-        # Set device
+                    
         if device is None:
             self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
         else:
             self.device = device
         
-        # Initialize networks
+                             
         self.policy_net = DQN(state_dim, action_dim, hidden_layers).to(self.device)
         self.target_net = DQN(state_dim, action_dim, hidden_layers).to(self.device)
         
-        # Copy policy network parameters to target network
+                                                          
         self.target_net.load_state_dict(self.policy_net.state_dict())
-        self.target_net.eval()  # Target network is only used for inference
+        self.target_net.eval()                                             
         
-        # Initialize optimizer
+                              
         self.optimizer = optim.AdamW(self.policy_net.parameters(), lr=learning_rate, amsgrad=True)
         
-        # Initialize replay buffer (dependency injection)
+                                                         
         if replay_buffer is not None:
             self.replay_buffer = replay_buffer
         else:
-            # Default to standard ReplayBuffer if none provided
+                                                               
             self.replay_buffer = ReplayBuffer(buffer_capacity, state_dim, self.device)
         
-        # Set hyperparameters
+                             
         self.gamma = gamma
         self.batch_size = batch_size
         self.target_update_freq = target_update_freq
         self.state_dim = state_dim
         self.action_dim = action_dim
         
-        # Training tracking
+                           
         self.episode_count = 0
         self.loss_history = []
         self.learn_steps = 0
@@ -133,20 +133,20 @@ class Agent:
             >>> action = agent.choose_action(state, epsilon=0.1)  # 10% exploration
             >>> action = agent.choose_action(state, epsilon=0.0)  # Greedy action
         """
-        # Epsilon-greedy action selection
+                                         
         if random.random() < epsilon:
-            # Choose random action
+                                  
             return random.randint(0, self.action_dim - 1)
         else:
-            # Choose greedy action
+                                  
             with torch.no_grad():
-                # Convert state to tensor and add batch dimension
+                                                                 
                 state_tensor = torch.FloatTensor(state).unsqueeze(0).to(self.device)
                 
-                # Get Q-values from policy network
+                                                  
                 q_values = self.policy_net(state_tensor)
                 
-                # Choose action with highest Q-value
+                                                    
                 return torch.argmax(q_values).item()
     
     def learn(self) -> Optional[float]:
@@ -161,57 +161,57 @@ class Agent:
             >>> if metrics:
             ...     print(f"Training loss: {metrics['loss']:.4f}")
         """
-        # Check if buffer has enough samples
+                                            
         if not self.replay_buffer.is_ready(self.batch_size):
             return 0.0
         
-        # Sample a batch from the replay buffer
+                                               
         states, actions, rewards, next_states, dones = self.replay_buffer.sample(self.batch_size)
         
-        # Get Q-values for current states and actions
+                                                     
         q_values = self.policy_net(states).gather(1, actions.unsqueeze(1))
         
-        # Compute target Q-values
+                                 
         with torch.no_grad():
-            # Get maximum Q-value for next states from target network
+                                                                     
             next_q_values = self.target_net(next_states).max(1)[0]
             
-            # Compute target Q-values using Bellman equation
+                                                            
             target_q_values = rewards + self.gamma * next_q_values * (1 - dones)
             
-            # Reshape to match q_values
+                                       
             target_q_values = target_q_values.unsqueeze(1)
         
-        # Compute loss (Huber loss for stability)
+                                                 
         loss = nn.SmoothL1Loss()(q_values, target_q_values)
         
-        # Optimize the policy network
+                                     
         self.optimizer.zero_grad()
         loss.backward()
         
-        # Clip gradients to prevent exploding gradients
+                                                       
         for param in self.policy_net.parameters():
             param.grad.data.clamp_(-1, 1)
         
         self.optimizer.step()
         
-        # Store loss value
+                          
         loss_value = loss.item()
         self.loss_history.append(loss_value)
         
-        # Increment learn steps and update target periodically
+                                                              
         self.learn_steps += 1
         if self.target_update_freq > 0 and (self.learn_steps % self.target_update_freq == 0):
             self.update_target_network()
         
-        # Return scalar loss for backward compatibility with tests
+                                                                  
         return float(loss_value)
     
     def update_target_network(self) -> None:
         """Update the target network with the policy network's weights."""
         self.target_net.load_state_dict(self.policy_net.state_dict())
     
-    # Backward-compatible alias expected by some benchmarks
+                                                           
     def update_target_net(self) -> None:
         self.update_target_network()
     
@@ -223,7 +223,7 @@ class Agent:
         """
         self.episode_count += 1
         
-        # Update target network if it's time
+                                            
         if self.episode_count % self.target_update_freq == 0:
             self.update_target_network()
     

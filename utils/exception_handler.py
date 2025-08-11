@@ -13,7 +13,7 @@ from typing import Any, Callable, Optional, Type, Union, Dict
 from functools import wraps
 import numpy as np
 
-# Configure logging
+                   
 logging.basicConfig(
     level=logging.INFO,
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
@@ -65,14 +65,14 @@ class ExceptionHandler:
     def __init__(self):
         """Initialize the exception handler."""
         self.fallback_values = {
-            'sinr_dB': -10.0,  # Default SINR when calculation fails
-            'throughput': 0.0,  # Default throughput when calculation fails
-            'position': np.array([100.0, 0.0, 2.0]),  # Default position
-            'velocity': np.array([0.0, 0.0, 0.0]),  # Default velocity
-            'channel_matrix': np.eye(6, dtype=complex),  # Default channel matrix
-            'reward': -1.0,  # Default reward when calculation fails
-            'action': 0,  # Default action
-            'mode': 1,  # Default OAM mode
+            'sinr_dB': -10.0,                                       
+            'throughput': 0.0,                                             
+            'position': np.array([100.0, 0.0, 2.0]),                    
+            'velocity': np.array([0.0, 0.0, 0.0]),                    
+            'channel_matrix': np.eye(6, dtype=complex),                          
+            'reward': -1.0,                                         
+            'action': 0,                  
+            'mode': 1,                    
         }
         
         self.error_counts = {}
@@ -95,10 +95,10 @@ class ExceptionHandler:
         error_type = type(error).__name__
         error_key = f"{operation}_{error_type}"
         
-        # Count errors
+                      
         self.error_counts[error_key] = self.error_counts.get(error_key, 0) + 1
         
-        # Log the error with context
+                                    
         logger.warning(
             f"Calculation error in {operation}: {error}",
             extra={
@@ -109,11 +109,11 @@ class ExceptionHandler:
             }
         )
         
-        # Use provided fallback or default
+                                          
         if fallback_value is not None:
             return fallback_value
         
-        # Return appropriate default based on operation
+                                                       
         if 'sinr' in operation.lower():
             return self.fallback_values['sinr_dB']
         elif 'throughput' in operation.lower():
@@ -152,7 +152,7 @@ class ExceptionHandler:
             }
         )
         
-        # Raise a user-friendly exception
+                                         
         raise FileOperationException(
             f"Failed to {operation} file '{file_path}': {str(error)}",
             error_code="FILE_OP_ERROR",
@@ -274,7 +274,7 @@ def safe_file_operation(operation_name: str):
             try:
                 return func(*args, **kwargs)
             except Exception as e:
-                # Extract file path from args if possible
+                                                         
                 file_path = "unknown"
                 if args and isinstance(args[0], str):
                     file_path = args[0]
@@ -304,7 +304,7 @@ def validate_input(validation_func: Callable, error_message: str = None):
             handler = ExceptionHandler()
             
             try:
-                # Perform validation
+                                    
                 validation_result = validation_func(*args, **kwargs)
                 if not validation_result:
                     raise ValidationException(
@@ -348,7 +348,7 @@ def graceful_degradation(default_value: Any = None, log_warning: bool = True):
         return wrapper
     return decorator
 
-# Global exception handler instance
+                                   
 exception_handler = ExceptionHandler()
 
 def get_exception_handler() -> ExceptionHandler:

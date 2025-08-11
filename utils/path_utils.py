@@ -15,20 +15,20 @@ def get_project_root() -> str:
     Returns:
         Path to the project root directory
     """
-    # Look for the project root by finding a marker file or directory
+                                                                     
     current_dir = os.path.abspath(os.path.dirname(__file__))
     
-    # Go up directories until we find the project root
-    while current_dir != os.path.dirname(current_dir):  # Stop at filesystem root
-        # Check if this looks like the project root
-        if os.path.exists(os.path.join(current_dir, 'environment')) and \
-           os.path.exists(os.path.join(current_dir, 'simulator')) and \
+                                                      
+    while current_dir != os.path.dirname(current_dir):                           
+                                                   
+        if os.path.exists(os.path.join(current_dir, 'environment')) and\
+           os.path.exists(os.path.join(current_dir, 'simulator')) and\
            os.path.exists(os.path.join(current_dir, 'models')):
             return current_dir
         
         current_dir = os.path.dirname(current_dir)
     
-    # If we can't find it, return the current working directory
+                                                               
     return os.getcwd()
 
 

@@ -14,24 +14,24 @@ import warnings
 
 class RewardObjective(Enum):
     """DOCOMO reward objectives"""
-    THROUGHPUT = "throughput"        # Peak throughput maximization
-    LATENCY = "latency"             # Ultra-low latency minimization
-    ENERGY = "energy"               # Energy efficiency improvement
-    RELIABILITY = "reliability"     # Ultra-high reliability
-    MOBILITY = "mobility"           # High-speed mobility support
-    SPECTRUM = "spectrum"           # Spectrum efficiency
-    STABILITY = "stability"         # System stability
-    HANDOVER = "handover"          # Handover optimization
+    THROUGHPUT = "throughput"                                      
+    LATENCY = "latency"                                             
+    ENERGY = "energy"                                              
+    RELIABILITY = "reliability"                             
+    MOBILITY = "mobility"                                        
+    SPECTRUM = "spectrum"                                
+    STABILITY = "stability"                           
+    HANDOVER = "handover"                                 
 
 @dataclass
 class DOCOMOObjectiveWeights:
     """DOCOMO objective weights (must sum to 1.0)"""
-    throughput: float = 0.25        # 25% - Peak throughput priority
-    latency: float = 0.25           # 25% - Ultra-low latency priority
-    energy: float = 0.20            # 20% - Energy efficiency
-    reliability: float = 0.15       # 15% - Ultra-high reliability  
-    mobility: float = 0.10          # 10% - High-speed mobility
-    spectrum: float = 0.05          # 5% - Spectrum efficiency
+    throughput: float = 0.25                                        
+    latency: float = 0.25                                             
+    energy: float = 0.20                                     
+    reliability: float = 0.15                                       
+    mobility: float = 0.10                                     
+    spectrum: float = 0.05                                    
     
     def __post_init__(self):
         """Validate weights sum to 1.0"""
@@ -68,7 +68,7 @@ class MultiObjectiveReward:
         """
         self.config = config
         
-        # Load DOCOMO KPI targets
+                                 
         kpi_targets = config.get('docomo_6g_system', {}).get('kpi_targets', {})
         self.target_throughput_gbps = kpi_targets.get('user_data_rate_gbps', 100.0)
         self.target_latency_ms = kpi_targets.get('latency_ms', 0.1)
@@ -77,7 +77,7 @@ class MultiObjectiveReward:
         self.target_energy_improvement = kpi_targets.get('energy_efficiency_improvement', 100.0)
         self.target_spectrum_improvement = kpi_targets.get('spectrum_efficiency_improvement', 10.0)
         
-        # Load objective weights
+                                
         rl_config = config.get('docomo_6g_system', {}).get('reinforcement_learning', {})
         objectives = rl_config.get('objectives', {})
         
@@ -90,27 +90,27 @@ class MultiObjectiveReward:
             spectrum=objectives.get('spectrum_weight', 0.05)
         )
         
-        # Reward scaling parameters (calibrated for stability-first learning)
-        self.reward_scale = 3.0   # Global scale reduced to avoid runaway magnitudes
-        self.penalty_scale = 1.5  # Penalties closer to rewards for balance
+                                                                             
+        self.reward_scale = 3.0                                                     
+        self.penalty_scale = 1.5                                           
         
-        # Physics-informed parameters
+                                     
         self.physics_bonus_enabled = True
         self.atmospheric_penalty_enabled = True
         self.oam_crosstalk_penalty_enabled = True
         
-        # Adaptive parameters
-        self.adaptive_weights = False  # Enable adaptive weighting
+                             
+        self.adaptive_weights = False                             
         self.performance_history = []
         
-        # Tracking for prolonged low-band use under good SINR
+                                                             
         self.low_band_good_sinr_streak = 0
         self.low_band_good_sinr_threshold_db = 10.0
         
-        # Baseline values for normalization
-        self.baseline_energy_w = 1.0        # Baseline energy consumption
-        self.baseline_spectrum_efficiency = 1.0  # Baseline spectrum efficiency
-        self.baseline_handover_rate = 0.1   # Baseline handover rate
+                                           
+        self.baseline_energy_w = 1.0                                     
+        self.baseline_spectrum_efficiency = 1.0                                
+        self.baseline_handover_rate = 0.1                           
         
     def calculate(self, 
                  state: np.ndarray,
@@ -129,7 +129,7 @@ class MultiObjectiveReward:
         Returns:
             Tuple of (total_reward, reward_breakdown)
         """
-        # Extract state information
+                                   
         sinr_db = next_state[0] if len(next_state) > 0 else 0.0
         throughput_gbps = info.get('throughput_gbps', 0.0)
         latency_ms = info.get('latency_ms', 1.0)
@@ -139,71 +139,71 @@ class MultiObjectiveReward:
         reliability_score = info.get('reliability_score', 1.0)
         handover_occurred = info.get('handover_occurred', False)
         
-        # Store action info for reward calculation
+                                                  
         self._current_action_info = info
-        # Ensure sinr is available to downstream logic
+                                                      
         try:
             self._current_action_info['sinr_db'] = float(sinr_db)
         except Exception:
             pass
         
-        # Calculate individual reward components
+                                                
         components = RewardComponents()
         
-        # 1. Throughput reward (DOCOMO: 100 Gbps user experience)
+                                                                 
         components.throughput_reward = self._calculate_throughput_reward(
             throughput_gbps, sinr_db, distance_m, info
         )
         
-        # 2. Latency reward (DOCOMO: 0.1 ms target)
+                                                   
         components.latency_reward = self._calculate_latency_reward(
             latency_ms, action, info
         )
         
-        # 3. Energy efficiency reward (DOCOMO: 100x improvement)
+                                                                
         components.energy_reward = self._calculate_energy_reward(
             energy_w, throughput_gbps, info
         )
         
-        # 4. Reliability reward (DOCOMO: 99.99999% target)
+                                                          
         components.reliability_reward = self._calculate_reliability_reward(
             reliability_score, sinr_db, info
         )
         
-        # 5. Mobility reward (DOCOMO: 500 km/h support)
+                                                       
         components.mobility_reward = self._calculate_mobility_reward(
             velocity_kmh, throughput_gbps, latency_ms, info
         )
         
-        # 6. Spectrum efficiency reward (DOCOMO: 10x improvement)
+                                                                 
         components.spectrum_reward = self._calculate_spectrum_reward(
             throughput_gbps, info
         )
         
-        # 7. System stability reward
+                                    
         components.stability_reward = self._calculate_stability_reward(
             state, next_state, info
         )
         
-        # 8. Handover penalty (increased)
+                                         
         components.handover_penalty = self._calculate_handover_penalty(
             handover_occurred, velocity_kmh, info
         )
         
-        # 9. Physics-informed bonus
+                                   
         components.physics_bonus = self._calculate_physics_bonus(
             state, action, next_state, info
         )
         
-        # Calculate weighted total reward
+                                         
         components.total_reward = self._calculate_total_reward(components)
         
-        # Apply constraints and clipping
+                                        
         components.total_reward = self._apply_constraints(
             components.total_reward, state, next_state, info
         )
         
-        # Update performance history
+                                    
         self.performance_history.append({
             'components': components,
             'throughput_gbps': throughput_gbps,
@@ -211,11 +211,11 @@ class MultiObjectiveReward:
             'mobility_kmh': velocity_kmh
         })
         
-        # Keep history bounded
+                              
         if len(self.performance_history) > 1000:
             self.performance_history = self.performance_history[-500:]
         
-        # Return reward and breakdown
+                                     
         reward_breakdown = {
             'throughput_reward': components.throughput_reward,
             'latency_reward': components.latency_reward,
@@ -239,42 +239,42 @@ class MultiObjectiveReward:
                                    info: Dict[str, Any] = None) -> float:
         """Calculate throughput reward with DOCOMO 100 Gbps target and high-frequency band bonuses"""
         if throughput_gbps <= 0:
-            return -1.0  # Penalty for zero throughput
+            return -1.0                               
         
-        # Base reward: normalized to DOCOMO target with enhanced scaling
-        base_reward = min(throughput_gbps / self.target_throughput_gbps, 3.0)  # Increased cap to 3x target
+                                                                        
+        base_reward = min(throughput_gbps / self.target_throughput_gbps, 3.0)                              
         
-        # Distance-aware bonus (closer distances can achieve higher throughput)
-        distance_bonus = max(0.0, (500.0 - distance_m) / 500.0) * 0.3  # Increased bonus
+                                                                               
+        distance_bonus = max(0.0, (500.0 - distance_m) / 500.0) * 0.3                   
         
-        # SINR bonus with enhanced scaling (good channel conditions)
-        sinr_bonus = max(0.0, (sinr_db - 5.0) / 25.0) * 0.5  # Enhanced SINR bonus
+                                                                    
+        sinr_bonus = max(0.0, (sinr_db - 5.0) / 25.0) * 0.5                       
         
-        # High-frequency band bonus - encourage Sub-THz and THz usage (softened)
+                                                                                
         current_band = info.get('current_band', 'mmwave_28') if info else 'mmwave_28'
         high_freq_bands = ['sub_thz_100', 'sub_thz_140', 'sub_thz_220', 'sub_thz_300', 'thz_600']
         if current_band in high_freq_bands:
             band_multipliers = {
-                'sub_thz_100': 1.20,  # +0.10
-                'sub_thz_140': 1.30,  # +0.10
-                'sub_thz_220': 1.40,  # +0.10  
-                'sub_thz_300': 1.50,  # +0.10
-                'thz_600': 1.60       # +0.10 for THz
+                'sub_thz_100': 1.20,         
+                'sub_thz_140': 1.30,         
+                'sub_thz_220': 1.40,           
+                'sub_thz_300': 1.50,         
+                'thz_600': 1.60                      
             }
             high_freq_bonus = band_multipliers.get(current_band, 1.0) - 1.0
         else:
             high_freq_bonus = 0.0
         
-        # Non-linear scaling for exceptional throughput
+                                                       
         if throughput_gbps > self.target_throughput_gbps:
-            excellence_bonus = math.log(throughput_gbps / self.target_throughput_gbps) * 0.8  # Increased bonus
+            excellence_bonus = math.log(throughput_gbps / self.target_throughput_gbps) * 0.8                   
         else:
             excellence_bonus = 0.0
         
-        # Apply throughput scaling with high-frequency emphasis
+                                                               
         total_reward = (base_reward + distance_bonus + sinr_bonus + excellence_bonus) * (1.0 + high_freq_bonus)
         
-        return min(total_reward, 3.0)  # Softer cap
+        return min(total_reward, 3.0)              
     
     def _calculate_latency_reward(self, 
                                 latency_ms: float, 
@@ -282,30 +282,30 @@ class MultiObjectiveReward:
                                 info: Dict[str, Any]) -> float:
         """Calculate latency reward with DOCOMO 0.1 ms target"""
         if latency_ms <= 0:
-            return -1.0  # Invalid latency
+            return -1.0                   
         
-        # Exponential reward for meeting/exceeding latency target
+                                                                 
         if latency_ms <= self.target_latency_ms:
-            # Bonus for exceeding target
+                                        
             reward = 1.0 + (self.target_latency_ms - latency_ms) / self.target_latency_ms
         else:
-            # Exponential penalty for exceeding target
+                                                      
             excess_factor = latency_ms / self.target_latency_ms
-            reward = 1.0 / excess_factor  # Exponential decay
+            reward = 1.0 / excess_factor                     
         
-        # Action-specific latency impacts
+                                         
         handover_latency_penalty = 0.0
-        if action in [3, 4]:  # Band switching actions
-            handover_latency_penalty = -0.2  # Switching adds latency
+        if action in [3, 4]:                          
+            handover_latency_penalty = -0.2                          
         
-        # Beam tracking latency bonus
+                                     
         beam_tracking_active = info.get('beam_tracking_active', False)
         if beam_tracking_active:
-            reward += 0.1  # Bonus for predictive tracking
+            reward += 0.1                                 
         
         total_reward = reward + handover_latency_penalty
         
-        return max(total_reward, -2.0)  # Floor at -2.0
+        return max(total_reward, -2.0)                 
     
     def _calculate_energy_reward(self,
                                energy_w: float,
@@ -315,64 +315,64 @@ class MultiObjectiveReward:
         if energy_w <= 0 or throughput_gbps <= 0:
             return -1.0
         
-        # Energy efficiency: bits per joule
-        energy_efficiency = throughput_gbps / energy_w  # Gbps per Watt
+                                           
+        energy_efficiency = throughput_gbps / energy_w                 
         baseline_efficiency = self.target_throughput_gbps / self.baseline_energy_w
         
-        # Normalized efficiency (target is 100x improvement)
+                                                            
         efficiency_ratio = energy_efficiency / baseline_efficiency
         
-        # Logarithmic reward for efficiency improvements
+                                                        
         if efficiency_ratio > 1.0:
             reward = math.log(efficiency_ratio) / math.log(self.target_energy_improvement)
         else:
-            reward = -1.0 + efficiency_ratio  # Linear penalty below baseline
+            reward = -1.0 + efficiency_ratio                                 
         
-        # Bonus for using optimal frequency bands
+                                                 
         optimal_band = info.get('using_optimal_band', False)
         if optimal_band:
             reward += 0.2
         
-        # Penalty for excessive power
-        if energy_w > 5.0 * self.baseline_energy_w:  # 5x baseline is excessive
+                                     
+        if energy_w > 5.0 * self.baseline_energy_w:                            
             reward -= 0.5
         
-        return max(min(reward, 2.0), -2.0)  # Clip to [-2, 2]
+        return max(min(reward, 2.0), -2.0)                   
     
     def _calculate_reliability_reward(self,
                                     reliability_score: float,
                                     sinr_db: float,
                                     info: Dict[str, Any]) -> float:
         """Calculate reliability reward (DOCOMO: 99.99999% target)"""
-        # Base reliability reward
+                                 
         reliability_ratio = reliability_score / self.target_reliability
         
         if reliability_ratio >= 1.0:
-            reward = 1.0  # Full reward for meeting target
+            reward = 1.0                                  
         else:
-            # Steep penalty for missing reliability target
-            reward = (reliability_ratio - 0.99) / 0.01  # Scale 0.99-1.0 to 0-1
-            reward = max(reward, -2.0)  # Floor at -2.0
+                                                          
+            reward = (reliability_ratio - 0.99) / 0.01                         
+            reward = max(reward, -2.0)                 
         
-        # SINR contribution to reliability
-        if sinr_db > 15.0:  # Good SINR supports high reliability
+                                          
+        if sinr_db > 15.0:                                       
             reward += 0.3
-        elif sinr_db < 5.0:  # Poor SINR hurts reliability
+        elif sinr_db < 5.0:                               
             reward -= 0.5
         
-        # Error rate bonus/penalty
+                                  
         error_rate = info.get('error_rate', 0.0)
-        if error_rate < 1e-7:  # Better than target
+        if error_rate < 1e-7:                      
             reward += 0.2
-        elif error_rate > 1e-5:  # Much worse than target
+        elif error_rate > 1e-5:                          
             reward -= 1.0
         
-        # Link stability bonus
+                              
         link_stable = info.get('link_stable', True)
         if not link_stable:
             reward -= 0.5
         
-        return max(min(reward, 2.0), -3.0)  # Clip to [-3, 2]
+        return max(min(reward, 2.0), -3.0)                   
     
     def _calculate_mobility_reward(self,
                                  velocity_kmh: float,
@@ -380,39 +380,39 @@ class MultiObjectiveReward:
                                  latency_ms: float,
                                  info: Dict[str, Any]) -> float:
         """Calculate mobility reward (DOCOMO: 500 km/h target)"""
-        # Base mobility support reward
+                                      
         mobility_ratio = min(velocity_kmh / self.target_mobility_kmh, 1.0)
         base_reward = mobility_ratio * 1.0
         
-        # Performance at high mobility bonus
-        if velocity_kmh > 100.0:  # High mobility scenario
-            # Throughput maintenance bonus
+                                            
+        if velocity_kmh > 100.0:                          
+                                          
             if throughput_gbps > 0.5 * self.target_throughput_gbps:
                 base_reward += 0.5
             
-            # Latency maintenance bonus  
+                                         
             if latency_ms < 2.0 * self.target_latency_ms:
                 base_reward += 0.3
             
-            # Handover efficiency bonus
+                                       
             handover_success_rate = info.get('handover_success_rate', 1.0)
             base_reward += handover_success_rate * 0.2
         
-        # Predictive tracking bonus
+                                   
         prediction_accuracy = info.get('mobility_prediction_accuracy', 0.0)
         base_reward += prediction_accuracy * 0.3
         
-        # Doppler compensation bonus
+                                    
         doppler_compensated = info.get('doppler_compensated', False)
         if doppler_compensated and velocity_kmh > 50.0:
             base_reward += 0.2
         
-        # Extreme mobility bonus (above 350 km/h)
+                                                 
         if velocity_kmh > 350.0:
             extreme_bonus = min((velocity_kmh - 350.0) / 150.0, 1.0) * 0.5
             base_reward += extreme_bonus
         
-        return min(base_reward, 2.0)  # Cap at 2.0
+        return min(base_reward, 2.0)              
     
     def _calculate_spectrum_reward(self,
                                  throughput_gbps: float,
@@ -423,59 +423,59 @@ class MultiObjectiveReward:
         if bandwidth_mhz <= 0:
             return -1.0
         
-        # Spectrum efficiency: bps/Hz
-        spectrum_efficiency = (throughput_gbps * 1e9) / (bandwidth_mhz * 1e6)  # bps/Hz
+                                     
+        spectrum_efficiency = (throughput_gbps * 1e9) / (bandwidth_mhz * 1e6)          
         
-        # Baseline spectrum efficiency (typical 4G/5G)
-        baseline_efficiency = self.baseline_spectrum_efficiency  # ~1 bps/Hz
+                                                      
+        baseline_efficiency = self.baseline_spectrum_efficiency             
         
-        # Efficiency improvement ratio
+                                      
         improvement_ratio = spectrum_efficiency / baseline_efficiency
         
-        # Logarithmic reward
+                            
         if improvement_ratio > 1.0:
             reward = math.log(improvement_ratio) / math.log(self.target_spectrum_improvement)
         else:
-            reward = improvement_ratio - 1.0  # Linear penalty below baseline
+            reward = improvement_ratio - 1.0                                 
         
-        # Bonus for using high-efficiency techniques
+                                                    
         oam_efficiency_bonus = info.get('oam_mode_efficiency', 0.0) * 0.2
         multi_band_bonus = info.get('multi_band_active', False) * 0.1
         
         total_reward = reward + oam_efficiency_bonus + multi_band_bonus
         
-        return max(min(total_reward, 1.5), -1.5)  # Clip to [-1.5, 1.5]
+        return max(min(total_reward, 1.5), -1.5)                       
     
     def _calculate_stability_reward(self,
                                   state: np.ndarray,
                                   next_state: np.ndarray,
                                   info: Dict[str, Any]) -> float:
         """Calculate system stability reward"""
-        # SINR stability
+                        
         if len(state) > 0 and len(next_state) > 0:
             sinr_change = abs(next_state[0] - state[0])
-            sinr_stability = max(0.0, 1.0 - sinr_change / 10.0)  # Penalty for >10 dB changes
+            sinr_stability = max(0.0, 1.0 - sinr_change / 10.0)                              
         else:
             sinr_stability = 0.0
         
-        # Throughput stability
+                              
         current_throughput = info.get('throughput_gbps', 0.0)
         prev_throughput = info.get('prev_throughput_gbps', current_throughput)
         
         if prev_throughput > 0:
             throughput_change = abs(current_throughput - prev_throughput) / prev_throughput
-            throughput_stability = max(0.0, 1.0 - throughput_change / 0.2)  # Penalty for >20% changes
+            throughput_stability = max(0.0, 1.0 - throughput_change / 0.2)                            
         else:
             throughput_stability = 0.0
         
-        # Mode switching stability (penalty for frequent switching)
+                                                                   
         mode_switches = info.get('recent_mode_switches', 0)
-        switching_penalty = min(mode_switches * 0.2, 1.0)  # Stronger penalty
+        switching_penalty = min(mode_switches * 0.2, 1.0)                    
         
-        # Overall stability score
+                                 
         stability_score = (sinr_stability + throughput_stability) / 2.0 - switching_penalty
         
-        return max(min(stability_score, 1.0), -1.0)  # Clip to [-1, 1]
+        return max(min(stability_score, 1.0), -1.0)                   
     
     def _calculate_handover_penalty(self,
                                   handover_occurred: bool,
@@ -485,24 +485,24 @@ class MultiObjectiveReward:
         if not handover_occurred:
             return 0.0
         
-        # Base handover penalty
+                               
         base_penalty = -1.0
         
-        # Velocity-adjusted penalty (higher speeds may need more handovers)
+                                                                           
         if velocity_kmh > 50.0:
-            velocity_adjustment = (velocity_kmh - 50.0) / 450.0  # Scale 50-500 to 0-1
-            base_penalty *= (1.0 - velocity_adjustment * 0.5)  # Reduce penalty at high speeds
+            velocity_adjustment = (velocity_kmh - 50.0) / 450.0                       
+            base_penalty *= (1.0 - velocity_adjustment * 0.5)                                 
         
-        # Handover success bonus
+                                
         handover_success = info.get('handover_successful', True)
         if not handover_success:
-            base_penalty *= 2.0  # Double penalty for failed handovers
+            base_penalty *= 2.0                                       
         
-        # Handover timing penalty (premature or late handovers)
-        handover_timing_score = info.get('handover_timing_score', 1.0)  # 1.0 = optimal
-        base_penalty *= (2.0 - handover_timing_score)  # Penalty for suboptimal timing
+                                                               
+        handover_timing_score = info.get('handover_timing_score', 1.0)                 
+        base_penalty *= (2.0 - handover_timing_score)                                 
         
-        return max(base_penalty, -2.0)  # Cap penalty
+        return max(base_penalty, -2.0)               
     
     def _calculate_physics_bonus(self,
                                state: np.ndarray,
@@ -515,43 +515,43 @@ class MultiObjectiveReward:
         
         total_bonus = 0.0
         
-        # OAM mode selection physics bonus
+                                          
         distance_m = next_state[3] if len(next_state) > 3 else 100.0
         current_mode = info.get('current_oam_mode', 1)
         
-        # Distance-mode matching bonus
-        if distance_m < 50.0 and current_mode <= 3:  # Low modes for short distance
+                                      
+        if distance_m < 50.0 and current_mode <= 3:                                
             total_bonus += 0.2
-        elif 50.0 <= distance_m <= 150.0 and 3 <= current_mode <= 6:  # Mid modes for medium distance
+        elif 50.0 <= distance_m <= 150.0 and 3 <= current_mode <= 6:                                 
             total_bonus += 0.2
-        elif distance_m > 150.0 and current_mode >= 6:  # High modes for long distance
+        elif distance_m > 150.0 and current_mode >= 6:                                
             total_bonus += 0.2
         
-        # Atmospheric window bonus
+                                  
         frequency_ghz = info.get('frequency_ghz', 28.0)
         in_atmospheric_window = info.get('in_atmospheric_window', False)
         if in_atmospheric_window:
             total_bonus += 0.1
         
-        # Beam alignment bonus
+                              
         beam_alignment_error = info.get('beam_alignment_error_deg', 0.0)
-        if beam_alignment_error < 0.1:  # Very good alignment
+        if beam_alignment_error < 0.1:                       
             total_bonus += 0.15
-        elif beam_alignment_error > 2.0:  # Poor alignment
+        elif beam_alignment_error > 2.0:                  
             total_bonus -= 0.3
         
-        # Crosstalk minimization bonus
+                                      
         crosstalk_db = info.get('oam_crosstalk_db', 0.0)
-        if crosstalk_db < -20.0:  # Good mode isolation
+        if crosstalk_db < -20.0:                       
             total_bonus += 0.1
-        elif crosstalk_db > -10.0:  # Poor isolation
+        elif crosstalk_db > -10.0:                  
             total_bonus -= 0.2
         
-        return max(min(total_bonus, 0.5), -0.5)  # Clip to [-0.5, 0.5]
+        return max(min(total_bonus, 0.5), -0.5)                       
     
     def _calculate_total_reward(self, components: RewardComponents) -> float:
         """Calculate weighted total reward with enhanced high-frequency band incentives"""
-        # Base weighted reward
+                              
         total_reward = (
             self.weights.throughput * components.throughput_reward +
             self.weights.latency * components.latency_reward +
@@ -559,17 +559,17 @@ class MultiObjectiveReward:
             self.weights.reliability * components.reliability_reward +
             self.weights.mobility * components.mobility_reward +
             self.weights.spectrum * components.spectrum_reward +
-            0.1 * components.stability_reward +  # Additional stability weight
+            0.1 * components.stability_reward +                               
             components.handover_penalty +
             components.physics_bonus
         )
         
-        # Get current system info
+                                 
         action_info = getattr(self, '_current_action_info', {})
         current_band = action_info.get('current_band', 'mmwave_28')
         throughput_gbps = action_info.get('throughput_gbps', 0.0)
         
-        # Frequency incentives (moderate additive, applied only when delivering throughput)
+                                                                                           
         freq_bands_priority = {
             'thz_600': 1.0,
             'sub_thz_300': 0.9,
@@ -582,56 +582,56 @@ class MultiObjectiveReward:
             'sub_6ghz': -0.3
         }
         frequency_bonus = freq_bands_priority.get(current_band, 0.0)
-        # Apply bonus only if actual throughput exceeds a minimal threshold to avoid blind bias
+                                                                                               
         if throughput_gbps < 5.0:
             frequency_bonus = min(frequency_bonus, 0.0)
         
-        # Stronger compliance bonus shaping to push >100 Gbps consistently
+                                                                          
         compliance_bonus = 0.0
         if throughput_gbps >= 100.0:
-            # Scale faster above target but cap contribution
+                                                            
             compliance_bonus = min(3.0, 2.0 + 0.02 * (throughput_gbps - 100.0))
         elif throughput_gbps >= 50.0:
             compliance_bonus = 0.6 + 0.6 * (throughput_gbps - 50.0) / 50.0
         elif throughput_gbps >= 20.0:
             compliance_bonus = 0.2 * (throughput_gbps / 100.0)
         
-        # Band switching action bonuses (capped for per-step consistency)
+                                                                         
         band_switch_bonus = 0.0
         if action_info.get('high_freq_bonus', 0.0) > 0:
             band_switch_bonus = min(action_info['high_freq_bonus'] * 0.5, 0.5)
             
-        # Beam optimization bonus 
+                                  
         beam_bonus = 0.0
         if action_info.get('beam_optimization_bonus', 0.0) > 0:
-            beam_bonus = action_info['beam_optimization_bonus'] * 1.0  # Increased
+            beam_bonus = action_info['beam_optimization_bonus'] * 1.0             
             
-        # Prediction accuracy bonus
+                                   
         prediction_bonus = 0.0
         if action_info.get('prediction_bonus', 0.0) > 0:
             prediction_bonus = action_info['prediction_bonus'] * 0.5
         
-        # Apply all bonuses
-        # Penalty for prolonged low-band use under good SINR
+                           
+                                                            
         low_band_penalty = 0.0
         try:
             sinr_db_val = float(action_info.get('sinr_db', 0.0))
             is_low_band = current_band in ['sub_6ghz', 'mmwave_28', 'mmwave_39']
             good_sinr = sinr_db_val > self.low_band_good_sinr_threshold_db
             if is_low_band and good_sinr and throughput_gbps < 80.0:
-                # Increase streak and apply escalating penalty (capped)
+                                                                       
                 self.low_band_good_sinr_streak = min(self.low_band_good_sinr_streak + 1, 50)
-                scale = min(0.02 * self.low_band_good_sinr_streak, 0.6)  # up to -0.6 pre-scale
+                scale = min(0.02 * self.low_band_good_sinr_streak, 0.6)                        
                 low_band_penalty = -scale
             else:
-                # Decay streak when condition not met
+                                                     
                 self.low_band_good_sinr_streak = max(self.low_band_good_sinr_streak - 1, 0)
         except Exception:
-            # Conservative fallbacks
+                                    
             if current_band == 'sub_6ghz':
                 low_band_penalty = -0.05
         
-        # Small per-step penalty for mmWave usage when SINR is already good
+                                                                           
         mmwave_penalty = 0.0
         try:
             if current_band in ['mmwave_28', 'mmwave_39', 'mmwave_60'] and float(action_info.get('sinr_db', 0.0)) > 10.0:
@@ -650,7 +650,7 @@ class MultiObjectiveReward:
             mmwave_penalty
         )
         
-        # Apply calibrated global scale
+                                       
         return enhanced_reward * self.reward_scale
     
     def _apply_constraints(self,
@@ -659,14 +659,14 @@ class MultiObjectiveReward:
                          next_state: np.ndarray,
                          info: Dict[str, Any]) -> float:
         """Apply final constraints and clipping"""
-        # Clip to a tighter per-step range to avoid domination
+                                                              
         reward = max(min(reward, 10.0), -10.0)
         
-        # Terminal state penalties
+                                  
         if info.get('terminal_failure', False):
-            reward = -25.0  # Large penalty for system failure
+            reward = -25.0                                    
         
-        # Physics violation penalties
+                                     
         if info.get('physics_violation', False):
             reward -= 10.0
         
@@ -676,25 +676,25 @@ class MultiObjectiveReward:
                                    components: RewardComponents,
                                    info: Dict[str, Any]) -> float:
         """Calculate overall DOCOMO compliance score"""
-        # Extract key metrics
+                             
         throughput_gbps = info.get('throughput_gbps', 0.0)
         latency_ms = info.get('latency_ms', 1.0)
         reliability = info.get('reliability_score', 1.0)
         mobility_kmh = info.get('mobility_kmh', 0.0)
         
-        # Individual compliance scores
+                                      
         throughput_compliance = min(throughput_gbps / self.target_throughput_gbps, 1.0)
         latency_compliance = min(self.target_latency_ms / latency_ms, 1.0) if latency_ms > 0 else 0.0
         reliability_compliance = reliability / self.target_reliability
         mobility_compliance = min(mobility_kmh / self.target_mobility_kmh, 1.0)
         
-        # Weighted compliance score
+                                   
         overall_compliance = (
             self.weights.throughput * throughput_compliance +
             self.weights.latency * latency_compliance +
             self.weights.reliability * reliability_compliance +
             self.weights.mobility * mobility_compliance +
-            0.2 * (components.energy_reward + 1.0) / 2.0  # Normalize energy reward
+            0.2 * (components.energy_reward + 1.0) / 2.0                           
         )
         
         return min(overall_compliance, 1.0)
@@ -704,14 +704,14 @@ class MultiObjectiveReward:
         if not self.adaptive_weights:
             return
         
-        # Simple adaptation logic - boost weights for underperforming objectives
+                                                                                
         if performance_metrics.get('throughput_achievement_rate', 1.0) < 0.8:
             self.weights.throughput = min(self.weights.throughput * 1.1, 0.4)
         
         if performance_metrics.get('latency_achievement_rate', 1.0) < 0.8:
             self.weights.latency = min(self.weights.latency * 1.1, 0.4)
         
-        # Renormalize weights
+                             
         total_weight = (self.weights.throughput + self.weights.latency + 
                        self.weights.energy + self.weights.reliability +
                        self.weights.mobility + self.weights.spectrum)
@@ -729,7 +729,7 @@ class MultiObjectiveReward:
         if not self.performance_history:
             return {}
         
-        recent_performance = self.performance_history[-100:]  # Last 100 episodes
+        recent_performance = self.performance_history[-100:]                     
         
         return {
             'avg_total_reward': np.mean([p['components'].total_reward for p in recent_performance]),

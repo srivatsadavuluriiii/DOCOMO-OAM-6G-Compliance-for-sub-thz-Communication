@@ -15,26 +15,26 @@ from enum import Enum
 
 class MobilityProfile(Enum):
     """Mobility profile types"""
-    STATIONARY = "stationary"        # 0 km/h
-    PEDESTRIAN = "pedestrian"        # 0-10 km/h
-    VEHICULAR_SLOW = "vehicular_slow" # 10-60 km/h  
-    VEHICULAR_FAST = "vehicular_fast" # 60-120 km/h
-    HIGH_SPEED_RAIL = "high_speed_rail" # 120-350 km/h
-    EXTREME_MOBILITY = "extreme_mobility" # 350-500 km/h
-    AERIAL = "aerial"                # Variable, up to 1000 km/h
+    STATIONARY = "stationary"                
+    PEDESTRIAN = "pedestrian"                   
+    VEHICULAR_SLOW = "vehicular_slow"               
+    VEHICULAR_FAST = "vehicular_fast"              
+    HIGH_SPEED_RAIL = "high_speed_rail"               
+    EXTREME_MOBILITY = "extreme_mobility"               
+    AERIAL = "aerial"                                           
 
 @dataclass
 class MobilityState:
     """3D mobility state representation"""
-    position_x: float = 0.0          # meters
-    position_y: float = 0.0          # meters  
-    position_z: float = 0.0          # meters
-    velocity_x: float = 0.0          # m/s
-    velocity_y: float = 0.0          # m/s
-    velocity_z: float = 0.0          # m/s
-    acceleration_x: float = 0.0      # m/s²
-    acceleration_y: float = 0.0      # m/s²
-    acceleration_z: float = 0.0      # m/s²
+    position_x: float = 0.0                  
+    position_y: float = 0.0                    
+    position_z: float = 0.0                  
+    velocity_x: float = 0.0               
+    velocity_y: float = 0.0               
+    velocity_z: float = 0.0               
+    acceleration_x: float = 0.0            
+    acceleration_y: float = 0.0            
+    acceleration_z: float = 0.0            
     
     @property
     def speed_ms(self) -> float:
@@ -54,12 +54,12 @@ class MobilityState:
 @dataclass
 class BeamTrackingState:
     """Beam tracking state"""
-    azimuth_deg: float = 0.0         # Beam azimuth angle
-    elevation_deg: float = 0.0       # Beam elevation angle
-    beam_width_deg: float = 1.0      # Beam width
-    tracking_error_deg: float = 0.0  # Current tracking error
-    prediction_confidence: float = 1.0 # Prediction confidence [0,1]
-    last_update_time: float = 0.0    # Last update timestamp
+    azimuth_deg: float = 0.0                             
+    elevation_deg: float = 0.0                             
+    beam_width_deg: float = 1.0                  
+    tracking_error_deg: float = 0.0                          
+    prediction_confidence: float = 1.0                              
+    last_update_time: float = 0.0                           
 
 class UltraHighMobilityModel:
     """
@@ -77,38 +77,38 @@ class UltraHighMobilityModel:
         self.config = config
         mobility_config = config.get('docomo_6g_system', {}).get('mobility', {})
         
-        # DOCOMO mobility parameters
+                                    
         self.max_speed_kmh = mobility_config.get('max_speed_kmh', 500.0)
         self.max_acceleration_ms2 = mobility_config.get('acceleration_max_ms2', 10.0)
         self.prediction_horizon_ms = mobility_config.get('prediction_horizon_ms', 50.0)
         self.beam_prediction_enabled = mobility_config.get('beam_prediction_enabled', True)
         self.doppler_compensation = mobility_config.get('doppler_compensation', True)
         
-        # Tracking parameters
-        self.beam_tracking_accuracy_deg = 0.05  # High precision requirement
-        self.handover_prediction_time_ms = 20.0  # Early prediction
-        self.mobility_state_estimation = True    # Kalman filtering
+                             
+        self.beam_tracking_accuracy_deg = 0.05                              
+        self.handover_prediction_time_ms = 20.0                    
+        self.mobility_state_estimation = True                      
         
-        # State tracking
+                        
         self.current_state = MobilityState()
-        self.predicted_states = deque(maxlen=100)  # State prediction buffer
-        self.mobility_history = deque(maxlen=1000)  # Mobility history
+        self.predicted_states = deque(maxlen=100)                           
+        self.mobility_history = deque(maxlen=1000)                    
         
-        # Beam tracking
+                       
         self.beam_state = BeamTrackingState()
         self.beam_prediction_buffer = deque(maxlen=50)
         
-        # Kalman filter for state estimation
+                                            
         self.kalman_filter = self._initialize_kalman_filter()
         
-        # Doppler tracking
+                          
         self.doppler_history = deque(maxlen=100)
         self.doppler_compensation_active = False
         
-        # Handover prediction
+                             
         self.handover_predictor = HandoverPredictor(self.prediction_horizon_ms)
         
-        # Statistics
+                    
         self.stats = {
             'max_speed_achieved_kmh': 0.0,
             'max_acceleration_achieved_ms2': 0.0,
@@ -120,35 +120,35 @@ class UltraHighMobilityModel:
         
     def _initialize_kalman_filter(self):
         """Initialize Kalman filter for mobility state estimation"""
-        # 9-state Kalman filter: [x, y, z, vx, vy, vz, ax, ay, az]
-        dt = 0.001  # 1 ms time step
+                                                                  
+        dt = 0.001                  
         
-        # State transition matrix (constant acceleration model)
+                                                               
         F = np.eye(9)
-        F[0:3, 3:6] = np.eye(3) * dt        # Position = position + velocity*dt
-        F[0:3, 6:9] = np.eye(3) * 0.5 * dt**2  # Position += 0.5*acceleration*dt²
-        F[3:6, 6:9] = np.eye(3) * dt        # Velocity = velocity + acceleration*dt
+        F[0:3, 3:6] = np.eye(3) * dt                                           
+        F[0:3, 6:9] = np.eye(3) * 0.5 * dt**2                                    
+        F[3:6, 6:9] = np.eye(3) * dt                                               
         
-        # Measurement matrix (observe position and velocity)
+                                                            
         H = np.zeros((6, 9))
-        H[0:3, 0:3] = np.eye(3)  # Observe position
-        H[3:6, 3:6] = np.eye(3)  # Observe velocity
+        H[0:3, 0:3] = np.eye(3)                    
+        H[3:6, 3:6] = np.eye(3)                    
         
-        # Process noise covariance
+                                  
         Q = np.eye(9) * 0.1
-        Q[6:9, 6:9] *= 10.0  # Higher uncertainty in acceleration
+        Q[6:9, 6:9] *= 10.0                                      
         
-        # Measurement noise covariance  
+                                        
         R = np.eye(6) * 0.01
-        R[0:3, 0:3] *= 1.0    # Position measurement noise
-        R[3:6, 3:6] *= 0.1    # Velocity measurement noise
+        R[0:3, 0:3] *= 1.0                                
+        R[3:6, 3:6] *= 0.1                                
         
-        # Initial state covariance
+                                  
         P = np.eye(9) * 1.0
         
         return {
             'F': F, 'H': H, 'Q': Q, 'R': R, 'P': P,
-            'x': np.zeros(9)  # Initial state
+            'x': np.zeros(9)                 
         }
     
     def update_mobility_state(self, 
@@ -166,12 +166,12 @@ class UltraHighMobilityModel:
         Returns:
             Updated mobility state
         """
-        # Prepare measurement vector
+                                    
         if velocity is not None:
             z = np.array([position[0], position[1], position[2],
                          velocity[0], velocity[1], velocity[2]])
         else:
-            # Estimate velocity from position difference
+                                                        
             if self.mobility_history:
                 dt = max(timestamp - self.mobility_history[-1]['timestamp'], 0.001)
                 prev_pos = self.mobility_history[-1]['position']
@@ -182,14 +182,14 @@ class UltraHighMobilityModel:
             z = np.array([position[0], position[1], position[2],
                          est_velocity[0], est_velocity[1], est_velocity[2]])
         
-        # Kalman filter update
+                              
         self._kalman_predict()
         self._kalman_update(z)
         
-        # Extract state from Kalman filter
+                                          
         state = self.kalman_filter['x']
         
-        # Update current state
+                              
         self.current_state = MobilityState(
             position_x=state[0],
             position_y=state[1], 
@@ -202,7 +202,7 @@ class UltraHighMobilityModel:
             acceleration_z=state[8]
         )
         
-        # Update statistics
+                           
         self.stats['max_speed_achieved_kmh'] = max(
             self.stats['max_speed_achieved_kmh'],
             self.current_state.speed_kmh
@@ -212,7 +212,7 @@ class UltraHighMobilityModel:
             self.current_state.acceleration_magnitude
         )
         
-        # Store in history
+                          
         self.mobility_history.append({
             'timestamp': timestamp,
             'position': position,
@@ -227,10 +227,10 @@ class UltraHighMobilityModel:
         F = self.kalman_filter['F']
         Q = self.kalman_filter['Q']
         
-        # Predict state
+                       
         self.kalman_filter['x'] = F @ self.kalman_filter['x']
         
-        # Predict covariance
+                            
         self.kalman_filter['P'] = F @ self.kalman_filter['P'] @ F.T + Q
     
     def _kalman_update(self, measurement: np.ndarray):
@@ -240,16 +240,16 @@ class UltraHighMobilityModel:
         P = self.kalman_filter['P']
         x = self.kalman_filter['x']
         
-        # Innovation
+                    
         y = measurement - H @ x
         
-        # Innovation covariance
+                               
         S = H @ P @ H.T + R
         
-        # Kalman gain
+                     
         K = P @ H.T @ np.linalg.inv(S)
         
-        # Update state and covariance
+                                     
         self.kalman_filter['x'] = x + K @ y
         I = np.eye(len(x))
         self.kalman_filter['P'] = (I - K @ H) @ P
@@ -268,12 +268,12 @@ class UltraHighMobilityModel:
         if not self.mobility_history:
             return self.current_state, 0.0
         
-        dt = prediction_time_ms / 1000.0  # Convert to seconds
+        dt = prediction_time_ms / 1000.0                      
         
-        # Use current state for prediction
+                                          
         current = self.current_state
         
-        # Constant acceleration model prediction
+                                                
         predicted_state = MobilityState(
             position_x=current.position_x + current.velocity_x * dt + 0.5 * current.acceleration_x * dt**2,
             position_y=current.position_y + current.velocity_y * dt + 0.5 * current.acceleration_y * dt**2,
@@ -281,15 +281,15 @@ class UltraHighMobilityModel:
             velocity_x=current.velocity_x + current.acceleration_x * dt,
             velocity_y=current.velocity_y + current.acceleration_y * dt,
             velocity_z=current.velocity_z + current.acceleration_z * dt,
-            acceleration_x=current.acceleration_x,  # Assume constant acceleration
+            acceleration_x=current.acceleration_x,                                
             acceleration_y=current.acceleration_y,
             acceleration_z=current.acceleration_z
         )
         
-        # Calculate prediction confidence based on motion regularity
+                                                                    
         confidence = self._calculate_prediction_confidence(prediction_time_ms)
         
-        # Store prediction
+                          
         self.predicted_states.append({
             'prediction_time_ms': prediction_time_ms,
             'predicted_state': predicted_state,
@@ -302,9 +302,9 @@ class UltraHighMobilityModel:
     def _calculate_prediction_confidence(self, prediction_time_ms: float) -> float:
         """Calculate prediction confidence based on motion patterns"""
         if len(self.mobility_history) < 10:
-            return 0.5  # Low confidence with insufficient history
+            return 0.5                                            
         
-        # Analyze velocity consistency
+                                      
         recent_velocities = [h['state'].speed_ms for h in list(self.mobility_history)[-10:]]
         velocity_std = np.std(recent_velocities)
         velocity_mean = np.mean(recent_velocities)
@@ -314,13 +314,13 @@ class UltraHighMobilityModel:
         else:
             velocity_consistency = 1.0
         
-        # Time-based confidence decay
-        time_decay = max(0.0, 1.0 - prediction_time_ms / 100.0)  # Decay over 100ms
+                                     
+        time_decay = max(0.0, 1.0 - prediction_time_ms / 100.0)                    
         
-        # Speed-based confidence (higher speeds are less predictable)
+                                                                     
         speed_factor = max(0.1, 1.0 - self.current_state.speed_kmh / 500.0)
         
-        # Combined confidence
+                             
         confidence = velocity_consistency * time_decay * speed_factor
         
         return min(1.0, max(0.0, confidence))
@@ -341,7 +341,7 @@ class UltraHighMobilityModel:
         if not self.mobility_history:
             return {'doppler_shift_hz': 0.0, 'doppler_rate_hz_s': 0.0}
         
-        # Current position and velocity
+                                       
         current_pos = np.array([self.current_state.position_x,
                                self.current_state.position_y,
                                self.current_state.position_z])
@@ -351,32 +351,32 @@ class UltraHighMobilityModel:
         
         bs_pos = np.array(base_station_position)
         
-        # Vector from BS to mobile
+                                  
         r_vector = current_pos - bs_pos
         r_distance = np.linalg.norm(r_vector)
         
-        if r_distance < 1e-6:  # Avoid division by zero
+        if r_distance < 1e-6:                          
             return {'doppler_shift_hz': 0.0, 'doppler_rate_hz_s': 0.0}
         
-        # Unit vector (BS to mobile)
+                                    
         r_unit = r_vector / r_distance
         
-        # Radial velocity (positive = moving away from BS)
+                                                          
         v_radial = np.dot(current_vel, r_unit)
         
-        # Doppler shift calculation
-        c = 3e8  # Speed of light (m/s)
+                                   
+        c = 3e8                        
         frequency_hz = frequency_ghz * 1e9
-        doppler_shift_hz = -(frequency_hz * v_radial) / c  # Negative for approaching
+        doppler_shift_hz = -(frequency_hz * v_radial) / c                            
         
-        # Doppler rate (acceleration effect)
+                                            
         current_acc = np.array([self.current_state.acceleration_x,
                                self.current_state.acceleration_y,
                                self.current_state.acceleration_z])
         a_radial = np.dot(current_acc, r_unit)
         doppler_rate_hz_s = -(frequency_hz * a_radial) / c
         
-        # Store Doppler history
+                               
         doppler_info = {
             'doppler_shift_hz': doppler_shift_hz,
             'doppler_rate_hz_s': doppler_rate_hz_s,
@@ -403,16 +403,16 @@ class UltraHighMobilityModel:
         Returns:
             Predicted beam angles and tracking information
         """
-        # Get predicted position
+                                
         predicted_state, confidence = self.predict_future_position(prediction_time_ms)
         
-        # Calculate angles to predicted position
+                                                
         bs_pos = np.array(base_station_position)
         predicted_pos = np.array([predicted_state.position_x,
                                  predicted_state.position_y,
                                  predicted_state.position_z])
         
-        # Vector from BS to predicted mobile position
+                                                     
         r_vector = predicted_pos - bs_pos
         r_distance = np.linalg.norm(r_vector)
         
@@ -425,30 +425,30 @@ class UltraHighMobilityModel:
                 'tracking_error_deg': 0.0
             }
         
-        # Calculate spherical coordinates
+                                         
         azimuth_rad = np.arctan2(r_vector[1], r_vector[0])
         elevation_rad = np.arcsin(r_vector[2] / r_distance)
         
-        # Convert to degrees
+                            
         azimuth_deg = np.degrees(azimuth_rad)
         elevation_deg = np.degrees(elevation_rad)
         
-        # Estimate tracking error based on velocity and prediction uncertainty
+                                                                              
         velocity_magnitude = predicted_state.speed_ms
-        angular_velocity_rad_s = velocity_magnitude / r_distance  # Approximate
+        angular_velocity_rad_s = velocity_magnitude / r_distance               
         
-        # Tracking error estimate
+                                 
         prediction_time_s = prediction_time_ms / 1000.0
         angular_uncertainty_rad = angular_velocity_rad_s * prediction_time_s * (1.0 - confidence)
         tracking_error_deg = np.degrees(angular_uncertainty_rad)
         
-        # Update beam state
+                           
         self.beam_state.azimuth_deg = azimuth_deg
         self.beam_state.elevation_deg = elevation_deg
         self.beam_state.tracking_error_deg = tracking_error_deg
         self.beam_state.prediction_confidence = confidence
         
-        # Store in prediction buffer
+                                    
         self.beam_prediction_buffer.append({
             'prediction_time_ms': prediction_time_ms,
             'azimuth_deg': azimuth_deg,
@@ -485,13 +485,13 @@ class UltraHighMobilityModel:
         if prediction_time_ms is None:
             prediction_time_ms = self.handover_prediction_time_ms
         
-        # Get predicted position
+                                
         predicted_state, confidence = self.predict_future_position(prediction_time_ms)
         predicted_pos = np.array([predicted_state.position_x,
                                  predicted_state.position_y,
                                  predicted_state.position_z])
         
-        # Calculate distances to all base stations
+                                                  
         current_bs_pos = np.array(current_bs_position)
         current_distance = np.linalg.norm(predicted_pos - current_bs_pos)
         
@@ -506,19 +506,19 @@ class UltraHighMobilityModel:
                 best_distance = candidate_distance
                 best_candidate = i
         
-        # Handover decision logic
+                                 
         should_handover = False
         handover_benefit = 0.0
         
         if best_candidate is not None:
             handover_benefit = (current_distance - best_distance) / current_distance
             
-            # Trigger handover if significant benefit and high confidence
-            if handover_benefit > 0.2 and confidence > 0.7:  # 20% distance improvement
+                                                                         
+            if handover_benefit > 0.2 and confidence > 0.7:                            
                 should_handover = True
         
-        # Additional factors
-        velocity_factor = min(1.0, self.current_state.speed_kmh / 100.0)  # Normalize to 100 km/h
+                            
+        velocity_factor = min(1.0, self.current_state.speed_kmh / 100.0)                         
         urgency = velocity_factor * handover_benefit * confidence
         
         handover_decision = {
@@ -535,7 +535,7 @@ class UltraHighMobilityModel:
             )
         }
         
-        # Update statistics
+                           
         if should_handover:
             self.stats['handover_predictions'] += 1
         
@@ -606,10 +606,10 @@ class HandoverPredictor:
     def predict_handover_timing(self, mobility_state: MobilityState, 
                               bs_positions: List[Tuple[float, float, float]]) -> float:
         """Predict optimal handover timing in milliseconds"""
-        # Simplified prediction - could be enhanced with ML
-        speed_factor = mobility_state.speed_kmh / 100.0  # Normalize
+                                                           
+        speed_factor = mobility_state.speed_kmh / 100.0             
         
-        # Faster speeds need earlier predictions
+                                                
         optimal_timing_ms = self.prediction_horizon_ms * (1.0 + speed_factor)
         
-        return min(optimal_timing_ms, 100.0)  # Max 100ms ahead
+        return min(optimal_timing_ms, 100.0)                   

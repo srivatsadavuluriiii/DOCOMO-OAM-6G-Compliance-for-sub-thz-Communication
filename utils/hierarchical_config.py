@@ -46,7 +46,7 @@ class HierarchicalConfig:
         if not base_path.exists():
             raise FileNotFoundError(f"Base configuration not found: {base_path}")
         
-        # Use sanitized config loader
+                                     
         self.base_config = sanitized_config_loader(str(base_path))
         self.base_config = self._ensure_legacy_compatibility(self.base_config)
         
@@ -65,24 +65,24 @@ class HierarchicalConfig:
         Raises:
             ValueError: If configuration is invalid or malicious
         """
-        # Check cache first
+                           
         if config_name in self.config_cache:
             return self.config_cache[config_name]
 
-        # Load base config if not already loaded
+                                                
         if self.base_config is None:
             self.load_base_config()
 
-        # Determine inheritance chain (always starts with base)
+                                                               
         chain = self._get_inheritance_chain(config_name)
-        # Ensure target config is included in the chain
+                                                       
         if chain[-1] != config_name:
             chain.append(config_name)
 
-        # Start with a copy of base
+                                   
         merged_config: Dict[str, Any] = self.base_config.copy()
 
-        # Merge each layer in order after base
+                                              
         for name in chain[1:]:
             config_path = self.config_dir / f"{name}.yaml"
             if not config_path.exists():
@@ -90,13 +90,13 @@ class HierarchicalConfig:
             layer_cfg = sanitized_config_loader(str(config_path))
             merged_config = self._deep_merge(merged_config, layer_cfg)
 
-        # Normalize RL-related top-level sections into rl_base.* overrides
+                                                                          
         merged_config = self._normalize_rl_sections(merged_config)
 
-        # Ensure legacy keys exist for backward compatibility with tests
+                                                                        
         merged_config = self._ensure_legacy_compatibility(merged_config)
 
-        # Cache the result
+                          
         self.config_cache[config_name] = merged_config
 
         return merged_config
@@ -115,7 +115,7 @@ class HierarchicalConfig:
         ]
 
         if 'rl_base' not in config or not isinstance(config['rl_base'], dict):
-            # Nothing to normalize if rl_base is absent
+                                                       
             return config
 
         for section in rl_sections:
@@ -124,7 +124,7 @@ class HierarchicalConfig:
                 base_section = config['rl_base'].get(section, {})
                 if not isinstance(base_section, dict):
                     base_section = {}
-                # Merge with top-level taking precedence
+                                                        
                 merged_section = self._deep_merge(base_section, top_value)
                 config['rl_base'][section] = merged_section
 
@@ -163,13 +163,13 @@ class HierarchicalConfig:
         """
         errors = []
         
-        # Check required sections
+                                 
         required_sections = ['system', 'oam', 'environment', 'mobility']
         for section in required_sections:
             if section not in config:
                 errors.append(f"Missing required section: {section}")
         
-        # Check OAM mode consistency
+                                    
         if 'oam' in config:
             oam = config['oam']
             if 'min_mode' in oam and 'max_mode' in oam:
@@ -183,10 +183,10 @@ class HierarchicalConfig:
                 except (ValueError, TypeError):
                     errors.append("min_mode and max_mode must be integers")
         
-        # Check system parameters (support both scalar and banded forms)
+                                                                        
         if 'system' in config:
             system = config['system']
-            # frequency may be scalar or provided via frequency_bands
+                                                                     
             if 'frequency' in system:
                 try:
                     freq = float(system['frequency'])
@@ -215,7 +215,7 @@ class HierarchicalConfig:
                 except (ValueError, TypeError):
                     errors.append("tx_power_dBm must be a number or dict of numbers")
         
-        # Check training parameters if present
+                                              
         if 'training' in config:
             training = config['training']
             if 'num_episodes' in training:
@@ -254,13 +254,13 @@ class HierarchicalConfig:
         """
         config = self.load_config_with_inheritance(config_name)
         
-        # Count parameters by section
+                                     
         section_counts = {}
         for section, params in config.items():
             if isinstance(params, dict):
                 section_counts[section] = len(params)
         
-        # Get inheritance chain
+                               
         inheritance_chain = self._get_inheritance_chain(config_name)
         
         return {
@@ -281,23 +281,23 @@ class HierarchicalConfig:
         cfg = config.copy()
         system = cfg.get('system', {})
         changed = False
-        # Frequency
+                   
         if 'frequency' not in system and isinstance(system.get('frequency_bands'), dict):
             mmwave = system['frequency_bands'].get('mmwave')
             if mmwave is not None:
                 system['frequency'] = mmwave
                 changed = True
-        # Bandwidth
+                   
         if 'bandwidth' not in system and isinstance(system.get('bandwidth_bands'), dict):
             mmwave_bw = system['bandwidth_bands'].get('mmwave')
             if mmwave_bw is not None:
                 system['bandwidth'] = mmwave_bw
                 changed = True
-        # tx power scalar mirror
+                                
         if isinstance(system.get('tx_power_dBm'), dict):
             mmwave_tx = system['tx_power_dBm'].get('mmwave')
             if mmwave_tx is not None:
-                system['tx_power_dBm_scalar'] = mmwave_tx  # do not overwrite dict
+                system['tx_power_dBm_scalar'] = mmwave_tx                         
                 changed = True
         if changed:
             cfg['system'] = system
@@ -333,7 +333,7 @@ class HierarchicalConfig:
         """
         configs = []
         
-        # Find all new configuration files
+                                          
         for config_file in self.config_dir.glob("*_new.yaml"):
             config_name = config_file.stem
             if config_name != "base_config_new":
@@ -375,7 +375,7 @@ class HierarchicalConfig:
         cfg1 = self.load_config_with_inheritance(config1)
         cfg2 = self.load_config_with_inheritance(config2)
         
-        # Find differences
+                          
         differences = {}
         all_keys = set(cfg1.keys()) | set(cfg2.keys())
         

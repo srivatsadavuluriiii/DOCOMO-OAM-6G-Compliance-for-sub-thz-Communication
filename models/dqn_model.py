@@ -29,18 +29,18 @@ class DQN(nn.Module):
         """
         super(DQN, self).__init__()
         
-        # Store activation type for weight initialization
+                                                         
         self.activation = activation
         
-        # Input layer
+                     
         layers = []
         prev_dim = state_dim
         
-        # Hidden layers
+                       
         for hidden_dim in hidden_layers:
             layers.append(nn.Linear(prev_dim, hidden_dim))
             
-            # Add activation function
+                                     
             if activation == "relu":
                 layers.append(nn.ReLU())
             elif activation == "leaky_relu":
@@ -48,18 +48,18 @@ class DQN(nn.Module):
             elif activation == "tanh":
                 layers.append(nn.Tanh())
             else:
-                layers.append(nn.ReLU())  # Default to ReLU
-                self.activation = "relu"  # Update activation for consistency
+                layers.append(nn.ReLU())                   
+                self.activation = "relu"                                     
             
             prev_dim = hidden_dim
         
-        # Output layer
+                      
         layers.append(nn.Linear(prev_dim, action_dim))
         
-        # Combine all layers
+                            
         self.model = nn.Sequential(*layers)
         
-        # Initialize weights
+                            
         self.apply(self._init_weights)
     
     def _init_weights(self, module):
@@ -70,16 +70,16 @@ class DQN(nn.Module):
             module: PyTorch module to initialize
         """
         if isinstance(module, nn.Linear):
-            # Use appropriate initialization based on activation function
+                                                                         
             if self.activation == "relu":
                 nn.init.kaiming_normal_(module.weight, nonlinearity='relu')
             elif self.activation == "leaky_relu":
                 nn.init.kaiming_normal_(module.weight, nonlinearity='leaky_relu')
             elif self.activation == "tanh":
-                # For tanh, use Xavier/Glorot initialization
+                                                            
                 nn.init.xavier_normal_(module.weight)
             else:
-                # Default to ReLU initialization
+                                                
                 nn.init.kaiming_normal_(module.weight, nonlinearity='relu')
             
             if module.bias is not None:

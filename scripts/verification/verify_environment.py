@@ -15,10 +15,10 @@ import platform
 import torch
 import numpy as np
 
-# Add project root to path
+                          
 sys.path.insert(0, str(Path(__file__).parent.parent.parent.resolve()))
 
-# Define color codes for terminal output
+                                        
 GREEN = '\033[92m'
 RED = '\033[91m'
 YELLOW = '\033[93m'
@@ -80,7 +80,7 @@ def check_random_seed_reproducibility():
     Returns:
         True if random seed setting produces reproducible results, False otherwise
     """
-    # Set random seed
+                     
     seed = 42
     np.random.seed(seed)
     torch.manual_seed(seed)
@@ -90,11 +90,11 @@ def check_random_seed_reproducibility():
         torch.backends.cudnn.deterministic = True
         torch.backends.cudnn.benchmark = False
     
-    # Generate random numbers
+                             
     np_random1 = np.random.rand(10)
     torch_random1 = torch.rand(10)
     
-    # Reset random seed
+                       
     np.random.seed(seed)
     torch.manual_seed(seed)
     if torch.cuda.is_available():
@@ -103,11 +103,11 @@ def check_random_seed_reproducibility():
         torch.backends.cudnn.deterministic = True
         torch.backends.cudnn.benchmark = False
     
-    # Generate random numbers again
+                                   
     np_random2 = np.random.rand(10)
     torch_random2 = torch.rand(10)
     
-    # Check if the random numbers are the same
+                                              
     np_match = np.allclose(np_random1, np_random2)
     torch_match = torch.allclose(torch_random1, torch_random2)
     
@@ -125,9 +125,9 @@ def check_environment_variables():
     Returns:
         True if all environment variables are set correctly, False otherwise
     """
-    # List of environment variables to check
+                                            
     env_vars = {
-        'PYTHONHASHSEED': '0',  # For reproducibility
+        'PYTHONHASHSEED': '0',                       
     }
     
     all_correct = True
@@ -137,10 +137,10 @@ def check_environment_variables():
         else:
             current_value = os.environ.get(var, 'not set')
             print_warning(f"Environment variable {var}={current_value} (recommended: {expected_value})")
-            # Don't fail the check for environment variables
-            # all_correct = False
+                                                            
+                                 
     
-    # Return True since environment variables are recommended but not required
+                                                                              
     return True
 
 def main():
@@ -149,7 +149,7 @@ def main():
     print(" "*30 + "ENVIRONMENT VERIFICATION")
     print("="*80 + "\n")
     
-    # Get required package versions from requirements.txt
+                                                         
     requirements_path = Path(__file__).parent.parent.parent / 'config' / 'requirements.txt'
     required_packages = {}
     with open(requirements_path, 'r') as f:
@@ -159,14 +159,14 @@ def main():
                 package, version = line.split('==')
                 required_packages[package] = version
     
-    # Check system information
+                              
     print("\n--- System Information ---")
     print(f"Python version: {sys.version}")
     print(f"Platform: {platform.platform()}")
     print(f"PyTorch version: {torch.__version__}")
     print(f"NumPy version: {np.__version__}")
     
-    # Check package versions
+                            
     print("\n--- Package Versions ---")
     all_versions_correct = True
     for package, version in required_packages.items():
@@ -177,19 +177,19 @@ def main():
             print_error(f"Error checking {package}: {e}")
             all_versions_correct = False
     
-    # Check CUDA availability
+                             
     print("\n--- CUDA Availability ---")
     cuda_available = check_cuda_availability()
     
-    # Check random seed reproducibility
+                                       
     print("\n--- Random Seed Reproducibility ---")
     reproducible = check_random_seed_reproducibility()
     
-    # Check environment variables
+                                 
     print("\n--- Environment Variables ---")
     env_vars_correct = check_environment_variables()
     
-    # Print summary
+                   
     print("\n" + "="*80)
     print(" "*35 + "SUMMARY")
     print("="*80)
@@ -214,7 +214,7 @@ def main():
     else:
         print_warning("Some environment variables are not set correctly")
     
-    # Print overall result
+                          
     print("\n" + "="*80)
     if all_versions_correct and reproducible:
         print_success("Environment verification PASSED")
@@ -223,7 +223,7 @@ def main():
         print_error("Environment verification FAILED")
         print("Please fix the issues above to ensure reproducible research")
     
-    # Print note about CUDA
+                           
     if not cuda_available:
         print("\nNOTE: CUDA is not available, but this is not required for reproducibility.")
         print("      The code will run on CPU, which may be slower but will produce the same results.")

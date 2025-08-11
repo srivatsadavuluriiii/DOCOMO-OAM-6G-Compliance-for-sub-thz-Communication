@@ -9,7 +9,7 @@ import numpy as np
 from datetime import datetime
 from typing import Dict, Any, Optional
 
-# Ensure project root is on sys.path before importing project modules
+                                                                     
 PROJECT_ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 if PROJECT_ROOT not in sys.path:
     sys.path.insert(0, PROJECT_ROOT)
@@ -19,7 +19,7 @@ ensure_project_root_in_path()
 from models.agent import Agent
 from environment.docomo_6g_env import DOCOMO_6G_Environment
 from utils.visualization_unified import create_evaluation_dashboard, visualize_q_values
-# For DOCOMO config we load YAML directly (sanitizer does not know DOCOMO sections)
+                                                                                   
 import matplotlib.pyplot as plt
 
 
@@ -84,10 +84,10 @@ def evaluate(args: argparse.Namespace) -> None:
     Args:
         args: Command line arguments
     """
-    # Set random seed
+                     
     set_random_seed(args.seed)
     
-    # Set model and output directories
+                                      
     model_dir = args.model_dir
     if args.output_dir is None:
         output_dir = os.path.join(model_dir, "evaluation")
@@ -96,11 +96,11 @@ def evaluate(args: argparse.Namespace) -> None:
     
     os.makedirs(output_dir, exist_ok=True)
     
-    # Create plots directory
+                            
     plots_dir = os.path.join(output_dir, 'plots')
     os.makedirs(plots_dir, exist_ok=True)
     
-    # Load configuration (DOCOMO config)
+                                        
     if args.config is None:
         config_path = os.path.join(model_dir, "config.yaml")
     else:
@@ -111,11 +111,11 @@ def evaluate(args: argparse.Namespace) -> None:
     except Exception:
         config = {}
     
-    # Set device
+                
     device = torch.device("cpu" if args.no_gpu or not torch.cuda.is_available() else "cuda")
     print(f"Using device: {device}")
     
-    # Determine expected model IO dims from checkpoint to pick correct env
+                                                                          
     candidate_final = os.path.join(model_dir, "models", "final")
     candidate_root = os.path.join(model_dir, "models")
     model_path = candidate_final if os.path.isdir(candidate_final) else candidate_root
@@ -133,17 +133,17 @@ def evaluate(args: argparse.Namespace) -> None:
     except Exception:
         pass
 
-    # Create DOCOMO environment
+                               
     if args.config is not None:
         env = DOCOMO_6G_Environment(config_path=args.config)
     else:
         env = DOCOMO_6G_Environment(config=config)
     
-    # Get state and action dimensions
+                                     
     state_dim = env.observation_space.shape[0]
     action_dim = env.action_space.n
     
-    # Create agent (with safe defaults if config lacks 'network')
+                                                                 
     network_cfg = config.get('network', {}) if isinstance(config, dict) else {}
     hidden_layers = network_cfg.get('hidden_layers', [128, 128])
     agent = Agent(
@@ -153,7 +153,7 @@ def evaluate(args: argparse.Namespace) -> None:
         device=device
     )
     
-    # Load trained model: prefer best_model.pth in model_dir
+                                                            
     best_model_path = os.path.join(model_dir, "best_model.pth")
     if os.path.isfile(best_model_path):
         try:
@@ -166,7 +166,7 @@ def evaluate(args: argparse.Namespace) -> None:
         except Exception as e:
             print(f"Warning: Could not load best_model.pth: {e}")
     else:
-        # Fallback to legacy structure if present
+                                                 
         candidate_final = os.path.join(model_dir, "models", "final")
         candidate_root = os.path.join(model_dir, "models")
         model_path = candidate_final if os.path.isdir(candidate_final) else candidate_root
@@ -176,7 +176,7 @@ def evaluate(args: argparse.Namespace) -> None:
         except Exception as e:
             print(f"Warning: Could not load model from {model_path}: {e}")
     
-    # Evaluation loop
+                     
     episode_rewards = []
     episode_throughputs = []
     episode_handovers = []
@@ -197,32 +197,32 @@ def evaluate(args: argparse.Namespace) -> None:
         episode_distance_values = []
         
         while not (done or truncated):
-            # Store state for Q-value analysis
+                                              
             collected_states.append(state)
             
-            # Store state information
-            episode_sinr_values.append(state[0])  # SINR
-            episode_distance_values.append(state[1])  # Distance
-            episode_mode_values.append(state[5])  # Current mode
+                                     
+            episode_sinr_values.append(state[0])        
+            episode_distance_values.append(state[1])            
+            episode_mode_values.append(state[5])                
             
-            # Choose action (no exploration during evaluation)
+                                                              
             action = agent.choose_action(state, epsilon=0.0)
             
-            # Take action
+                         
             next_state, reward, done, truncated, info = env.step(action)
             
-            # Update tracking
+                             
             episode_reward += reward
             state = next_state
             
-            # Render if requested
+                                 
             if args.render:
                 env.render()
         
-        # Store episode metrics
+                               
         episode_rewards.append(episode_reward)
         try:
-            # Prefer KPI tracker metrics
+                                        
             kpis = env.kpi_tracker.get_current_kpis()
             episode_throughputs.append(kpis.get('current_throughput_gbps', 0.0) * 1e9)
         except Exception:
@@ -236,14 +236,14 @@ def evaluate(args: argparse.Namespace) -> None:
         episode_modes.append(episode_mode_values)
         episode_distances.append(episode_distance_values)
         
-        # Print progress
+                        
         if args.verbose or episode % 10 == 0:
             print(f"Episode {episode}/{args.episodes} | "
                   f"Reward: {episode_reward:.2f} | "
                   f"Throughput: {env.episode_throughput:.2e} | "
                   f"Handovers: {env.episode_handovers}")
     
-    # Calculate average metrics
+                               
     avg_reward = np.mean(episode_rewards)
     avg_throughput = np.mean(episode_throughputs)
     avg_handovers = np.mean(episode_handovers)
@@ -253,9 +253,9 @@ def evaluate(args: argparse.Namespace) -> None:
     print(f"  Average Throughput: {avg_throughput:.2e} bps")
     print(f"  Average Handovers: {avg_handovers:.2f}")
     
-    # Collect Q-values for analysis
+                                   
     if len(collected_states) > 1000:
-        # Sample a subset of states to avoid memory issues
+                                                          
         collected_states = np.array(collected_states)
         indices = np.random.choice(len(collected_states), 1000, replace=False)
         sampled_states = collected_states[indices]
@@ -264,9 +264,9 @@ def evaluate(args: argparse.Namespace) -> None:
     
     q_values = collect_q_values(agent, sampled_states)
     
-    # Create visualizations
+                           
     
-    # 1. Plot Q-values
+                      
     if action_dim == 3:
         action_names = ["STAY", "UP", "DOWN"]
     elif action_dim == 8:
@@ -276,10 +276,10 @@ def evaluate(args: argparse.Namespace) -> None:
     q_plot_path = os.path.join(plots_dir, "q_values.png")
     visualize_q_values(q_values, action_names, q_plot_path)
     
-    # 2. Plot SINR vs. Distance with color indicating OAM mode
+                                                              
     plt.figure(figsize=(10, 8))
     
-    # Flatten the episode data
+                              
     all_sinrs = np.concatenate(episode_sinrs)
     all_distances = np.concatenate(episode_distances)
     all_modes = np.concatenate(episode_modes)
@@ -293,11 +293,11 @@ def evaluate(args: argparse.Namespace) -> None:
     plt.title('SINR vs. Distance with OAM Mode Selection')
     plt.grid(True, alpha=0.3)
     
-    # Save SINR plot
+                    
     sinr_plot_path = os.path.join(plots_dir, 'sinr_distance_mode.png')
     plt.savefig(sinr_plot_path)
     
-    # 3. Create interactive dashboard
+                                     
     dashboard_path = os.path.join(output_dir, "dashboard.html")
     create_evaluation_dashboard(
         episode_rewards,
@@ -306,7 +306,7 @@ def evaluate(args: argparse.Namespace) -> None:
         dashboard_path
     )
     
-    # Save evaluation metrics
+                             
     metrics = {
         "avg_reward": float(avg_reward),
         "avg_throughput": float(avg_throughput),

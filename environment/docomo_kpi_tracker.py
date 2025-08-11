@@ -15,25 +15,25 @@ from datetime import datetime, timedelta
 @dataclass
 class DOCOMOKPIs:
     """DOCOMO 6G Key Performance Indicators"""
-    # Core Performance KPIs
-    peak_data_rate_tbps: float = 1.0           # 1 Tbps peak data rate
-    user_data_rate_gbps: float = 100.0         # 100 Gbps user experience
-    latency_ms: float = 0.1                    # 0.1 ms end-to-end latency
-    reliability: float = 0.9999999             # 99.99999% reliability
+                           
+    peak_data_rate_tbps: float = 1.0                                  
+    user_data_rate_gbps: float = 100.0                                   
+    latency_ms: float = 0.1                                               
+    reliability: float = 0.9999999                                    
     
-    # Mobility and Coverage KPIs  
-    mobility_kmh: float = 500.0                # 500 km/h mobility support
-    connection_density_per_km2: float = 1e7    # 10M devices per km²
-    coverage_improvement: float = 100.0        # 100% seamless coverage
+                                  
+    mobility_kmh: float = 500.0                                           
+    connection_density_per_km2: float = 1e7                         
+    coverage_improvement: float = 100.0                                
     
-    # Efficiency KPIs
-    energy_efficiency_improvement: float = 100 # 100x improvement vs 5G
-    spectrum_efficiency_improvement: float = 10 # 10x improvement vs 5G
+                     
+    energy_efficiency_improvement: float = 100                         
+    spectrum_efficiency_improvement: float = 10                        
     
-    # Advanced KPIs
-    sensing_accuracy_cm: float = 1.0           # 1 cm sensing accuracy
-    positioning_accuracy_cm: float = 10.0     # 10 cm positioning
-    synchronization_accuracy_ns: float = 1.0  # 1 ns time sync
+                   
+    sensing_accuracy_cm: float = 1.0                                  
+    positioning_accuracy_cm: float = 10.0                        
+    synchronization_accuracy_ns: float = 1.0                  
 
 @dataclass 
 class PerformanceMeasurement:
@@ -66,18 +66,18 @@ class DOCOMOKPITracker:
             config: DOCOMO configuration dictionary
             window_size: Rolling window size for statistics
         """
-        # Ensure config is always a dictionary
+                                              
         self.config = config if isinstance(config, dict) else {}
         self.window_size = window_size
         self.docomo_targets = DOCOMOKPIs()
         
-        # Update targets from config
+                                    
         kpi_targets = self.config.get('docomo_6g_system', {}).get('kpi_targets', {})
         for key, value in kpi_targets.items():
             if hasattr(self.docomo_targets, key):
                 setattr(self.docomo_targets, key, value)
         
-        # Rolling windows for measurements
+                                          
         self.measurements = deque(maxlen=window_size)
         self.throughput_history = deque(maxlen=window_size)
         self.latency_history = deque(maxlen=window_size)
@@ -85,7 +85,7 @@ class DOCOMOKPITracker:
         self.energy_history = deque(maxlen=window_size)
         self.mobility_history = deque(maxlen=window_size)
         
-        # Compliance tracking
+                             
         self.compliance_scores = {
             'throughput': deque(maxlen=100),
             'latency': deque(maxlen=100),
@@ -95,7 +95,7 @@ class DOCOMOKPITracker:
             'overall': deque(maxlen=100)
         }
         
-        # Statistics tracking
+                             
         self.session_stats = {
             'start_time': datetime.now(),
             'total_measurements': 0,
@@ -106,7 +106,7 @@ class DOCOMOKPITracker:
             'error_count': 0
         }
         
-        # Real-time analytics (configurable)
+                                            
         monitoring_cfg = self.config.get('docomo_6g_system', {}).get('monitoring', {})
         self.anomaly_detection_enabled = bool(monitoring_cfg.get('anomaly_detection', True))
         self.anomaly_threshold = float(monitoring_cfg.get('anomaly_threshold', 3.5))
@@ -126,7 +126,7 @@ class DOCOMOKPITracker:
         Returns:
             Current compliance scores
         """
-        # Add measurement to history
+                                    
         self.measurements.append(measurement)
         self.throughput_history.append(measurement.throughput_gbps)
         self.latency_history.append(measurement.latency_ms)
@@ -134,21 +134,21 @@ class DOCOMOKPITracker:
         self.energy_history.append(measurement.energy_consumption_w)
         self.mobility_history.append(measurement.mobility_kmh)
         
-        # Update session statistics
+                                   
         self._update_session_stats(measurement)
         
-        # Calculate compliance scores
+                                     
         compliance = self._calculate_compliance_scores(measurement)
         
-        # Update compliance history
+                                   
         for metric, score in compliance.items():
             if metric in self.compliance_scores:
                 self.compliance_scores[metric].append(score)
         
-        # Detect anomalies
+                          
         self._detect_anomalies(measurement)
         
-        # Update performance trend
+                                  
         self._update_performance_trend()
         
         self.last_update = datetime.now()
@@ -158,19 +158,19 @@ class DOCOMOKPITracker:
         """Update session-level statistics"""
         self.session_stats['total_measurements'] += 1
         
-        # Peak throughput tracking
+                                  
         if measurement.throughput_gbps > self.session_stats['peak_throughput_gbps']:
             self.session_stats['peak_throughput_gbps'] = measurement.throughput_gbps
             
-        # Minimum latency tracking  
+                                    
         if measurement.latency_ms < self.session_stats['min_latency_ms']:
             self.session_stats['min_latency_ms'] = measurement.latency_ms
             
-        # Maximum mobility tracking
+                                   
         if measurement.mobility_kmh > self.session_stats['max_mobility_kmh']:
             self.session_stats['max_mobility_kmh'] = measurement.mobility_kmh
             
-        # Handover counting
+                           
         self.session_stats['handover_count'] += measurement.handover_count
     
     def _calculate_compliance_scores(self, measurement: PerformanceMeasurement) -> Dict[str, float]:
@@ -185,43 +185,43 @@ class DOCOMOKPITracker:
         """
         compliance = {}
         
-        # Throughput compliance (100 Gbps user target)
+                                                      
         throughput_ratio = measurement.throughput_gbps / self.docomo_targets.user_data_rate_gbps
         compliance['throughput'] = min(throughput_ratio, 1.0)
         
-        # Latency compliance (0.1 ms target)
+                                            
         if measurement.latency_ms <= self.docomo_targets.latency_ms:
             compliance['latency'] = 1.0
         else:
-            # Exponential penalty for exceeding latency target
+                                                              
             excess_ratio = measurement.latency_ms / self.docomo_targets.latency_ms
             compliance['latency'] = max(0.0, 1.0 / excess_ratio)
         
-        # Reliability compliance
+                                
         compliance['reliability'] = measurement.reliability_score / self.docomo_targets.reliability
         
-        # Mobility compliance (500 km/h target)
+                                               
         if measurement.mobility_kmh <= self.docomo_targets.mobility_kmh:
             compliance['mobility'] = 1.0
         else:
-            # Graceful degradation beyond mobility target
+                                                         
             excess_ratio = measurement.mobility_kmh / self.docomo_targets.mobility_kmh
             compliance['mobility'] = max(0.5, 1.0 / excess_ratio)
         
-        # Energy efficiency compliance (Gbps/W relative to baseline and target improvement)
-        baseline_energy_w = 1.0  # 1 W baseline
-        baseline_efficiency = self.docomo_targets.user_data_rate_gbps / baseline_energy_w  # 100 Gbps/W
+                                                                                           
+        baseline_energy_w = 1.0                
+        baseline_efficiency = self.docomo_targets.user_data_rate_gbps / baseline_energy_w              
         current_efficiency = 0.0
         if measurement.energy_consumption_w > 0:
             current_efficiency = measurement.throughput_gbps / measurement.energy_consumption_w
-        # Improvement ratio over baseline
+                                         
         efficiency_improvement = current_efficiency / max(baseline_efficiency, 1e-6)
         target_improvement = max(self.docomo_targets.energy_efficiency_improvement, 1e-6)
         compliance['energy'] = float(min(max(efficiency_improvement / target_improvement, 0.0), 1.0))
         
-        # Overall compliance (weighted average)
-        # Heavier emphasis on latency/throughput given improved stability
-        # Shift emphasis strongly to throughput/latency; de-emphasize energy for aggregate scoring
+                                               
+                                                                         
+                                                                                                  
         weights = {
             'throughput': 0.35,
             'latency': 0.35,
@@ -240,23 +240,23 @@ class DOCOMOKPITracker:
         """Detect performance anomalies"""
         if not self.anomaly_detection_enabled:
             return
-        # Require warmup and minimum history for stable statistics
+                                                                  
         if (self.session_stats.get('total_measurements', 0) < self.anomaly_warmup_samples or
             len(self.throughput_history) < 30 or len(self.latency_history) < 30):
             return
             
-        # Calculate rolling statistics
+                                      
         recent_throughput = np.array(list(self.throughput_history)[-30:])
         throughput_mean = np.mean(recent_throughput)
         throughput_std = np.std(recent_throughput)
         
-        # Anomaly detection
+                           
         if throughput_std > 1e-9:
             z_score = abs(measurement.throughput_gbps - throughput_mean) / throughput_std
             if z_score > self.anomaly_threshold:
                 self._log_anomaly('throughput', measurement, z_score)
         
-        # Similar detection for latency
+                                       
         recent_latency = np.array(list(self.latency_history)[-30:])
         latency_mean = np.mean(recent_latency)
         latency_std = np.std(recent_latency)
@@ -303,7 +303,7 @@ class DOCOMOKPITracker:
             Current KPI values and statistics
         """
         if not self.measurements:
-            # Return default values when no measurements exist
+                                                              
             return {
                 'timestamp': datetime.now().isoformat(),
                 'current_throughput_gbps': 0.0,
@@ -333,17 +333,17 @@ class DOCOMOKPITracker:
             'current_mobility_kmh': latest.mobility_kmh,
             'current_energy_w': latest.energy_consumption_w,
             
-            # Rolling averages
+                              
             'avg_throughput_gbps': np.mean(self.throughput_history) if self.throughput_history else 0,
             'avg_latency_ms': np.mean(self.latency_history) if self.latency_history else 0,
             'avg_reliability': np.mean(self.reliability_history) if self.reliability_history else 0,
             
-            # Peak values
+                         
             'peak_throughput_gbps': self.session_stats['peak_throughput_gbps'],
             'min_latency_ms': self.session_stats['min_latency_ms'],
             'max_mobility_kmh': self.session_stats['max_mobility_kmh'],
             
-            # Session statistics
+                                
             'total_measurements': self.session_stats['total_measurements'],
             'session_duration_min': (datetime.now() - self.session_stats['start_time']).total_seconds() / 60,
             'handover_count': self.session_stats['handover_count'],
@@ -373,8 +373,8 @@ class DOCOMOKPITracker:
                 compliance[f'{metric}_min'] = 0.0
                 compliance[f'{metric}_max'] = 0.0
         
-        # DOCOMO compliance thresholds
-        # Be robust if config is None/malformed
+                                      
+                                               
         root_cfg = self.config if isinstance(self.config, dict) else {}
         try:
             docomo_threshold = float(root_cfg.get('docomo_6g_system', {}).get('validation', {}).get('kpi_compliance_threshold', 0.95))
@@ -396,7 +396,7 @@ class DOCOMOKPITracker:
         current_kpis = self.get_current_kpis()
         compliance = self.get_compliance_score()
         
-        # Calculate achievement rates
+                                     
         achievement_rates = {}
         if self.throughput_history:
             target_throughput = self.docomo_targets.user_data_rate_gbps
@@ -414,7 +414,7 @@ class DOCOMOKPITracker:
             'overall_compliance_score': compliance.get('overall_current', 0.0),
             'performance_trend': self.performance_trend,
             
-            # Current performance vs DOCOMO targets
+                                                   
             'performance_vs_targets': {
                 'throughput': {
                     'current_gbps': current_kpis.get('current_throughput_gbps', 0),
@@ -432,7 +432,7 @@ class DOCOMOKPITracker:
                 }
             },
             
-            # Session summary
+                             
             'session_summary': {
                 'duration_min': current_kpis.get('session_duration_min', 0),
                 'total_measurements': current_kpis.get('total_measurements', 0),
@@ -441,7 +441,7 @@ class DOCOMOKPITracker:
                 'system_stability': self._calculate_system_stability()
             },
             
-            # Recommendations
+                             
             'recommendations': self._generate_recommendations(compliance, current_kpis)
         }
     
@@ -451,14 +451,14 @@ class DOCOMOKPITracker:
             return 0.0
             
         total_handovers = sum(m.handover_count for m in self.measurements)
-        total_time = len(self.measurements)  # Assuming 1 measurement per time unit
+        total_time = len(self.measurements)                                        
         
         if total_time == 0:
             return 0.0
             
-        # Lower handover rate is better (efficiency)
+                                                    
         handover_rate = total_handovers / total_time
-        efficiency = max(0.0, 1.0 - handover_rate / 10.0)  # Normalize to 0-1
+        efficiency = max(0.0, 1.0 - handover_rate / 10.0)                    
         return efficiency
     
     def _calculate_system_stability(self) -> float:
@@ -466,7 +466,7 @@ class DOCOMOKPITracker:
         if len(self.throughput_history) < 10:
             return 0.0
         
-        # Calculate coefficient of variation for stability
+                                                          
         throughput_std = np.std(self.throughput_history)
         throughput_mean = np.mean(self.throughput_history)
         
@@ -474,34 +474,34 @@ class DOCOMOKPITracker:
             return 0.0
             
         cv = throughput_std / throughput_mean
-        stability = max(0.0, 1.0 - cv)  # Lower CV = higher stability
+        stability = max(0.0, 1.0 - cv)                               
         return stability
     
     def _generate_recommendations(self, compliance: Dict[str, float], kpis: Dict[str, Any]) -> List[str]:
         """Generate performance improvement recommendations"""
         recommendations = []
         
-        # Throughput recommendations
+                                    
         if compliance.get('throughput_current', 0) < 0.8:
             recommendations.append("Consider using higher frequency bands (sub-THz) for increased throughput")
             recommendations.append("Optimize OAM mode selection for current distance and conditions")
         
-        # Latency recommendations  
+                                   
         if compliance.get('latency_current', 0) < 0.8:
             recommendations.append("Enable predictive handover to reduce switching latency")
             recommendations.append("Optimize beam tracking algorithms for faster response")
         
-        # Mobility recommendations
+                                  
         if kpis.get('max_mobility_kmh', 0) < self.docomo_targets.mobility_kmh * 0.8:
             recommendations.append("Enhance mobility prediction algorithms")
             recommendations.append("Implement advanced Doppler compensation")
         
-        # Overall performance
+                             
         if compliance.get('overall_current', 0) < 0.9:
             recommendations.append("Enable multi-objective optimization with DOCOMO priorities")
             recommendations.append("Consider adaptive frequency band selection")
         
-        # Stability improvements
+                                
         if self._calculate_system_stability() < 0.8:
             recommendations.append("Implement more aggressive handover penalties for stability")
             recommendations.append("Enable atmospheric condition prediction")

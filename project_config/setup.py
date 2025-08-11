@@ -9,11 +9,11 @@ with intelligent handover optimization using Deep Q-Networks.
 from setuptools import setup, find_packages
 from pathlib import Path
 
-# Read the README file
+                      
 this_directory = Path(__file__).parent
 long_description = (this_directory / "docs" / "README.md").read_text()
 
-# Read requirements
+                   
 requirements = (this_directory / "config" / "requirements.txt").read_text().splitlines()
 
 setup(

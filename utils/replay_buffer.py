@@ -4,7 +4,7 @@ from collections import deque
 import random
 from typing import Tuple, List, Dict, Any, Optional, TYPE_CHECKING
 
-# Avoid circular import at runtime: only import interface for type checking
+                                                                           
 if TYPE_CHECKING:
     from models.replay_buffer_interface import ReplayBufferInterface
 
@@ -59,13 +59,13 @@ class ReplayBuffer:
         if batch_size > len(self.buffer):
             batch_size = len(self.buffer)
             
-        # Sample random indices
+                               
         indices = np.random.choice(len(self.buffer), batch_size, replace=False)
         
-        # Get the sampled transitions
+                                     
         states, actions, rewards, next_states, dones = zip(*[self.buffer[i] for i in indices])
         
-        # Convert to torch tensors
+                                  
         states = torch.FloatTensor(np.array(states)).to(self.device)
         actions = torch.LongTensor(np.array(actions)).to(self.device)
         rewards = torch.FloatTensor(np.array(rewards)).to(self.device)

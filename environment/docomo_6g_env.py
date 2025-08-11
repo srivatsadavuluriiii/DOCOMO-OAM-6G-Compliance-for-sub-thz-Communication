@@ -15,12 +15,12 @@ from dataclasses import dataclass
 from collections import deque
 import warnings
 
-# Import DOCOMO components
+                          
 from .docomo_kpi_tracker import DOCOMOKPITracker, PerformanceMeasurement, DOCOMOKPIs
 from .docomo_atmospheric_models import DOCOMOAtmosphericModels, AtmosphericParameters, AtmosphericCondition
 from .ultra_high_mobility import UltraHighMobilityModel, MobilityState, BeamTrackingState
 
-# Add path for multi_objective_reward
+                                     
 import sys
 import os
 current_dir = os.path.dirname(os.path.abspath(__file__))
@@ -28,14 +28,14 @@ project_root = os.path.join(current_dir, '..', '..')
 models_dir = os.path.join(project_root, 'models', 'docomo_6g')
 sys.path.insert(0, project_root)
 
-# Import models with proper path handling (flat location)
+                                                         
 try:
     from models.multi_objective_reward import MultiObjectiveReward
 except ImportError:
-    # As a last resort, try local relative import
-    from ..models.multi_objective_reward import MultiObjectiveReward  # type: ignore
+                                                 
+    from ..models.multi_objective_reward import MultiObjectiveReward                
 
-# Import existing physics models (enhanced)
+                                           
 sys.path.append(os.path.join(os.path.dirname(__file__), '..', '..'))
 from simulator.channel_simulator import ChannelSimulator
 from environment.physics_calculator import PhysicsCalculator
@@ -167,7 +167,7 @@ class DOCOMO_6G_Environment(gym.Env):
         """
         super().__init__()
         
-        # Load configuration
+                            
         if config is not None:
             self.config = config
         elif config_path is not None:
@@ -184,12 +184,12 @@ class DOCOMO_6G_Environment(gym.Env):
         self.high_freq_start_prob = float(rl_training_cfg.get('high_freq_start_prob', 0.4))
         self.optimal_start_band = bool(rl_training_cfg.get('optimal_start_band', False))
         
-        # Initialize frequency bands FIRST (allow config overrides)
+                                                                   
         self.frequency_bands = dict(DOCOMOFrequencyBands.BANDS)
         cfg_bands = self.docomo_config.get('frequency_bands', {})
         if isinstance(cfg_bands, dict) and cfg_bands:
             for band_name, band_cfg in cfg_bands.items():
-                # Merge/override known bands; allow adding new ones if provided
+                                                                               
                 if band_name in self.frequency_bands:
                     for key in [
                         'frequency', 'bandwidth', 'max_range_km',
@@ -199,19 +199,19 @@ class DOCOMO_6G_Environment(gym.Env):
                         if key in band_cfg:
                             self.frequency_bands[band_name][key] = band_cfg[key]
                 else:
-                    # Accept additional bands from config verbatim
+                                                                  
                     self.frequency_bands[band_name] = band_cfg
-        # Preserve intended order if possible
+                                             
         self.band_names = list(self.frequency_bands.keys())
         
-        # Initialize DOCOMO components
+                                      
         self.kpi_tracker = DOCOMOKPITracker(self.config)
         self.atmospheric_models = DOCOMOAtmosphericModels()
         self.mobility_model = UltraHighMobilityModel(self.config)
         self.multi_objective_reward = MultiObjectiveReward(self.config)
         
-        # Initialize physics components (enhanced with config)
-        # Defer exact band settings to _apply_band_to_simulator
+                                                              
+                                                               
         channel_config = {
             'oam': {
                 'min_mode': 1,
@@ -228,59 +228,59 @@ class DOCOMO_6G_Environment(gym.Env):
         )
         self.channel_simulator = ChannelSimulator(config=channel_config)
         
-        # Action and observation spaces
+                                       
         self.action_space = spaces.Discrete(8)
         
-        # Enhanced state space (20 dimensions)
+                                              
         self.observation_space = spaces.Box(
-            low=np.array([-30.0, 0.0, 0.0, 1.0, -139.0, -139.0, -139.0,  # SINR, throughput, latency, distance, velocities
-                         0, 1, -1000.0, 0.0, 0.0, 0.0, -50.0,  # band, mode, doppler, atm_loss, energy, reliability, interference
-                         0.0, 0.0, 0, -100.0, 0.0, 0.0]),      # pred_conf, beam_error, conn_count, mobility_pred, weather, traffic
-            high=np.array([50.0, 2000.0, 10.0, 10000.0, 139.0, 139.0, 139.0,  # Upper bounds
+            low=np.array([-30.0, 0.0, 0.0, 1.0, -139.0, -139.0, -139.0,                                                   
+                         0, 1, -1000.0, 0.0, 0.0, 0.0, -50.0,                                                                    
+                         0.0, 0.0, 0, -100.0, 0.0, 0.0]),                                                                          
+            high=np.array([50.0, 2000.0, 10.0, 10000.0, 139.0, 139.0, 139.0,                
                           8, 8, 1000.0, 50.0, 100.0, 1.0, 50.0,
                           1.0, 10.0, 1000000, 100.0, 1.0, 2000.0]),
             dtype=np.float32
         )
         
-        # Environment state
-        self.current_band = 'mmwave_28'  # Start with 28 GHz
+                           
+        self.current_band = 'mmwave_28'                     
         self.current_oam_mode = 1
-        self.base_station_position = (0.0, 0.0, 30.0)  # 30m height
+        self.base_station_position = (0.0, 0.0, 30.0)              
         
-        # Beam tracking and alignment parameters
-        self.beam_alignment_error_deg = np.random.uniform(0.1, 2.0)  # Initial alignment error
+                                                
+        self.beam_alignment_error_deg = np.random.uniform(0.1, 2.0)                           
         self.beam_tracking_enabled = False
-        self.prediction_confidence = 0.5  # Initial prediction confidence
+        self.prediction_confidence = 0.5                                 
         
-        # Performance tracking
+                              
         self.step_count = 0
         self.episode_count = 0
         self.max_steps = self.config.get('simulation', {}).get('max_steps_per_episode', 2000)
-        # Band switch gating (TTT + min interval) to stabilize selection
+                                                                        
         self.min_band_switch_interval = int(self.docomo_config.get('band_switch_optimization', {}).get('min_interval_steps', 12))
         self.band_time_to_trigger_steps = int(self.docomo_config.get('band_switch_optimization', {}).get('time_to_trigger_steps', 8))
         self.band_sinr_hysteresis_db = float(self.docomo_config.get('band_switch_optimization', {}).get('sinr_hysteresis_db', 2.0))
         self.band_switch_min_gain_gbps = float(self.docomo_config.get('band_switch_optimization', {}).get('min_gain_gbps', 5.0))
         self.min_band_dwell_steps = int(self.docomo_config.get('band_switch_optimization', {}).get('min_dwell_steps', 0))
-        self._pending_band_dir: Optional[int] = None  # +1 up, -1 down
+        self._pending_band_dir: Optional[int] = None                  
         self._pending_band_counter: int = 0
         self._last_band_switch_step: int = -9999
         self._band_stickiness_steps: int = 0
         self._band_stickiness_window: int = int(self.docomo_config.get('band_switch_optimization', {}).get('stickiness_window', 20))
         self._band_stickiness_bonus: float = float(self.docomo_config.get('band_switch_optimization', {}).get('stickiness_bonus', 0.1))
         self._early_exemption_steps: int = int(self.docomo_config.get('band_switch_optimization', {}).get('early_exemption_steps', 0))
-        self._early_exemption_remaining: int = 999999 if self._early_exemption_steps <= 0 else 3  # allow up to 3 early upgrades
+        self._early_exemption_remaining: int = 999999 if self._early_exemption_steps <= 0 else 3                                
         
-        # State history for stability calculations
+                                                  
         self.state_history = deque(maxlen=100)
         self.throughput_history = deque(maxlen=50)
         self.handover_history = deque(maxlen=20)
         
-        # Atmospheric conditions
+                                
         self.atmospheric_params = AtmosphericParameters()
         self._update_atmospheric_conditions()
         
-        # Statistics
+                    
         self.episode_stats = {
             'total_reward': 0.0,
             'peak_throughput_gbps': 0.0,
@@ -289,7 +289,7 @@ class DOCOMO_6G_Environment(gym.Env):
             'compliance_score': 0.0
         }
         
-        # Apply initial band settings to simulator/physics
+                                                          
         self._apply_band_to_simulator()
 
         print(f" DOCOMO 6G Environment initialized")
@@ -306,7 +306,7 @@ class DOCOMO_6G_Environment(gym.Env):
         """
         super().reset(seed=seed)
         
-        # Reset counters
+                        
         self.step_count = 0
         self.episode_count += 1
         self._pending_band_dir = None
@@ -314,18 +314,18 @@ class DOCOMO_6G_Environment(gym.Env):
         self._last_band_switch_step = -9999
         self._band_stickiness_steps = 0
         
-        # Reset beam tracking parameters
+                                        
         self.beam_alignment_error_deg = np.random.uniform(0.1, 2.0)
         self.beam_tracking_enabled = False
         self.prediction_confidence = 0.5
 
-        # Choose initial position/velocity first (needed for throughput-aware band selection)
-        initial_distance = np.random.uniform(10.0, 200.0)  # 10m to 200m
+                                                                                             
+        initial_distance = np.random.uniform(10.0, 200.0)               
         initial_angle = np.random.uniform(0, 2*np.pi)
         initial_position = (
             initial_distance * np.cos(initial_angle),
             initial_distance * np.sin(initial_angle),
-            1.5  # User height
+            1.5               
         )
         initial_speed_kmh = np.random.uniform(0.0, 120.0)
         initial_speed_ms = initial_speed_kmh / 3.6
@@ -335,23 +335,23 @@ class DOCOMO_6G_Environment(gym.Env):
             initial_speed_ms * np.sin(velocity_angle),
             0.0
         )
-        # Update mobility model with initial state so _estimate_throughput_for_band uses it
+                                                                                           
         self.mobility_model.update_mobility_state(
             position=initial_position,
             velocity=initial_velocity,
             timestamp=time.time()
         )
 
-        # Select starting band
+                              
         start_rand = np.random.random()
         if self.optimal_start_band:
-            # Throughput-aware selection with conservative constraints
+                                                                      
             start_pos = np.array(initial_position, dtype=float)
             distance_km = float(np.linalg.norm(start_pos)) / 1000.0
             per_band_tp = {}
             for b in self.band_names:
                 try:
-                    # Respect nominal max range for safety
+                                                          
                     max_range_km = float(self.frequency_bands[b].get('max_range_km', 0.0))
                     if max_range_km and distance_km > max_range_km:
                         per_band_tp[b] = 0.0
@@ -359,24 +359,24 @@ class DOCOMO_6G_Environment(gym.Env):
                     per_band_tp[b] = self._estimate_throughput_for_band(b)
                 except Exception:
                     per_band_tp[b] = 0.0
-            # Filter candidates: prefer sub-THz bands with tp >= 100 Gbps; allow THz only if tp >= 150 Gbps
+                                                                                                           
             sub_thz = ['sub_thz_100', 'sub_thz_140', 'sub_thz_220', 'sub_thz_300']
             candidates = [b for b in sub_thz if per_band_tp.get(b, 0.0) >= 100.0]
-            # Fallbacks: best sub-THz, then best overall
+                                                        
             chosen = None
             if candidates:
                 chosen = max(candidates, key=lambda b: per_band_tp.get(b, 0.0))
             else:
-                # Best sub-THz regardless of threshold
+                                                      
                 best_sub = max(sub_thz, key=lambda b: per_band_tp.get(b, 0.0))
                 if per_band_tp.get(best_sub, 0.0) > 0.0:
                     chosen = best_sub
                 else:
-                    # Best overall across all bands
+                                                   
                     chosen = max(self.band_names, key=lambda b: per_band_tp.get(b, 0.0))
             self.current_band = chosen if chosen else 'mmwave_28'
         else:
-            # Start on high-frequency bands with configurable probability
+                                                                         
             if start_rand < self.high_freq_start_prob:
                 high_freq_bands = ['sub_thz_100', 'sub_thz_140', 'sub_thz_220', 'sub_thz_300', 'thz_600']
                 band_weights = [0.4, 0.3, 0.15, 0.1, 0.05]
@@ -385,7 +385,7 @@ class DOCOMO_6G_Environment(gym.Env):
                 standard_bands = ['mmwave_28', 'mmwave_39', 'mmwave_60']
                 self.current_band = np.random.choice(standard_bands)
 
-        # Set appropriate OAM mode for selected band (favor higher modes within range)
+                                                                                      
         available_modes = self.frequency_bands[self.current_band]['oam_modes']
         try:
             min_mode = int(min(available_modes))
@@ -396,18 +396,18 @@ class DOCOMO_6G_Environment(gym.Env):
         except Exception:
             self.current_oam_mode = available_modes[-1] if isinstance(available_modes, list) and available_modes else 1
 
-        # Apply band settings to simulator/physics for the new band
+                                                                   
         self._apply_band_to_simulator()
         
-        # Reset atmospheric conditions
+                                      
         self._update_atmospheric_conditions()
         
-        # Clear history
+                       
         self.state_history.clear()
         self.throughput_history.clear()
         self.handover_history.clear()
         
-        # Reset episode statistics
+                                  
         self.episode_stats = {
             'total_reward': 0.0,
             'peak_throughput_gbps': 0.0,
@@ -416,10 +416,10 @@ class DOCOMO_6G_Environment(gym.Env):
             'compliance_score': 0.0
         }
         
-        # Get initial observation
+                                 
         observation = self._get_observation()
         
-        # Initial info
+                      
         info = {
             'episode': self.episode_count,
             'docomo_compliance': True,
@@ -442,19 +442,19 @@ class DOCOMO_6G_Environment(gym.Env):
         """
         self.step_count += 1
         
-        # Execute action
+                        
         action_info = self._execute_action(action)
         
-        # Update mobility (simulate time progression)
+                                                     
         self._update_mobility()
         
-        # Update atmospheric conditions
+                                       
         self._update_atmospheric_conditions()
         
-        # Calculate system performance
+                                      
         performance_metrics = self._calculate_performance()
         
-        # Create performance measurement for KPI tracker
+                                                        
         from datetime import datetime
         measurement = PerformanceMeasurement(
             timestamp=datetime.now(),
@@ -473,13 +473,13 @@ class DOCOMO_6G_Environment(gym.Env):
             atmospheric_loss_db=performance_metrics['atmospheric_loss_db']
         )
         
-        # Update KPI tracker
+                            
         compliance_scores = self.kpi_tracker.update(measurement)
         
-        # Calculate multi-objective reward
+                                          
         next_observation = self._get_observation()
         
-        # Prepare info for reward calculation
+                                             
         reward_info = {
             **performance_metrics,
             **action_info,
@@ -490,7 +490,7 @@ class DOCOMO_6G_Environment(gym.Env):
             'current_oam_mode': self.current_oam_mode
         }
         
-        # Calculate reward using current and next state
+                                                       
         current_state = self.state_history[-1] if self.state_history else np.zeros(20)
         reward, reward_breakdown = self.multi_objective_reward.calculate(
             state=current_state,
@@ -499,17 +499,17 @@ class DOCOMO_6G_Environment(gym.Env):
             info=reward_info
         )
         
-        # Update episode statistics
+                                   
         self._update_episode_stats(performance_metrics, reward, compliance_scores)
         
-        # Store state in history
+                                
         self.state_history.append(next_observation.copy())
         self.throughput_history.append(performance_metrics['throughput_gbps'])
         
-        # Check termination conditions
+                                      
         terminated, truncated = self._check_termination(performance_metrics)
         
-        # Comprehensive info dictionary
+                                       
         info = {
             'step': self.step_count,
             'episode': self.episode_count,
@@ -542,46 +542,46 @@ class DOCOMO_6G_Environment(gym.Env):
         prev_mode = self.current_oam_mode
         prev_band = self.current_band
         
-        if action == 0:  # STAY
-            pass  # No changes
+        if action == 0:        
+            pass              
             
-        elif action == 1:  # OAM_UP
+        elif action == 1:          
             if self.current_oam_mode < 8:
                 available_modes = self.frequency_bands[self.current_band]['oam_modes']
                 if self.current_oam_mode + 1 <= max(available_modes):
                     self.current_oam_mode += 1
                     action_info['mode_changed'] = True
                     
-        elif action == 2:  # OAM_DOWN
+        elif action == 2:            
             if self.current_oam_mode > 1:
                 available_modes = self.frequency_bands[self.current_band]['oam_modes']
                 if self.current_oam_mode - 1 >= min(available_modes):
                     self.current_oam_mode -= 1
                     action_info['mode_changed'] = True
                     
-        elif action == 3:  # BAND_UP - Enhanced for higher frequency band encouragement (with TTT)
+        elif action == 3:                                                                         
             current_band_idx = self.band_names.index(self.current_band)
             if current_band_idx < len(self.band_names) - 1:
                 new_band = self.band_names[current_band_idx + 1]
-                # Disallow early exemption to thz_600 to avoid low-average starts
+                                                                                 
                 if new_band == 'thz_600':
                     action_info['ignored_band_switch'] = True
                     return action_info
-                # Early-phase one-time exemption to speed initial upgrade
+                                                                         
                 early_exempt = False
                 if (self._early_exemption_steps > 0 and self._early_exemption_remaining > 0 and self.step_count <= self._early_exemption_steps):
-                    # Check estimated gain condition for exemption
+                                                                  
                     current_tp = self._estimate_throughput_for_band(self.current_band)
                     candidate_tp = self._estimate_throughput_for_band(new_band)
                     if candidate_tp - current_tp >= self.band_switch_min_gain_gbps:
                         early_exempt = True
                         self._early_exemption_remaining -= 1
-                # Enforce min interval and dwell if not early exempt
+                                                                    
                 if not early_exempt:
                     if (self.step_count - self._last_band_switch_step) < max(self.min_band_switch_interval, self.min_band_dwell_steps):
                         action_info['ignored_band_switch'] = True
                         return action_info
-                # TTT: require consecutive UP requests
+                                                      
                 if self._pending_band_dir == +1:
                     self._pending_band_counter += 1
                 else:
@@ -590,31 +590,31 @@ class DOCOMO_6G_Environment(gym.Env):
                 if not early_exempt and self._pending_band_counter < self.band_time_to_trigger_steps:
                     action_info['pending_band_switch'] = True
                     return action_info
-                # Throughput hysteresis: require minimum expected gain
+                                                                      
                 current_tp = self._estimate_throughput_for_band(self.current_band)
                 candidate_tp = self._estimate_throughput_for_band(new_band)
                 if candidate_tp - current_tp < self.band_switch_min_gain_gbps:
                     action_info['insufficient_tp_gain'] = candidate_tp - current_tp
                     return action_info
-                # Check if current distance is within new band range
+                                                                    
                 distance_km = self.mobility_model.current_state.position_x**2 + self.mobility_model.current_state.position_y**2
                 distance_km = np.sqrt(distance_km) / 1000.0
                 
-                # Enhanced range check for Sub-THz and THz bands - more lenient for high throughput
+                                                                                                   
                 max_range = self.frequency_bands[new_band]['max_range_km']
                 if new_band in ['sub_thz_100', 'sub_thz_140', 'sub_thz_220', 'sub_thz_300', 'thz_600']:
-                    # Extend range significantly for high-frequency bands to encourage usage
-                    max_range *= 3.0  # 3x range extension during training
-                    # Add distance-based SINR bonus to compensate for range extension
+                                                                                            
+                    max_range *= 3.0                                      
+                                                                                     
                     distance_factor = min(distance_km / (max_range / 3.0), 1.0)
                     action_info['distance_compensation'] = (1.0 - distance_factor) * 2.0
                 
                 if distance_km <= max_range:
                     self.current_band = new_band
-                    # Choose optimal OAM mode for new band (higher modes for better throughput)
+                                                                                               
                     available_modes = self.frequency_bands[new_band]['oam_modes']
-                    # Favor higher OAM modes for better spectral efficiency
-                    # Choose a valid mode within band's bounds and favor higher modes
+                                                                           
+                                                                                     
                     try:
                         min_mode = int(min(available_modes))
                         max_mode = int(max(available_modes))
@@ -623,7 +623,7 @@ class DOCOMO_6G_Environment(gym.Env):
                             self.current_oam_mode = int(np.random.choice(favored))
                         else:
                             self.current_oam_mode = max_mode
-                        # Clamp for safety
+                                          
                         self.current_oam_mode = max(min_mode, min(max_mode, int(self.current_oam_mode)))
                     except Exception:
                         self.current_oam_mode = available_modes[-1] if isinstance(available_modes, list) and available_modes else 1
@@ -635,33 +635,33 @@ class DOCOMO_6G_Environment(gym.Env):
                     self._pending_band_counter = 0
                     self._band_stickiness_steps = 0
 
-                    # Reconfigure simulator/physics for the new band
+                                                                    
                     self._apply_band_to_simulator()
                     
-                    # Enhanced bonus for switching to higher frequency bands
+                                                                            
                     try:
                         freq_val = self.frequency_bands[new_band].get('frequency', 28.0e9)
                         freq_ghz = float(freq_val) / 1e9
                     except Exception:
                         freq_ghz = 28.0
-                    if freq_ghz >= 300:  # THz bands
+                    if freq_ghz >= 300:             
                         action_info['high_freq_bonus'] = 5.0
-                    elif freq_ghz >= 140:  # High Sub-THz
+                    elif freq_ghz >= 140:                
                         action_info['high_freq_bonus'] = 3.0  
-                    elif freq_ghz >= 100:  # DOCOMO compliance band
+                    elif freq_ghz >= 100:                          
                         action_info['high_freq_bonus'] = 2.0
                     else:
                         action_info['high_freq_bonus'] = 1.0
                     
-        elif action == 4:  # BAND_DOWN (with TTT)
+        elif action == 4:                        
             current_band_idx = self.band_names.index(self.current_band)
             if current_band_idx > 0:
                 new_band = self.band_names[current_band_idx - 1]
-                # Enforce min interval (no early exemption for down)
+                                                                    
                 if (self.step_count - self._last_band_switch_step) < self.min_band_switch_interval:
                     action_info['ignored_band_switch'] = True
                     return action_info
-                # TTT: require consecutive DOWN requests
+                                                        
                 if self._pending_band_dir == -1:
                     self._pending_band_counter += 1
                 else:
@@ -670,15 +670,15 @@ class DOCOMO_6G_Environment(gym.Env):
                 if self._pending_band_counter < self.band_time_to_trigger_steps:
                     action_info['pending_band_switch'] = True
                     return action_info
-                # Throughput hysteresis for down-switch too (allow if big loss avoided)
+                                                                                       
                 current_tp = self._estimate_throughput_for_band(self.current_band)
                 candidate_tp = self._estimate_throughput_for_band(new_band)
-                # Only allow down-switch if candidate isn't much worse, or current TP is very low
+                                                                                                 
                 if current_tp > 5.0 and (current_tp - candidate_tp) > (self.band_switch_min_gain_gbps / 2.0):
                     action_info['downswitch_avoided_due_tp_loss'] = current_tp - candidate_tp
                     return action_info
                 self.current_band = new_band
-                # Adjust OAM mode to available modes in new band (clamp)
+                                                                        
                 available_modes = self.frequency_bands[new_band]['oam_modes']
                 try:
                     min_mode = int(min(available_modes))
@@ -696,57 +696,57 @@ class DOCOMO_6G_Environment(gym.Env):
                 self._pending_band_counter = 0
                 self._band_stickiness_steps = 0
 
-                # Reconfigure simulator/physics for the new band
+                                                                
                 self._apply_band_to_simulator()
                 
-        elif action == 5:  # BEAM_TRACK - Enhanced SINR optimization
-            # Enable predictive beam tracking with improved alignment
+        elif action == 5:                                           
+                                                                     
             action_info['beam_tracking_enabled'] = True
-            # Improve beam alignment accuracy by 20%
+                                                    
             self.beam_alignment_error_deg *= 0.8
-            # Add SINR improvement bonus
+                                        
             action_info['beam_optimization_bonus'] = 1.5
             
-        elif action == 6:  # PREDICT - Enhanced mobility prediction
-            # Enable mobility prediction with beam optimization
+        elif action == 6:                                          
+                                                               
             self.mobility_model.beam_prediction_enabled = True
-            # Pre-align beams based on predicted movement
+                                                         
             velocity_vector = np.array([
                 self.mobility_model.current_state.velocity_x,
                 self.mobility_model.current_state.velocity_y,
                 self.mobility_model.current_state.velocity_z
             ])
-            # Proactive beam alignment reduces future alignment errors
-            prediction_accuracy = np.exp(-np.linalg.norm(velocity_vector) / 50.0)  # Better at low speeds
+                                                                      
+            prediction_accuracy = np.exp(-np.linalg.norm(velocity_vector) / 50.0)                        
             self.beam_alignment_error_deg *= (1.0 - 0.3 * prediction_accuracy)
             action_info['prediction_bonus'] = prediction_accuracy
             
-        elif action == 7:  # HANDOVER
-            # Initiate intelligent handover based on mobility prediction
+        elif action == 7:            
+                                                                        
             handover_decision = self.mobility_model.should_trigger_handover(
                 current_bs_position=self.base_station_position,
-                candidate_bs_positions=[(100.0, 100.0, 30.0), (-100.0, -100.0, 30.0)],  # Mock candidates
+                candidate_bs_positions=[(100.0, 100.0, 30.0), (-100.0, -100.0, 30.0)],                   
                 prediction_time_ms=50.0
             )
             
             if handover_decision['should_handover']:
                 action_info['handover_occurred'] = True
-                action_info['handover_successful'] = np.random.random() > 0.05  # 95% success rate
+                action_info['handover_successful'] = np.random.random() > 0.05                    
                 self.handover_history.append({
                     'step': self.step_count,
                     'successful': action_info['handover_successful'],
                     'benefit': handover_decision['handover_benefit']
                 })
         
-        # Update handover count
+                               
         if action_info['handover_occurred']:
             self.episode_stats['handover_count'] += 1
         else:
-            # Stickiness: reward remaining on the same band for stability
+                                                                         
             self._band_stickiness_steps += 1
             if self._band_stickiness_steps >= self._band_stickiness_window:
                 action_info['band_stickiness_bonus'] = self._band_stickiness_bonus
-                # throttle bonus frequency
+                                          
                 self._band_stickiness_steps = 0
         
         return action_info
@@ -758,15 +758,15 @@ class DOCOMO_6G_Environment(gym.Env):
         then restores current band's configuration. Safe and lightweight for single-step estimates.
         """
         try:
-            # Save current band
+                               
             prev_band = self.current_band
-            # Apply candidate band
+                                  
             self.current_band = band_name
             self._apply_band_to_simulator()
-            # Probe SINR at current position
+                                            
             cs = self.mobility_model.current_state
             pos = np.array([cs.position_x, cs.position_y, cs.position_z], dtype=float)
-            # Clamp OAM mode to candidate band's allowed range
+                                                              
             try:
                 oam_modes = self.frequency_bands[self.current_band].get('oam_modes', [1, 8])
                 if isinstance(oam_modes, list) and oam_modes:
@@ -784,19 +784,19 @@ class DOCOMO_6G_Environment(gym.Env):
             try:
                 _, sinr_db = self.channel_simulator.run_step(pos, cand_mode)
             except Exception:
-                # Restore band before returning
+                                               
                 self.current_band = prev_band
                 self._apply_band_to_simulator()
                 return 0.0
             tp_bps = self.physics_calculator.calculate_throughput(sinr_db) * 0.95
-            # Restore previous band and its simulator config (including OAM bounds)
+                                                                                   
             self.current_band = prev_band
             self._apply_band_to_simulator()
             return float(tp_bps / 1e9)
         except Exception:
-            # Best-effort restore of band on any unexpected error
+                                                                 
             try:
-                self.current_band = prev_band  # may be undefined if error very early
+                self.current_band = prev_band                                        
                 self._apply_band_to_simulator()
             except Exception:
                 pass
@@ -804,46 +804,46 @@ class DOCOMO_6G_Environment(gym.Env):
     
     def _update_mobility(self):
         """Update mobility state (simulate movement)"""
-        # Simple mobility simulation - could be enhanced
+                                                        
         current_state = self.mobility_model.current_state
         
-        # Add some randomness to acceleration (wind, driver behavior, etc.)
-        accel_noise = np.random.normal(0, 0.5, 3)  # m/s² noise
+                                                                           
+        accel_noise = np.random.normal(0, 0.5, 3)              
         
-        # Update acceleration with noise and limits
+                                                   
         new_accel = np.array([
             current_state.acceleration_x + accel_noise[0],
             current_state.acceleration_y + accel_noise[1], 
             current_state.acceleration_z + accel_noise[2]
         ])
         
-        # Limit acceleration magnitude
+                                      
         accel_mag = np.linalg.norm(new_accel)
         if accel_mag > self.mobility_model.max_acceleration_ms2:
             new_accel = new_accel / accel_mag * self.mobility_model.max_acceleration_ms2
         
-        # Update velocity with acceleration
-        dt = 0.1  # 100ms time step
+                                           
+        dt = 0.1                   
         new_velocity = np.array([
             current_state.velocity_x + new_accel[0] * dt,
             current_state.velocity_y + new_accel[1] * dt,
             current_state.velocity_z + new_accel[2] * dt
         ])
         
-        # Limit speed
+                     
         speed = np.linalg.norm(new_velocity)
         max_speed_ms = self.mobility_model.max_speed_kmh / 3.6
         if speed > max_speed_ms:
             new_velocity = new_velocity / speed * max_speed_ms
         
-        # Update position
+                         
         new_position = np.array([
             current_state.position_x + new_velocity[0] * dt,
             current_state.position_y + new_velocity[1] * dt,
             current_state.position_z + new_velocity[2] * dt
         ])
         
-        # Update mobility model
+                               
         self.mobility_model.update_mobility_state(
             position=tuple(new_position),
             velocity=tuple(new_velocity),
@@ -852,17 +852,17 @@ class DOCOMO_6G_Environment(gym.Env):
     
     def _update_atmospheric_conditions(self):
         """Update atmospheric conditions (could be weather-based)"""
-        # Simple atmospheric condition simulation
-        # In real implementation, this would use weather data
+                                                 
+                                                             
         
-        # Randomly vary conditions slightly
+                                           
         self.atmospheric_params.temperature_c += np.random.normal(0, 0.1)
         self.atmospheric_params.humidity_percent = np.clip(
             self.atmospheric_params.humidity_percent + np.random.normal(0, 1), 0, 100
         )
         
-        # Occasional weather changes
-        if np.random.random() < 0.01:  # 1% chance per step
+                                    
+        if np.random.random() < 0.01:                      
             conditions = list(AtmosphericCondition)
             self.atmospheric_params.condition = np.random.choice(conditions)
             
@@ -877,37 +877,37 @@ class DOCOMO_6G_Environment(gym.Env):
     
     def _calculate_performance(self) -> Dict[str, float]:
         """Calculate comprehensive system performance metrics"""
-        # Current system state
+                              
         current_state = self.mobility_model.current_state
         distance_m = np.sqrt(current_state.position_x**2 + current_state.position_y**2)
 
-        # Current band specifications
+                                     
         band_spec = self.frequency_bands[self.current_band]
         frequency_hz = float(band_spec['frequency'])
         frequency_ghz = frequency_hz / 1e9
         bandwidth_hz = float(band_spec['bandwidth'])
 
-        # Atmospheric losses (for reporting/bonus only; SINR comes from simulator)
+                                                                                  
         atmospheric_losses = self.atmospheric_models.calculate_total_atmospheric_loss(
             frequency_ghz=frequency_ghz,
             distance_km=distance_m / 1000.0,
             params=self.atmospheric_params
         )
 
-        # Beam misalignment estimate and prediction stats
+                                                         
         beam_angles = self.mobility_model.predict_beam_angles(
             base_station_position=self.base_station_position,
             prediction_time_ms=10.0
         )
         beam_alignment_error_deg = beam_angles['tracking_error_deg']
 
-        # Use channel simulator for SINR with all physical effects
+                                                                  
         user_position = np.array([
             current_state.position_x,
             current_state.position_y,
             current_state.position_z,
         ], dtype=float)
-        # Ensure current OAM mode is valid for this band's allowed modes
+                                                                        
         try:
             oam_modes = self.frequency_bands[self.current_band].get('oam_modes', [1, 8])
             if isinstance(oam_modes, list) and oam_modes:
@@ -919,7 +919,7 @@ class DOCOMO_6G_Environment(gym.Env):
                     self.current_oam_mode = max_mode
         except Exception:
             pass
-        # Ensure OAM mode is clamped before simulator call
+                                                          
         try:
             oam_modes = self.frequency_bands[self.current_band].get('oam_modes', [1, 8])
             if isinstance(oam_modes, list) and oam_modes:
@@ -933,40 +933,40 @@ class DOCOMO_6G_Environment(gym.Env):
             pass
         _, sinr_db = self.channel_simulator.run_step(user_position, int(self.current_oam_mode))
 
-        # Throughput via physics calculator (band-specific bandwidth applied in _apply_band_to_simulator)
+                                                                                                         
         throughput_bps = self.physics_calculator.calculate_throughput(sinr_db)
-        # Use near-ideal implementation efficiency to target KPI throughput
+                                                                           
         throughput_bps *= 0.95
         throughput_gbps = throughput_bps / 1e9
 
-        # Calculate latency (distance + processing + switching delays)
-        propagation_latency_ms = (distance_m / 3e8) * 1000  # Speed of light
-        # Reduced base processing and per-mode increment to favor sub-0.1ms target
+                                                                      
+        propagation_latency_ms = (distance_m / 3e8) * 1000                  
+                                                                                  
         processing_latency_ms = 0.03 + (self.current_oam_mode - 1) * 0.005
-        # Beam tracking and prediction reduce processing overhead
+                                                                 
         if self.beam_tracking_enabled:
             processing_latency_ms *= 0.9
         if getattr(self.mobility_model, 'beam_prediction_enabled', False):
             processing_latency_ms *= 0.9
-        # Apply switching latency only on the exact switch step
+                                                               
         switching_latency_ms = 0.0
         if self.step_count == self._last_band_switch_step:
             switching_latency_ms = 0.01
         total_latency_ms = propagation_latency_ms + processing_latency_ms + switching_latency_ms
 
-        # Doppler shift for reporting
+                                     
         doppler_info = self.mobility_model.calculate_doppler_shift(
             frequency_ghz=frequency_ghz,
             base_station_position=self.base_station_position
         )
 
-        # Energy consumption model (tuned to improve energy compliance while remaining plausible)
+                                                                                                 
         base_energy_w = 0.5
         frequency_energy_w = frequency_ghz / 300.0
         oam_energy_w = self.current_oam_mode * 0.05
         mobility_energy_w = current_state.speed_kmh / 500.0 * 0.5
         total_energy_w = base_energy_w + frequency_energy_w + oam_energy_w + mobility_energy_w
-        # Efficiency gains from stability and optimal operation
+                                                               
         if self._is_link_stable():
             total_energy_w *= 0.9
         if self._is_using_optimal_band(distance_m):
@@ -975,7 +975,7 @@ class DOCOMO_6G_Environment(gym.Env):
             total_energy_w *= 0.95
         total_energy_w = max(total_energy_w, 0.1)
 
-        # Reliability score (based on SINR and stability)
+                                                         
         if sinr_db > 20:
             reliability_score = 0.9999999
         elif sinr_db > 10:
@@ -984,14 +984,14 @@ class DOCOMO_6G_Environment(gym.Env):
             reliability_score = 0.99999
         else:
             reliability_score = 0.999
-        # Ensure reliability aligns with target when SINR is strong
-        # Remove negligible mobility penalty to avoid eroding compliance
+                                                                   
+                                                                        
         reliability_score = max(0.0, reliability_score)
 
-        # For info only: free-space path loss from physics calculator
+                                                                     
         path_loss_db = self.physics_calculator.calculate_path_loss(distance_m, frequency_hz)
 
-        # Interference is modeled inside simulator; provide a nominal value for info
+                                                                                    
         interference_db = 0.0
 
         return {
@@ -1007,7 +1007,7 @@ class DOCOMO_6G_Environment(gym.Env):
             'doppler_shift_hz': doppler_info['doppler_shift_hz'],
             'frequency_ghz': frequency_ghz,
             'bandwidth_mhz': bandwidth_hz / 1e6,
-            # For physics bonus heuristics
+                                          
             'oam_crosstalk_db': -max(0, (self.current_oam_mode - 1) * 2.0),
             'path_loss_db': path_loss_db,
             'interference_db': interference_db,
@@ -1028,32 +1028,32 @@ class DOCOMO_6G_Environment(gym.Env):
         if not self.mobility_model.mobility_history:
             return np.zeros(20, dtype=np.float32)
         
-        # Calculate current performance
+                                       
         perf = self._calculate_performance()
         current_state = self.mobility_model.current_state
         
-        # Build observation vector
+                                  
         obs = np.array([
-            perf['sinr_db'],                                    # [0] SINR
-            perf['throughput_gbps'],                           # [1] Throughput  
-            perf['latency_ms'],                                # [2] Latency
-            perf['distance_m'],                                # [3] Distance
-            current_state.velocity_x,                          # [4] Velocity X
-            current_state.velocity_y,                          # [5] Velocity Y
-            current_state.velocity_z,                          # [6] Velocity Z
-            self.band_names.index(self.current_band),         # [7] Current Band
-            self.current_oam_mode,                            # [8] Current OAM Mode
-            perf['doppler_shift_hz'],                         # [9] Doppler Shift
-            perf['atmospheric_loss_db'],                      # [10] Atmospheric Loss
-            perf['energy_consumption_w'],                     # [11] Energy Consumption
-            perf['reliability_score'],                        # [12] Reliability Score
-            perf['interference_db'],                          # [13] Interference Level
-            perf['mobility_prediction_accuracy'],             # [14] Prediction Confidence
-            perf['beam_alignment_error_deg'],                 # [15] Beam Alignment Error
-            1,                                                # [16] Connection Count (single user)
-            current_state.acceleration_magnitude,             # [17] Mobility Prediction
-            self._get_weather_factor(),                       # [18] Weather Factor
-            perf['throughput_gbps']                           # [19] Traffic Demand (current throughput)
+            perf['sinr_db'],                                              
+            perf['throughput_gbps'],                                             
+            perf['latency_ms'],                                             
+            perf['distance_m'],                                              
+            current_state.velocity_x,                                          
+            current_state.velocity_y,                                          
+            current_state.velocity_z,                                          
+            self.band_names.index(self.current_band),                           
+            self.current_oam_mode,                                                  
+            perf['doppler_shift_hz'],                                            
+            perf['atmospheric_loss_db'],                                             
+            perf['energy_consumption_w'],                                              
+            perf['reliability_score'],                                                
+            perf['interference_db'],                                                   
+            perf['mobility_prediction_accuracy'],                                         
+            perf['beam_alignment_error_deg'],                                            
+            1,                                                                                     
+            current_state.acceleration_magnitude,                                       
+            self._get_weather_factor(),                                            
+            perf['throughput_gbps']                                                                     
         ], dtype=np.float32)
         
         return obs
@@ -1067,17 +1067,17 @@ class DOCOMO_6G_Environment(gym.Env):
         """Get optimal frequency band for given distance"""
         distance_km = distance_m / 1000.0
         
-        # Find highest frequency band that can reach this distance
-        for band_name in reversed(self.band_names):  # Start from highest frequency
+                                                                  
+        for band_name in reversed(self.band_names):                                
             if distance_km <= self.frequency_bands[band_name]['max_range_km']:
                 return band_name
         
-        return self.band_names[0]  # Fallback to lowest frequency
+        return self.band_names[0]                                
     
     def _is_link_stable(self) -> bool:
         """Check if link is stable based on recent performance"""
         if len(self.throughput_history) < 10:
-            return True  # Assume stable with insufficient history
+            return True                                           
         
         recent_throughput = list(self.throughput_history)[-10:]
         throughput_std = np.std(recent_throughput)
@@ -1085,16 +1085,16 @@ class DOCOMO_6G_Environment(gym.Env):
         
         if throughput_mean > 0:
             cv = throughput_std / throughput_mean
-            return cv < 0.2  # Less than 20% coefficient of variation
+            return cv < 0.2                                          
         
         return True
     
     def _calculate_handover_success_rate(self) -> float:
         """Calculate recent handover success rate"""
         if not self.handover_history:
-            return 1.0  # No handovers yet
+            return 1.0                    
         
-        recent_handovers = list(self.handover_history)[-10:]  # Last 10 handovers
+        recent_handovers = list(self.handover_history)[-10:]                     
         if not recent_handovers:
             return 1.0
         
@@ -1132,16 +1132,16 @@ class DOCOMO_6G_Environment(gym.Env):
         terminated = False
         truncated = False
         
-        # Truncation: Max steps reached
+                                       
         if self.step_count >= self.max_steps:
             truncated = True
         
-        # Termination: Complete system failure
-        if performance['sinr_db'] < -20.0:  # Extremely poor signal
+                                              
+        if performance['sinr_db'] < -20.0:                         
             terminated = True
-        elif performance['throughput_gbps'] < 0.01:  # No meaningful throughput
+        elif performance['throughput_gbps'] < 0.01:                            
             terminated = True
-        elif performance['distance_m'] > 10000.0:  # Too far from base station
+        elif performance['distance_m'] > 10000.0:                             
             terminated = True
         
         return terminated, truncated
@@ -1205,13 +1205,13 @@ class DOCOMO_6G_Environment(gym.Env):
             'bandwidth': float(band_spec.get('bandwidth', 400e6)),
             'tx_power_dBm': float(band_spec.get('tx_power_dbm', getattr(self.channel_simulator, 'tx_power_dBm', 30.0)))
         }
-        # Optional antenna gains (assume symmetric if provided)
+                                                               
         antenna_gain = band_spec.get('antenna_gain_dbi', None)
         if antenna_gain is not None:
             system_cfg['tx_antenna_gain_dBi'] = float(antenna_gain)
             system_cfg['rx_antenna_gain_dBi'] = float(antenna_gain)
 
-        # Determine OAM mode bounds
+                                   
         oam_modes = band_spec.get('oam_modes', [1, 8])
         min_mode = min(oam_modes) if isinstance(oam_modes, list) and oam_modes else 1
         max_mode = max(oam_modes) if isinstance(oam_modes, list) and oam_modes else 8
@@ -1223,19 +1223,19 @@ class DOCOMO_6G_Environment(gym.Env):
                 'max_mode': int(max_mode)
             }
         }
-        # Update simulator config and recompute derived parameters
+                                                                  
         try:
             self.channel_simulator._update_config(cfg)
-            # Recompute derived params affected by updates
+                                                          
             self.channel_simulator.wavelength = 3e8 / self.channel_simulator.frequency
             self.channel_simulator.k = 2 * np.pi / self.channel_simulator.wavelength
             self.channel_simulator.num_modes = self.channel_simulator.max_mode - self.channel_simulator.min_mode + 1
             self.channel_simulator.H = np.eye(self.channel_simulator.num_modes, dtype=complex)
         except Exception:
-            # If anything goes wrong, leave simulator as-is but proceed
+                                                                       
             pass
 
-        # Update physics calculator bandwidth to match band
+                                                           
         try:
             self.physics_calculator.bandwidth = float(system_cfg['bandwidth'])
             if hasattr(self.physics_calculator, 'reset_cache'):

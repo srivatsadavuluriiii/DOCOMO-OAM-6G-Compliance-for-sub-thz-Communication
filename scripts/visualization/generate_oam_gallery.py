@@ -24,10 +24,10 @@ from typing import List, Sequence, Tuple
 
 import numpy as np
 import matplotlib.pyplot as plt
-from mpl_toolkits.mplot3d import Axes3D  # noqa: F401 - needed for 3D projection
+from mpl_toolkits.mplot3d import Axes3D                                         
 
 
-# Ensure project root on sys.path for standalone execution
+                                                          
 PROJECT_ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 if PROJECT_ROOT not in sys.path:
     sys.path.insert(0, PROJECT_ROOT)
@@ -49,10 +49,10 @@ def _set_publication_style() -> None:
         "figure.titlesize": 14,
     })
 
-# Centralized color scheme for the gallery
-PHASE_CMAP = "twilight"          # cyclic, ideal for wrapped phase
-INTENSITY_CMAP = "turbo"         # vibrant and perceptually uniform-ish
-HEATMAP_CMAP = "plasma"          # vivid yet readable for heatmaps
+                                          
+PHASE_CMAP = "twilight"                                           
+INTENSITY_CMAP = "turbo"                                               
+HEATMAP_CMAP = "plasma"                                           
 
 
 def generate_oam_mode(topological_charge: int, size: int = 512, beam_waist: float = 0.30) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
@@ -70,7 +70,7 @@ def generate_oam_mode(topological_charge: int, size: int = 512, beam_waist: floa
     amplitude = (rho ** abs(topological_charge)) * np.exp(-(rho ** 2) / 2.0)
     field = amplitude * np.exp(1j * topological_charge * phi)
 
-    # Normalize field magnitude
+                               
     max_amp = np.max(np.abs(field)) or 1.0
     field = field / max_amp
     intensity = np.abs(field) ** 2
@@ -90,7 +90,7 @@ def superpose(fields: Sequence[Tuple[np.ndarray, np.ndarray, np.ndarray]], weigh
     field = np.zeros_like(complex_fields[0], dtype=np.complex128)
     for coeff, f in zip(w, complex_fields):
         field += coeff * f
-    # Normalize
+               
     max_amp = np.max(np.abs(field)) or 1.0
     field = field / max_amp
     intensity = np.abs(field) ** 2
@@ -140,7 +140,7 @@ def save_mode_comparison_intensity(modes: Sequence[int], size: int, out_dir: str
     os.makedirs(out_dir, exist_ok=True)
     cols = len(modes)
     fig, axes = plt.subplots(1, cols, figsize=(3.0 * cols, 3.6), constrained_layout=True)
-    # Ensure axes is iterable when single mode
+                                              
     if cols == 1:
         axes = [axes]
     for idx, l in enumerate(modes):
@@ -212,7 +212,7 @@ def save_propagation_series(l: int, size: int, out_dir: str, distances: Sequence
     cols = len(distances)
     fig, axes = plt.subplots(2, cols, figsize=(3.6 * cols, 6.8), constrained_layout=True)
     for idx, d in enumerate(distances):
-        beam_waist = 0.30 * (1.0 + 0.45 * d)  # simple spreading model
+        beam_waist = 0.30 * (1.0 + 0.45 * d)                          
         _, phase, intensity = generate_oam_mode(l, size=size, beam_waist=beam_waist)
         im0 = axes[0, idx].imshow(phase, cmap=PHASE_CMAP, origin="lower")
         axes[0, idx].set_title(f"Distance = {d:.1f}")
@@ -317,8 +317,8 @@ def save_helical_phase_3d(l: int, out_dir: str, n_r: int = 80, n_phi: int = 360,
 
     X = R * np.cos(PHI)
     Y = R * np.sin(PHI)
-    phase = l * PHI  # unwrapped phase
-    Z = height_scale * (phase / (2.0 * np.pi))  # height in units of helical turns
+    phase = l * PHI                   
+    Z = height_scale * (phase / (2.0 * np.pi))                                    
     phase_wrapped = np.mod(phase + np.pi, 2.0 * np.pi) - np.pi
 
     fig = plt.figure(figsize=(6.5, 5.5))
@@ -425,7 +425,7 @@ def main(argv: List[str] | None = None) -> None:
         save_superpositions([c for c in combos if set(c[0]).issubset(set(range(1, 10)))], size=args.size, out_dir=args.out)
 
     if "impairments" in targets:
-        for l in [m for m in args.modes if 1 <= m <= 8][:3]:  # limit to three modes for speed
+        for l in [m for m in args.modes if 1 <= m <= 8][:3]:                                  
             save_impairments(l, size=args.size, out_dir=args.out)
 
     if "propagation" in targets:

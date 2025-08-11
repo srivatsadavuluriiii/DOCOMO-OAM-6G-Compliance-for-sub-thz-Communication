@@ -10,7 +10,7 @@ import os
 import sys
 import numpy as np
 
-# Ensure project root on path
+                             
 sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
 
 from environment.hybrid_oam_env import HybridOAM_Env
@@ -27,17 +27,17 @@ def load_config_100gbps():
 
 
 def evaluate_band(env: HybridOAM_Env, band: str, distance_m: float = 100.0):
-    # Ensure we can switch immediately for verification
+                                                       
     env.steps_since_last_band_switch = env.min_band_switch_interval
-    # Switch band (updates simulator, physics, mobility, reward)
+                                                                
     env._switch_band(band)
 
-    # Fix position at 100 m on x-axis, zero velocity
+                                                    
     env.position = np.array([distance_m, 0.0, 0.0], dtype=float)
     env.velocity = np.array([0.0, 0.0, 0.0], dtype=float)
     env.current_mode = (env.min_mode + env.max_mode) // 2
 
-    # Run simulator
+                   
     _, sinr_db = env.simulator.run_step(env.position, env.current_mode)
     throughput_bps = env._calculate_throughput(sinr_db)
 

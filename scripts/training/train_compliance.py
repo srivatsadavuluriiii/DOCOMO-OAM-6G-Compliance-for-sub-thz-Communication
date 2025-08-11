@@ -18,14 +18,14 @@ from datetime import datetime
 from pathlib import Path
 from typing import Dict, List, Any, Optional, Tuple
 
-# Ensure project root is on sys.path before importing project modules
+                                                                     
 PROJECT_ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 if PROJECT_ROOT not in sys.path:
     sys.path.insert(0, PROJECT_ROOT)
 from utils.path_utils import ensure_project_root_in_path
 ensure_project_root_in_path()
 
-# Import existing project infrastructure
+                                        
 from models.agent import Agent
 from environment.docomo_6g_env import DOCOMO_6G_Environment
 from models.multi_objective_reward import MultiObjectiveReward
@@ -65,33 +65,33 @@ class DOCOMOTrainingManager:
         self.output_dir = Path(output_dir)
         self.args = args
         
-        # Create output directory
+                                 
         self.output_dir.mkdir(parents=True, exist_ok=True)
         
-        # Set random seeds
+                          
         torch.manual_seed(args.seed)
         np.random.seed(args.seed)
         
-        # Initialize device
+                           
         self.device = torch.device('cuda' if torch.cuda.is_available() and not args.no_gpu else 'cpu')
         print(f"  Using device: {self.device}")
         
-        # Load configuration
+                            
         self.config = self._load_config()
         
-        # Initialize environment
+                                
         print(" Initializing DOCOMO 6G Environment...")
         self.env = DOCOMO_6G_Environment(config_path=config_path)
         print(f"    State space: {self.env.observation_space.shape}")
         print(f"    Action space: {self.env.action_space.n}")
         print(f"    Frequency bands: {len(self.env.band_names)}")
         
-        # Initialize agent using existing Agent class
+                                                     
         print(" Initializing DQN Agent...")
         state_dim = self.env.observation_space.shape[0]
         action_dim = self.env.action_space.n
         
-        # Get agent config from DOCOMO config or use defaults
+                                                             
         agent_config = self.config.get('agent', {})
         self.agent = Agent(
             state_dim=state_dim,
@@ -105,20 +105,20 @@ class DOCOMOTrainingManager:
             device=self.device
         )
         
-        # Epsilon management (not built into Agent class)
+                                                         
         self.epsilon_start = agent_config.get('epsilon_start', 1.0)
         self.epsilon_end = agent_config.get('epsilon_end', 0.01)
         self.epsilon_decay_steps = agent_config.get('epsilon_decay_steps', 10000)
         self.epsilon = self.epsilon_start
         self.step_count = 0
         
-        # Move agent to device
+                              
         self.agent.policy_net.to(self.device)
         self.agent.target_net.to(self.device)
         
         print(f"     Model parameters: {sum(p.numel() for p in self.agent.policy_net.parameters())}")
         
-        # Initialize metrics tracking
+                                     
         self.metrics_logger = MetricsLogger(log_dir=str(self.output_dir))
         self.training_metrics = {
             'episodes': [],
@@ -137,7 +137,7 @@ class DOCOMOTrainingManager:
             return config
         except Exception as e:
             print(f" Error loading config: {e}")
-            # Return default config
+                                   
             return {
                 'agent': {
                     'hidden_layers': [256, 256],
@@ -182,7 +182,7 @@ class DOCOMOTrainingManager:
         for episode in range(episodes):
             episode_start = time.time()
             
-            # Reset environment
+                               
             state, info = self.env.reset()
             state = torch.FloatTensor(state).to(self.device)
             
@@ -191,20 +191,20 @@ class DOCOMOTrainingManager:
             steps = 0
             band_usage = {band: 0 for band in self.env.band_names}
             
-            # Episode loop
+                          
             while steps < self.args.max_steps:
-                # Select action using epsilon-greedy
+                                                    
                 action = self._select_action(state)
                 self.step_count += 1
                 
-                # Decay epsilon
+                               
                 self._decay_epsilon()
                 
-                # Environment step
+                                  
                 next_state, reward, done, truncated, info = self.env.step(action)
                 next_state = torch.FloatTensor(next_state).to(self.device)
                 
-                # Store transition
+                                  
                 self.agent.replay_buffer.push(
                     state.cpu().numpy(),
                     action,
@@ -213,12 +213,12 @@ class DOCOMOTrainingManager:
                     done or truncated
                 )
                 
-                # Track metrics
+                               
                 episode_reward += reward
                 if hasattr(self.env, 'current_band'):
                     band_usage[self.env.current_band] += 1
                 
-                # Learn if enough samples
+                                         
                 if self.agent.replay_buffer.is_ready(self.agent.batch_size):
                     loss_value = self.agent.learn()
                     if loss_value is not None and isinstance(loss_value, (int, float)):
@@ -230,36 +230,36 @@ class DOCOMOTrainingManager:
                 if done or truncated:
                     break
             
-            # Update target network periodically
+                                                
             if (episode + 1) % self.agent.target_update_freq == 0:
                 self.agent.update_target_network()
             
-            # Collect episode metrics
+                                     
             self.training_metrics['episodes'].append(episode)
             self.training_metrics['rewards'].append(episode_reward)
             self.training_metrics['losses'].append(episode_loss / max(steps, 1))
             
-            # Collect DOCOMO KPIs
+                                 
             if hasattr(self.env, 'kpi_tracker') and self.env.kpi_tracker.measurements:
                 kpis = self.env.kpi_tracker.get_current_kpis()
                 self.training_metrics['kpis'].append(kpis)
                 
-                # Calculate DOCOMO compliance
+                                             
                 compliance = self._calculate_docomo_compliance(kpis)
                 if compliance > best_compliance:
                     best_compliance = compliance
             
-            # Track band performance
+                                    
             for band, count in band_usage.items():
                 if count > 0:
                     self.training_metrics['band_performance'][band].append(episode_reward / count)
             
-            # Update best reward and save model
+                                               
             if episode_reward > best_reward:
                 best_reward = episode_reward
                 self._save_best_model(episode, episode_reward, best_compliance)
             
-            # Logging
+                     
             if (episode + 1) % self.args.log_interval == 0:
                 episode_time = time.time() - episode_start
                 
@@ -270,7 +270,7 @@ class DOCOMOTrainingManager:
                       f"ε={self.epsilon:.3f}, "
                       f"Time={episode_time:.2f}s")
                 
-                # Show KPI progress
+                                   
                 if self.training_metrics['kpis']:
                     latest_kpis = self.training_metrics['kpis'][-1]
                     throughput = latest_kpis.get('current_throughput_gbps', 0)
@@ -279,7 +279,7 @@ class DOCOMOTrainingManager:
                     
                     print(f"          KPIs: T={throughput:.1f}Gbps, L={latency:.3f}ms, R={reliability:.4f}")
                     
-                    # Show most used band (robust frequency parsing)
+                                                                    
                     most_used = max(band_usage.items(), key=lambda x: x[1])
                     try:
                         freq_val = self.env.frequency_bands[most_used[0]].get('frequency', 28.0e9)
@@ -288,7 +288,7 @@ class DOCOMOTrainingManager:
                         freq_ghz = 28.0
                     print(f"          Band: {most_used[0]} ({freq_ghz:.0f} GHz) - {most_used[1]} uses")
 
-                    # DOCOMO-standard formatted line
+                                                    
                     targets = getattr(self.env.kpi_tracker, 'docomo_targets', None)
                     comp = self.env.kpi_tracker.get_compliance_score() if hasattr(self.env, 'kpi_tracker') else {}
                     overall = comp.get('overall_current', 0.0)
@@ -302,13 +302,13 @@ class DOCOMOTrainingManager:
                             f"Compliance: {overall*100:.1f}%"
                         )
             
-            # Periodic saves
+                            
             if (episode + 1) % self.args.save_interval == 0:
                 self._save_checkpoint(episode, episode_reward)
         
         training_time = time.time() - training_start
         
-        # Training summary
+                          
         print("\n" + "="*60)
         print(" DOCOMO 6G Training Completed!")
         if episodes > 0:
@@ -320,17 +320,17 @@ class DOCOMOTrainingManager:
         print(f"    Final epsilon: {self.epsilon:.4f}")
         print(f"    Buffer size: {len(self.agent.replay_buffer)}")
         
-        # Final evaluation
+                          
         final_metrics = self._evaluate_agent(self.args.eval_episodes)
         
-        # Add training-wide throughput stats (avg and peak across KPIs history)
+                                                                               
         if self.training_metrics['kpis']:
             tps = [k.get('current_throughput_gbps', 0.0) for k in self.training_metrics['kpis']]
             if tps:
                 final_metrics['avg_training_throughput_gbps'] = float(np.mean(tps))
                 final_metrics['peak_training_throughput_gbps'] = float(np.max(tps))
         
-        # Save final results
+                            
         self._save_final_results(training_time, best_reward, best_compliance, final_metrics)
         
         return final_metrics
@@ -339,7 +339,7 @@ class DOCOMOTrainingManager:
         """Calculate DOCOMO 6G compliance score using KPI tracker (overall)."""
         if hasattr(self.env, 'kpi_tracker'):
             comp = self.env.kpi_tracker.get_compliance_score()
-            # Prefer current overall; fallback to avg if missing
+                                                                
             return float(comp.get('overall_current', comp.get('overall_avg', 0.0)))
         return 0.0
     
@@ -347,7 +347,7 @@ class DOCOMOTrainingManager:
         """Evaluate the trained agent"""
         print(f"\n Evaluating agent over {num_episodes} episodes...")
 
-        # If a best model exists in the output directory, load it for evaluation
+                                                                                
         try:
             best_path = self.output_dir / "best_model.pth"
             if best_path.exists():
@@ -366,9 +366,9 @@ class DOCOMOTrainingManager:
         eval_compliances = []
         eval_episode_handovers = []
         
-        # Set agent to evaluation mode
+                                      
         old_epsilon = self.epsilon
-        self.epsilon = 0.0  # No exploration
+        self.epsilon = 0.0                  
         
         for episode in range(num_episodes):
             state, _ = self.env.reset()
@@ -392,27 +392,27 @@ class DOCOMOTrainingManager:
                     break
             
             eval_rewards.append(episode_reward)
-            # Collect compliance per episode from tracker
+                                                         
             if hasattr(self.env, 'kpi_tracker'):
                 comp = self.env.kpi_tracker.get_compliance_score()
                 if 'overall_current' in comp:
                     eval_compliances.append(float(comp['overall_current']))
-            # Collect per-episode handovers from env stats (if available)
+                                                                         
             try:
                 if isinstance(getattr(self.env, 'episode_stats', None), dict):
                     eval_episode_handovers.append(int(self.env.episode_stats.get('handover_count', 0)))
             except Exception:
                 pass
             
-            # Collect KPIs
+                          
             if hasattr(self.env, 'kpi_tracker') and self.env.kpi_tracker.measurements:
                 kpis = self.env.kpi_tracker.get_current_kpis()
                 eval_kpis.append(kpis)
         
-        # Restore original epsilon
+                                  
         self.epsilon = old_epsilon
         
-        # Calculate evaluation metrics
+                                      
         eval_metrics = {
             'mean_reward': np.mean(eval_rewards),
             'std_reward': np.std(eval_rewards),
@@ -422,7 +422,7 @@ class DOCOMOTrainingManager:
         }
         
         if eval_kpis:
-            # Average KPI performance
+                                     
             avg_kpis = {}
             for key in eval_kpis[0].keys():
                 if key != 'timestamp':
@@ -432,10 +432,10 @@ class DOCOMOTrainingManager:
             
             eval_metrics.update(avg_kpis)
             
-            # Calculate final compliance (average of per-episode overall)
+                                                                         
             if eval_compliances:
                 eval_metrics['docomo_compliance'] = float(np.mean(eval_compliances))
-        # Average handovers per episode (target ≤ 3–4)
+                                                      
         if eval_episode_handovers:
             eval_metrics['avg_episode_handovers'] = float(np.mean(eval_episode_handovers))
         
@@ -496,11 +496,11 @@ class DOCOMOTrainingManager:
             }
         }
         
-        # Save results JSON
+                           
         with open(self.output_dir / "training_results.json", 'w') as f:
             json.dump(results, f, indent=2, default=str)
         
-        # Generate plots
+                        
         self._generate_plots()
         
         print(f"\n Results saved to: {self.output_dir}")
@@ -513,18 +513,18 @@ class DOCOMOTrainingManager:
         plots_dir = self.output_dir / "plots"
         plots_dir.mkdir(exist_ok=True)
         
-        # Training curves
+                         
         if self.training_metrics['rewards']:
             fig, axes = plt.subplots(2, 2, figsize=(15, 10))
             
-            # Rewards
+                     
             episodes = self.training_metrics['episodes']
             rewards = self.training_metrics['rewards']
             axes[0, 0].plot(episodes, rewards, alpha=0.7)
             if len(rewards) >= 2:
                 w = min(10, len(rewards))
                 smooth = np.convolve(rewards, np.ones(w)/w, mode='same')
-                # Align x,y lengths
+                                   
                 if len(smooth) != len(episodes):
                     if len(smooth) > len(episodes):
                         smooth = smooth[:len(episodes)]
@@ -536,7 +536,7 @@ class DOCOMOTrainingManager:
             axes[0, 0].set_ylabel('Reward')
             axes[0, 0].grid(True)
             
-            # Losses
+                    
             if self.training_metrics['losses']:
                 losses = self.training_metrics['losses']
                 axes[0, 1].plot(episodes, losses, alpha=0.7)
@@ -554,7 +554,7 @@ class DOCOMOTrainingManager:
                 axes[0, 1].set_ylabel('Loss')
                 axes[0, 1].grid(True)
             
-            # KPI Performance
+                             
             if self.training_metrics['kpis']:
                 kpis = self.training_metrics['kpis']
                 throughputs = [kpi.get('current_throughput_gbps', 0) for kpi in kpis]
@@ -576,7 +576,7 @@ class DOCOMOTrainingManager:
                 ax_kpi.set_xlabel('Episode')
                 ax_kpi.grid(True)
             
-            # Band Performance
+                              
             axes[1, 1].set_title('Frequency Band Performance')
             for band, rewards in self.training_metrics['band_performance'].items():
                 if rewards:
@@ -608,10 +608,10 @@ def main():
     print(f"    Episodes: {args.episodes}")
     print(f"    Seed: {args.seed}")
     
-    # Initialize training manager
+                                 
     trainer = DOCOMOTrainingManager(args.config, args.output_dir, args)
     
-    # Start training
+                    
     final_metrics = trainer.train()
     
     print("\n DOCOMO 6G Training Successfully Completed!")

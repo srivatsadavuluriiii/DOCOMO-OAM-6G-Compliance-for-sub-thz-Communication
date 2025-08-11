@@ -14,7 +14,7 @@ from typing import Dict, Any, List, Optional, Union, Tuple
 from pathlib import Path
 import logging
 
-# Configure logging
+                   
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
@@ -34,24 +34,24 @@ class InputSanitizer:
         self.allowed_sections = {
             'system', 'oam', 'environment', 'mobility', 'training', 
             'rl_base', 'exploration', 'evaluation', 'network', 'replay_buffer',
-            'enhanced_params', 'reward', 'stable_reward',  # Allow existing sections
+            'enhanced_params', 'reward', 'stable_reward',                           
             'distance_optimization', 'distance_thresholds', 'mode_preferences', 
             'optimization_weights', 'adaptive_parameters', 'distance_reward',
             'performance_tracking', 'distance_categories', 'optimization_strategies',
-            'distance_sinr_thresholds', 'handover_optimization',  # Distance optimization sections
-            # Hybrid 6G sections
+            'distance_sinr_thresholds', 'handover_optimization',                                  
+                                
             'hybrid_system', 'distance_optimization_bands', 'physics'
         }
         
         self.parameter_specs = {
             'system': {
-                'frequency': {'type': (int, float), 'range': (1e9, 1e12), 'required': False},  # Allow up to 1 THz
-                'bandwidth': {'type': (int, float), 'range': (1e6, 10e9), 'required': False},  # Optional for hybrid
-                # Accept both scalar and dict for backward compatibility
+                'frequency': {'type': (int, float), 'range': (1e9, 1e12), 'required': False},                     
+                'bandwidth': {'type': (int, float), 'range': (1e6, 10e9), 'required': False},                       
+                                                                        
                 'tx_power_dBm': {'type': (int, float, dict), 'range': (-20, 50), 'required': False},
                 'noise_figure_dB': {'type': (int, float), 'range': (1, 20), 'required': True},
                 'noise_temp': {'type': (int, float), 'range': (100, 500), 'required': True},
-                # Hybrid 6G parameters
+                                      
                 'frequency_bands': {'type': dict, 'range': None, 'required': False},
                 'bandwidth_bands': {'type': dict, 'range': None, 'required': False},
                 'max_throughput_gbps': {'type': dict, 'range': None, 'required': False},
@@ -63,7 +63,7 @@ class InputSanitizer:
                 'max_mode': {'type': int, 'range': (2, 12), 'required': True},
                 'beam_width': {'type': (int, float), 'range': (0.001, 0.1), 'required': True},
                 'mode_spacing': {'type': int, 'range': (1, 5), 'required': False},
-                # Hybrid 6G parameters
+                                      
                 'beam_width_bands': {'type': dict, 'range': None, 'required': False}
             },
             'environment': {
@@ -79,12 +79,12 @@ class InputSanitizer:
                 'update_interval': {'type': (int, float), 'range': (0.1, 10), 'required': False},
                 'min_speed': {'type': (int, float), 'range': (0, 100), 'required': False},
                 'direction_change_prob': {'type': (int, float), 'range': (0, 1), 'required': False},
-                # Hybrid 6G parameters
+                                      
                 'area_size_bands': {'type': dict, 'range': None, 'required': False}
             },
             'training': {
                 'num_episodes': {'type': int, 'range': (1, 10000), 'required': False},
-                'episodes': {'type': int, 'range': (1, 10000), 'required': False},  # Allow both forms
+                'episodes': {'type': int, 'range': (1, 10000), 'required': False},                    
                 'batch_size': {'type': int, 'range': (1, 1000), 'required': False},
                 'learning_rate': {'type': (int, float), 'range': (1e-6, 1), 'required': False},
                 'max_steps_per_episode': {'type': int, 'range': (1, 10000), 'required': False},
@@ -92,7 +92,7 @@ class InputSanitizer:
                 'target_update_interval': {'type': int, 'range': (1, 1000), 'required': False},
                 'target_update_freq': {'type': int, 'range': (1, 1000), 'required': False},
                 'gamma': {'type': (int, float), 'range': (0, 1), 'required': False},
-                # Hybrid 6G training parameters
+                                               
                 'exploration': {'type': dict, 'range': None, 'required': False},
                 'band_exploration': {'type': dict, 'range': None, 'required': False}
             },
@@ -127,7 +127,7 @@ class InputSanitizer:
                 'reward_max': {'type': (int, float), 'range': (0, 100), 'required': False},
                 'sinr_scaling_factor': {'type': (int, float), 'range': (0, 10), 'required': False}
             },
-            # Distance optimization sections
+                                            
             'distance_optimization': {
                 'distance_thresholds': {'type': dict, 'range': None, 'required': False},
                 'mode_preferences': {'type': dict, 'range': None, 'required': False},
@@ -194,7 +194,7 @@ class InputSanitizer:
                 'handover_hysteresis_db': {'type': (int, float), 'range': (0, 20), 'required': False},
                 'distance_based_handover_threshold': {'type': bool, 'range': None, 'required': False}
             },
-            # Hybrid 6G sections
+                                
             'hybrid_system': {
                 'band_selection': {'type': dict, 'range': None, 'required': False},
                 'distance_thresholds': {'type': dict, 'range': None, 'required': False},
@@ -214,7 +214,7 @@ class InputSanitizer:
             }
         }
         
-        # Malicious patterns to detect
+                                      
         self.malicious_patterns = [
             r'__import__\s*\(',
             r'eval\s*\(',
@@ -228,9 +228,9 @@ class InputSanitizer:
             r'class\s+',
             r'def\s+',
             r'lambda\s+',
-            r'\\x[0-9a-fA-F]{2}',  # Hex escapes
-            r'\\u[0-9a-fA-F]{4}',  # Unicode escapes
-            r'\\U[0-9a-fA-F]{8}',  # Extended Unicode escapes
+            r'\\x[0-9a-fA-F]{2}',               
+            r'\\u[0-9a-fA-F]{4}',                   
+            r'\\U[0-9a-fA-F]{8}',                            
         ]
     
     def sanitize_yaml_content(self, yaml_content: str) -> Tuple[bool, List[str]]:
@@ -245,12 +245,12 @@ class InputSanitizer:
         """
         errors = []
         
-        # Check for malicious patterns
+                                      
         for pattern in self.malicious_patterns:
             if re.search(pattern, yaml_content, re.IGNORECASE):
                 errors.append(f"Malicious pattern detected: {pattern}")
         
-        # Check for excessive nesting (potential DoS)
+                                                     
         max_depth = 0
         current_depth = 0
         for char in yaml_content:
@@ -260,17 +260,17 @@ class InputSanitizer:
                 max_depth = max(max_depth, current_depth)
                 current_depth = 0
         
-        if max_depth > 50:  # More than 50 levels of nesting
+        if max_depth > 50:                                  
             errors.append("Excessive nesting detected (potential DoS)")
         
-        # Check for extremely long lines
+                                        
         lines = yaml_content.split('\n')
         for i, line in enumerate(lines):
-            if len(line) > 1000:  # Lines longer than 1000 characters
+            if len(line) > 1000:                                     
                 errors.append(f"Line {i+1} is too long ({len(line)} characters)")
         
-        # Check for excessive file size
-        if len(yaml_content) > 100000:  # 100KB limit
+                                       
+        if len(yaml_content) > 100000:               
             errors.append(f"File too large ({len(yaml_content)} bytes)")
         
         return len(errors) == 0, errors
@@ -288,20 +288,20 @@ class InputSanitizer:
         Returns:
             Tuple of (is_valid, error_message)
         """
-        # Handle scientific notation in strings (e.g., "28.0e9")
-        # Only applicable when expected_type is a tuple that includes int or float
+                                                                
+                                                                                  
         if isinstance(value, str) and isinstance(expected_type, tuple) and (int in expected_type or float in expected_type):
             try:
-                # Try to convert to float
+                                         
                 float_value = float(value)
-                # If int is expected and the float is a whole number, it's valid
+                                                                                
                 if int in expected_type and float_value.is_integer():
                     return True, None
-                # If float is expected, it's valid
+                                                  
                 if float in expected_type:
                     return True, None
             except (ValueError, TypeError):
-                pass  # Fall through to the normal type check
+                pass                                         
         
         if not isinstance(value, expected_type):
             if isinstance(expected_type, tuple):
@@ -326,7 +326,7 @@ class InputSanitizer:
         Returns:
             Tuple of (is_valid, error_message)
         """
-        # Convert string to float if needed
+                                           
         if isinstance(value, str):
             try:
                 value = float(value)
@@ -351,26 +351,26 @@ class InputSanitizer:
         """
         errors = []
         
-        # Check if section is allowed
+                                     
         if section_name not in self.allowed_sections:
             errors.append(f"Unknown section: {section_name}")
             return errors
         
-        # Get parameter specifications for this section
+                                                       
         if section_name not in self.parameter_specs:
-            return errors  # No validation specs for this section
+            return errors                                        
         
         specs = self.parameter_specs[section_name]
         
         for param_name, param_value in section_data.items():
-            # Check if parameter is known
+                                         
             if param_name not in specs:
                 errors.append(f"Unknown parameter in {section_name}: {param_name}")
                 continue
             
             spec = specs[param_name]
             
-            # Type validation
+                             
             is_valid_type, type_error = self.validate_parameter_type(
                 param_value, spec['type'], f"{section_name}.{param_name}"
             )
@@ -378,7 +378,7 @@ class InputSanitizer:
                 errors.append(type_error)
                 continue
             
-            # Range validation (if specified)
+                                             
             if spec['range'] is not None and isinstance(param_value, (int, float)):
                 min_val, max_val = spec['range']
                 is_valid_range, range_error = self.validate_parameter_range(
@@ -387,12 +387,12 @@ class InputSanitizer:
                 if not is_valid_range:
                     errors.append(range_error)
             
-            # Special validation for lists
+                                          
             if spec['type'] == list and isinstance(param_value, list):
-                if len(param_value) > 100:  # Limit list size
+                if len(param_value) > 100:                   
                     errors.append(f"{section_name}.{param_name} list too large ({len(param_value)} items)")
         
-        # Check for required parameters
+                                       
         for param_name, spec in specs.items():
             if spec.get('required', False) and param_name not in section_data:
                 errors.append(f"Required parameter missing in {section_name}: {param_name}")
@@ -412,7 +412,7 @@ class InputSanitizer:
         errors = []
         sanitized_config = {}
         
-        # Validate each section
+                               
         for section_name, section_data in config.items():
             if not isinstance(section_data, dict):
                 errors.append(f"Section {section_name} must be a dictionary")
@@ -421,7 +421,7 @@ class InputSanitizer:
             section_errors = self.validate_section(section_name, section_data)
             errors.extend(section_errors)
             
-            # Only include section if no errors
+                                               
             if not section_errors:
                 sanitized_config[section_name] = section_data.copy()
         
@@ -439,35 +439,35 @@ class InputSanitizer:
         """
         errors = []
         
-        # Check file existence
+                              
         if not os.path.exists(file_path):
             return {}, [f"File not found: {file_path}"]
         
-        # Check file size
+                         
         file_size = os.path.getsize(file_path)
-        if file_size > 100000:  # 100KB limit
+        if file_size > 100000:               
             return {}, [f"File too large: {file_size} bytes"]
         
         try:
-            # Read file content
+                               
             with open(file_path, 'r', encoding='utf-8') as f:
                 yaml_content = f.read()
             
-            # Sanitize YAML content
+                                   
             is_safe, content_errors = self.sanitize_yaml_content(yaml_content)
             if not is_safe:
                 return {}, content_errors
             
-            # Parse YAML
+                        
             config = yaml.safe_load(yaml_content)
             if config is None:
                 return {}, ["Empty or invalid YAML file"]
             
-            # Validate configuration structure
+                                              
             if not isinstance(config, dict):
                 return {}, ["Configuration must be a dictionary"]
             
-            # Sanitize configuration
+                                    
             sanitized_config, config_errors = self.sanitize_config(config)
             errors.extend(config_errors)
             
@@ -512,5 +512,5 @@ def create_sanitized_config_loader():
     
     return load_sanitized_config
 
-# Create a global sanitized loader
+                                  
 sanitized_config_loader = create_sanitized_config_loader() 

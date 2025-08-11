@@ -27,7 +27,7 @@ ensure_project_root_in_path()
 
 # Try to import numba for JIT compilation
 try:
-    from numba import jit, njit, prange
+    from numba import jit, njit, prange #type: ignore
     NUMBA_AVAILABLE = True
 except ImportError:
     NUMBA_AVAILABLE = False
