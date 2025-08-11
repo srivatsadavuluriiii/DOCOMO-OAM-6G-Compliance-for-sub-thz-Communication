@@ -31,7 +31,7 @@ class DistanceOptimizedEnv(OAM_Env):
     optimization strategies for improved performance and stability.
     """
     
-    def __init__(self, config: Optional[Dict[str, Any]] = None, simulator: Optional['SimulatorInterface'] = None):
+    def __init__(self, config: Optional[Dict[str, Any]] = None, simulator: Optional['SimulatorInterface'] = None): #type: ignore
         """
         Initialize the distance-optimized OAM environment.
         
@@ -136,15 +136,16 @@ class DistanceOptimizedEnv(OAM_Env):
                 self.handover_hysteresis = handover_config.get('handover_hysteresis', self.handover_hysteresis)
 
         # Analytics config
-        self.analytics_enabled = bool(config.get('analytics', {}).get('enable', False)) if config else False
-        self.analytics_backends = config.get('analytics', {}).get('backends', ["jsonl"]) if config else ["jsonl"]
-        self.analytics_interval = int(config.get('analytics', {}).get('interval', 1)) if config else 1
+        analytics_cfg = config.get('analytics', {}) if config else {}
+        self.analytics_enabled = bool(analytics_cfg.get('enable', False))
+        self.analytics_backends = analytics_cfg.get('backends', ["jsonl"]) if isinstance(analytics_cfg, dict) else ["jsonl"]
+        self.analytics_interval = int(analytics_cfg.get('interval', 1)) if isinstance(analytics_cfg, dict) else 1
+        self.analytics_log_dir = analytics_cfg.get('log_dir', os.path.join('results', 'analytics')) if isinstance(analytics_cfg, dict) else os.path.join('results', 'analytics')
         self._metrics_logger = None
         if self.analytics_enabled:
             from utils.visualization_unified import MetricsLogger
-            log_dir = os.path.join('results', 'analytics')
             try:
-                self._metrics_logger = MetricsLogger(log_dir, backends=self.analytics_backends, flush_interval=self.analytics_interval)
+                self._metrics_logger = MetricsLogger(self.analytics_log_dir, backends=self.analytics_backends, flush_interval=self.analytics_interval)
             except Exception:
                 self._metrics_logger = None
     
@@ -290,6 +291,20 @@ class DistanceOptimizedEnv(OAM_Env):
             except Exception:
                 pass
 
+        # If episode ended, emit summary immediately
+        if self._metrics_logger is not None and (done or truncated):
+            try:
+                stats = self.reward_calculator.get_episode_stats()
+                summary = {
+                    'episode_reward': float(info.get('episode_reward', 0.0)),
+                    'episode_throughput': float(info.get('episode_throughput', stats.get('episode_throughput', 0.0))),
+                    'episode_handovers': int(info.get('episode_handovers', stats.get('episode_handovers', 0))),
+                }
+                self._episode_counter = getattr(self, '_episode_counter', 0) + 1
+                self._metrics_logger.log_episode_summary(summary, self._episode_counter)
+            except Exception:
+                pass
+
         return next_state, reward, done, truncated, info
     
     def reset(self, seed: Optional[int] = None, options: Optional[Dict[str, Any]] = None) -> Tuple[np.ndarray, Dict[str, Any]]:
@@ -317,20 +332,6 @@ class DistanceOptimizedEnv(OAM_Env):
         
         # Call parent reset
         state, info = super().reset(seed=seed, options=options)
-        # Emit episode summary (previous episode), if logger exists and steps>0
-        if self._metrics_logger is not None and self.steps == 0:
-            try:
-                stats = self.reward_calculator.get_episode_stats()
-                summary = {
-                    'episode_reward': float(stats.get('episode_reward', 0.0)),
-                    'episode_throughput': float(stats.get('episode_throughput', 0.0)),
-                    'episode_handovers': int(stats.get('episode_handovers', 0)),
-                }
-                # Use a simple episode counter proxy
-                self._episode_counter = getattr(self, '_episode_counter', 0) + 1
-                self._metrics_logger.log_episode_summary(summary, self._episode_counter)
-            except Exception:
-                pass
         return state, info
     
     def get_distance_optimization_stats(self) -> Dict[str, Any]:
