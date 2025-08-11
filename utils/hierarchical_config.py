@@ -68,29 +68,67 @@ class HierarchicalConfig:
         # Check cache first
         if config_name in self.config_cache:
             return self.config_cache[config_name]
-        
+
         # Load base config if not already loaded
         if self.base_config is None:
             self.load_base_config()
-        
-        # Load specific config with sanitization
-        config_path = self.config_dir / f"{config_name}.yaml"
-        if not config_path.exists():
-            raise FileNotFoundError(f"Configuration not found: {config_path}")
-        
-        # Use sanitized config loader
-        specific_config = sanitized_config_loader(str(config_path))
-        
-        # Merge with base config (specific config overrides base)
-        merged_config = self._deep_merge(self.base_config.copy(), specific_config)
-        
+
+        # Determine inheritance chain (always starts with base)
+        chain = self._get_inheritance_chain(config_name)
+        # Ensure target config is included in the chain
+        if chain[-1] != config_name:
+            chain.append(config_name)
+
+        # Start with a copy of base
+        merged_config: Dict[str, Any] = self.base_config.copy()
+
+        # Merge each layer in order after base
+        for name in chain[1:]:
+            config_path = self.config_dir / f"{name}.yaml"
+            if not config_path.exists():
+                raise FileNotFoundError(f"Configuration not found: {config_path}")
+            layer_cfg = sanitized_config_loader(str(config_path))
+            merged_config = self._deep_merge(merged_config, layer_cfg)
+
+        # Normalize RL-related top-level sections into rl_base.* overrides
+        merged_config = self._normalize_rl_sections(merged_config)
+
         # Ensure legacy keys exist for backward compatibility with tests
         merged_config = self._ensure_legacy_compatibility(merged_config)
-        
+
         # Cache the result
         self.config_cache[config_name] = merged_config
-        
+
         return merged_config
+
+    def _normalize_rl_sections(self, config: Dict[str, Any]) -> Dict[str, Any]:
+        """
+        Normalize RL-related sections provided at the top level in child configs
+        so that they override values under rl_base.*.
+
+        We do not remove the top-level keys to preserve backward compatibility
+        for code that might read them directly. This function only ensures that
+        rl_base.* reflects the intended overrides.
+        """
+        rl_sections = [
+            'network', 'replay_buffer', 'exploration', 'evaluation', 'reward'
+        ]
+
+        if 'rl_base' not in config or not isinstance(config['rl_base'], dict):
+            # Nothing to normalize if rl_base is absent
+            return config
+
+        for section in rl_sections:
+            top_value = config.get(section)
+            if isinstance(top_value, dict):
+                base_section = config['rl_base'].get(section, {})
+                if not isinstance(base_section, dict):
+                    base_section = {}
+                # Merge with top-level taking precedence
+                merged_section = self._deep_merge(base_section, top_value)
+                config['rl_base'][section] = merged_section
+
+        return config
     
     def _deep_merge(self, base: Dict[str, Any], override: Dict[str, Any]) -> Dict[str, Any]:
         """

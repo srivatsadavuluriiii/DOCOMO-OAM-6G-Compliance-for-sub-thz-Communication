@@ -113,8 +113,7 @@ class TestConfigSystem:
     
     def test_config_inheritance(self):
         """Test that configuration inheritance works correctly."""
-        # Skip this test for now as it requires fixing the input sanitizer
-        pytest.skip("This test requires fixing the input sanitizer")
+        # This test verifies multi-level inheritance and RL override normalization
         
         # Load the base configuration
         base_config = load_hierarchical_config("base_config_new")
@@ -133,6 +132,6 @@ class TestConfigSystem:
         assert extended_config['oam']['min_mode'] == base_config['oam']['min_mode']
         assert extended_config['oam']['max_mode'] == base_config['oam']['max_mode']
         
-        # Check that the extended configuration has its own values
-        assert extended_config['training']['num_episodes'] == 1000
+        # Check that the extended configuration has its own values (overrides)
+        assert extended_config['training']['num_episodes'] == 2000
         assert extended_config['rl_base']['replay_buffer']['capacity'] == 100000

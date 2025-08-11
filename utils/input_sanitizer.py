@@ -289,7 +289,8 @@ class InputSanitizer:
             Tuple of (is_valid, error_message)
         """
         # Handle scientific notation in strings (e.g., "28.0e9")
-        if isinstance(value, str) and (int in expected_type or float in expected_type):
+        # Only applicable when expected_type is a tuple that includes int or float
+        if isinstance(value, str) and isinstance(expected_type, tuple) and (int in expected_type or float in expected_type):
             try:
                 # Try to convert to float
                 float_value = float(value)
