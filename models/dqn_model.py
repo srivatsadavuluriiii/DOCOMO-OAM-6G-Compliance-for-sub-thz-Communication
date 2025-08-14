@@ -4,7 +4,7 @@ import torch.nn.functional as F
 from typing import List, Tuple, Dict, Any, Optional
 
 
-class DQN(nn.Module):
+class DQNModel(nn.Module):
     """
     Deep Q-Network for OAM handover decisions.
     
@@ -29,7 +29,7 @@ class DQN(nn.Module):
             activation: Activation function to use ('relu', 'leaky_relu', 'tanh')
             dueling: Whether to use Dueling DQN architecture
         """
-        super(DQN, self).__init__()
+        super(DQNModel, self).__init__()
         
         self.action_dim = action_dim
         self.dueling = dueling

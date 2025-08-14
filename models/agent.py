@@ -24,10 +24,10 @@ ensure_project_root_in_path()
 
                                            
 try:
-    from .dqn_model import DQN
+    from .dqn_model import DQNModel
     from .replay_buffer_interface import ReplayBufferInterface
 except ImportError:
-    from models.dqn_model import DQN
+    from models.dqn_model import DQNModel
     from models.replay_buffer_interface import ReplayBufferInterface
 from utils.replay_buffer import ReplayBuffer
 
@@ -94,8 +94,8 @@ class Agent:
             self.device = device
         
                              
-        self.policy_net = DQN(state_dim, action_dim, hidden_layers, dueling=dueling_dqn).to(self.device)
-        self.target_net = DQN(state_dim, action_dim, hidden_layers, dueling=dueling_dqn).to(self.device)
+        self.policy_net = DQNModel(state_dim, action_dim, hidden_layers, dueling=dueling_dqn).to(self.device)
+        self.target_net = DQNModel(state_dim, action_dim, hidden_layers, dueling=dueling_dqn).to(self.device)
         
                                                           
         self.target_net.load_state_dict(self.policy_net.state_dict())
