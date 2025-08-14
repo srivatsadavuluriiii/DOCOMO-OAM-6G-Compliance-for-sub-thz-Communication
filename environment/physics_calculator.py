@@ -8,7 +8,7 @@ from the RL environment logic to follow the Single Responsibility Principle.
 
 import numpy as np
 import math
-from typing import Tuple, Optional
+from typing import Tuple, Optional, Dict, Any
 import os
 import sys
 
@@ -369,6 +369,225 @@ class PhysicsCalculator:
         self._throughput_cache.clear()
         self._sinr_linear_cache.clear()
     
+    def calculate_beam_divergence(self, frequency: float, distance: float, 
+                                 initial_beam_width: float) -> Dict[str, float]:
+        """
+        Calculate proper diffractive beam spreading with distance.
+        
+        Implements: w(z) = w0 * sqrt(1 + (z/z_R)²)
+        where z_R = π * w0² / λ is the Rayleigh range
+        
+        Args:
+            frequency: Frequency in Hz
+            distance: Propagation distance in meters
+            initial_beam_width: Initial beam waist w0 in meters
+            
+        Returns:
+            Dictionary with beam parameters at distance z
+        """
+        try:
+            # Input validation
+            if frequency <= 0 or initial_beam_width <= 0 or distance < 0:
+                raise ValueError("Invalid input parameters")
+            
+            # Calculate wavelength
+            wavelength = 3e8 / frequency
+            
+            # Rayleigh range
+            rayleigh_range = math.pi * initial_beam_width**2 / wavelength
+            
+            # Beam radius at distance z
+            if distance == 0:
+                beam_width = initial_beam_width
+            else:
+                beam_width = initial_beam_width * math.sqrt(1 + (distance / rayleigh_range)**2)
+            
+            # Radius of curvature
+            if distance == 0:
+                radius_of_curvature = float('inf')
+            else:
+                radius_of_curvature = distance * (1 + (rayleigh_range / distance)**2)
+            
+            # Divergence angle (far-field)
+            divergence_angle = wavelength / (math.pi * initial_beam_width)
+            
+            # Gouy phase
+            gouy_phase = math.atan(distance / rayleigh_range) if rayleigh_range > 0 else 0
+            
+            return {
+                'beam_width': beam_width,
+                'rayleigh_range': rayleigh_range,
+                'radius_of_curvature': radius_of_curvature,
+                'divergence_angle': divergence_angle,
+                'gouy_phase': gouy_phase,
+                'beam_area': math.pi * beam_width**2,
+                'beam_expansion_factor': beam_width / initial_beam_width
+            }
+            
+        except (ValueError, TypeError, OverflowError, ZeroDivisionError):
+            # Return safe defaults for invalid inputs
+            return {
+                'beam_width': initial_beam_width,
+                'rayleigh_range': 1000.0,
+                'radius_of_curvature': float('inf'),
+                'divergence_angle': 0.001,
+                'gouy_phase': 0.0,
+                'beam_area': math.pi * initial_beam_width**2,
+                'beam_expansion_factor': 1.0
+            }
+
+    def calculate_enhanced_throughput(self, sinr_dB: float, frequency: float = 28e9,
+                                    modulation_scheme: str = "adaptive",
+                                    coding_rate: float = 0.8) -> Dict[str, float]:
+        """
+        Calculate enhanced throughput with practical constraints.
+        
+        Implements:
+        - Adaptive modulation based on SNR thresholds
+        - Practical SNR limits for mmWave/THz
+        - Coding gain factors
+        - Link margin requirements
+        
+        Args:
+            sinr_dB: Signal-to-Interference-plus-Noise Ratio in dB
+            frequency: Operating frequency in Hz
+            modulation_scheme: Modulation scheme ("adaptive", "qpsk", "16qam", "64qam", "256qam")
+            coding_rate: Forward error correction coding rate (0.5 to 1.0)
+            
+        Returns:
+            Dictionary with throughput analysis
+        """
+        try:
+            # Input validation
+            if not isinstance(sinr_dB, (int, float)) or np.isnan(sinr_dB) or np.isinf(sinr_dB):
+                raise ValueError("Invalid SINR input")
+            if frequency <= 0:
+                raise ValueError("Invalid frequency")
+            
+            # Frequency-dependent practical limits
+            if frequency >= 100e9:  # Sub-THz
+                max_practical_sinr = 35.0  # dB, limited by phase noise
+                min_practical_sinr = -5.0   # dB, atmospheric limitations
+                link_margin = 3.0           # dB, additional margin for THz
+            elif frequency >= 60e9:  # mmWave high
+                max_practical_sinr = 40.0
+                min_practical_sinr = -10.0
+                link_margin = 2.0
+            elif frequency >= 28e9:  # mmWave mid
+                max_practical_sinr = 45.0
+                min_practical_sinr = -15.0
+                link_margin = 1.5
+            else:  # Sub-6 GHz
+                max_practical_sinr = 50.0
+                min_practical_sinr = -20.0
+                link_margin = 1.0
+            
+            # Apply practical SINR limits
+            effective_sinr = max(min(sinr_dB - link_margin, max_practical_sinr), min_practical_sinr)
+            
+            # Adaptive modulation and coding
+            if modulation_scheme == "adaptive":
+                if effective_sinr >= 25.0:
+                    modulation = "256qam"
+                    spectral_efficiency = 8.0  # bits/s/Hz
+                    required_sinr = 25.0
+                elif effective_sinr >= 20.0:
+                    modulation = "64qam"
+                    spectral_efficiency = 6.0
+                    required_sinr = 20.0
+                elif effective_sinr >= 15.0:
+                    modulation = "16qam"
+                    spectral_efficiency = 4.0
+                    required_sinr = 15.0
+                elif effective_sinr >= 8.0:
+                    modulation = "qpsk"
+                    spectral_efficiency = 2.0
+                    required_sinr = 8.0
+                else:
+                    modulation = "bpsk"
+                    spectral_efficiency = 1.0
+                    required_sinr = 3.0
+            else:
+                # Fixed modulation scheme
+                modulation_params = {
+                    "bpsk": (1.0, 3.0),
+                    "qpsk": (2.0, 8.0),
+                    "16qam": (4.0, 15.0),
+                    "64qam": (6.0, 20.0),
+                    "256qam": (8.0, 25.0)
+                }
+                spectral_efficiency, required_sinr = modulation_params.get(
+                    modulation_scheme, (2.0, 8.0)
+                )
+                modulation = modulation_scheme
+            
+            # Check if SINR meets requirement
+            if effective_sinr < required_sinr:
+                # Fallback to lower modulation or fail
+                if effective_sinr >= 3.0:
+                    modulation = "bpsk"
+                    spectral_efficiency = 1.0
+                else:
+                    # Link failure
+                    return {
+                        'shannon_throughput': 0.0,
+                        'practical_throughput': 0.0,
+                        'modulation': "none",
+                        'spectral_efficiency': 0.0,
+                        'coding_rate': 0.0,
+                        'coding_gain_db': 0.0,
+                        'effective_sinr_db': effective_sinr,
+                        'link_margin_db': link_margin,
+                        'link_status': 'failed'
+                    }
+            
+            # Coding gain (typical values for LDPC/Turbo codes)
+            if coding_rate >= 0.9:
+                coding_gain_db = 1.0
+            elif coding_rate >= 0.8:
+                coding_gain_db = 2.0
+            elif coding_rate >= 0.7:
+                coding_gain_db = 3.0
+            elif coding_rate >= 0.5:
+                coding_gain_db = 4.0
+            else:
+                coding_gain_db = 5.0
+            
+            # Shannon limit throughput
+            sinr_linear = 10 ** (effective_sinr / 10)
+            shannon_throughput = self.bandwidth * math.log2(1 + sinr_linear)
+            
+            # Practical throughput with modulation and coding
+            practical_throughput = self.bandwidth * spectral_efficiency * coding_rate
+            
+            # Apply coding gain to effective throughput
+            effective_throughput = min(practical_throughput, shannon_throughput * 0.8)  # 80% of Shannon
+            
+            return {
+                'shannon_throughput': shannon_throughput,
+                'practical_throughput': effective_throughput,
+                'modulation': modulation,
+                'spectral_efficiency': spectral_efficiency,
+                'coding_rate': coding_rate,
+                'coding_gain_db': coding_gain_db,
+                'effective_sinr_db': effective_sinr,
+                'link_margin_db': link_margin,
+                'link_status': 'active'
+            }
+            
+        except (ValueError, TypeError, OverflowError):
+            return {
+                'shannon_throughput': 0.0,
+                'practical_throughput': 0.0,
+                'modulation': "none",
+                'spectral_efficiency': 0.0,
+                'coding_rate': 0.0,
+                'coding_gain_db': 0.0,
+                'effective_sinr_db': sinr_dB,
+                'link_margin_db': 0.0,
+                'link_status': 'error'
+            }
+
     def get_cache_stats(self) -> dict:
         """Get cache statistics for monitoring performance."""
         return {

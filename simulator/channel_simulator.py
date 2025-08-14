@@ -14,6 +14,7 @@ import scipy.special as sp
 from scipy.constants import c as speed_of_light
 from utils.exception_handler import safe_calculation, graceful_degradation, get_exception_handler
 from environment.physics_calculator import PhysicsCalculator
+from simulator.oam_beam_physics import OAMBeamPhysics, OAMBeamParameters
 
 class ChannelSimulator:
     """
@@ -47,6 +48,7 @@ class ChannelSimulator:
         """
         self.config = config or {}
         self.physics_calculator = PhysicsCalculator(self.config)
+        self.oam_beam_physics = OAMBeamPhysics(self.config)
                             
         self.frequency = 28.0e9                   
         self.wavelength = speed_of_light / self.frequency
@@ -573,92 +575,101 @@ class ChannelSimulator:
     
     def _calculate_crosstalk(self, distance: float, turbulence_screen: np.ndarray) -> np.ndarray:
         """
-        Calculate crosstalk between OAM modes using Paterson et al. model.
+        Calculate crosstalk between OAM modes using proper Laguerre-Gaussian beam physics.
         
-        Implements the proper OAM crosstalk theory:
-        - OAM orthogonality: exp(-((l₁-l₂)/σ)²) where σ depends on turbulence
-        - Phase correlation functions for mode coupling
-        - Turbulence-induced mode mixing
-        - Diffraction and atmospheric effects
+        Implements physics-based OAM crosstalk:
+        - Exact Laguerre-Gaussian mode overlap integrals
+        - Atmospheric turbulence perturbations on beam structure
+        - Beam divergence effects on mode coupling
+        - Power coupling efficiency between modes
         
         Args:
             distance: Propagation distance in meters
             turbulence_screen: Turbulence-induced phase screen
             
         Returns:
-            Crosstalk matrix based on Paterson et al. model
+            Complex crosstalk matrix [num_modes x num_modes]
             
         References:
-        - Paterson, C. (2005). Atmospheric turbulence and orbital angular momentum of 
-          single photons for optical communication. Physical Review Letters, 94(15), 153901.
-        - Tyler, G. A., & Boyd, R. W. (2009). Influence of atmospheric turbulence on 
-          the propagation of quantum states of light carrying orbital angular momentum. 
-          Optics Letters, 34(2), 142-144.
-        - Djordjevic, I. B., & Arabaci, M. (2010). LDPC-coded orbital angular momentum 
-          (OAM) modulation. Optics Express, 18(14), 14627-14646.
+        - Allen, L., et al. (1992). Orbital angular momentum of light. Phys. Rev. A 45, 8185.
+        - Paterson, C. (2005). Atmospheric turbulence and orbital angular momentum. PRL 94, 153901.
         """
-                                     
+        # Use proper OAM beam physics for crosstalk calculation
         crosstalk_matrix = np.eye(self.num_modes, dtype=complex)
         
-                                               
-        w_L = self.beam_width * distance                            
+        # Create beam parameters for current configuration
+        beam_params = OAMBeamParameters(
+            wavelength=self.wavelength,
+            waist_radius=self.beam_width,
+            aperture_radius=self.beam_width * 3.0,  # Reasonable aperture size
+            oam_mode_l=0,  # Will be updated for each mode
+            radial_mode_p=0
+        )
         
-                                            
-        r0 = (0.423 * (self.k ** 2) * self.turbulence_strength * distance) ** (-3/5)
+        # Calculate atmospheric turbulence strength
+        cn2 = self.turbulence_strength * 1e-14  # Convert to proper units
         
-                                                    
-                                                                        
-                                                             
-                                                                    
-        if r0 > w_L:
-                                    
-            sigma = w_L / (2 * np.sqrt(2 * np.log(2)))
-        else:
-                                      
-            sigma = w_L / (2 * np.sqrt(1 + (w_L / r0) ** 2))
-        
-                                                 
-                                                          
-        diffraction_factor = self.wavelength * distance / (np.pi * w_L ** 2)
-        
-                                                     
-                                                             
+        # Get modes array
         modes = np.arange(self.min_mode, self.max_mode + 1)
-        mode_diff_matrix = np.abs(modes[:, None] - modes[None, :])
         
-                                                
-        orthogonality_matrix = np.exp(-(mode_diff_matrix / sigma) ** 2)
+        # Calculate mode coupling using atmospheric turbulence model
+        if cn2 > 1e-18:  # Only if significant turbulence
+            atm_coupling = self.oam_beam_physics.atmospheric_mode_coupling(
+                cn2, max(abs(self.max_mode), abs(self.min_mode)), 
+                speed_of_light / self.wavelength, distance, beam_params
+            )
+            
+            # Map atmospheric coupling to our mode indices
+            l_max = max(abs(self.max_mode), abs(self.min_mode))
+            mode_count = 2 * l_max + 1
+            atm_modes = list(range(-l_max, l_max + 1))
+            
+            for i, mode_i in enumerate(modes):
+                for j, mode_j in enumerate(modes):
+                    try:
+                        atm_i = atm_modes.index(mode_i)
+                        atm_j = atm_modes.index(mode_j)
+                        crosstalk_matrix[i, j] = atm_coupling[atm_i, atm_j]
+                    except (ValueError, IndexError):
+                        # Mode not in atmospheric coupling matrix, use identity
+                        crosstalk_matrix[i, j] = 1.0 if i == j else 0.0
         
-                                            
-        diffraction_matrix = diffraction_factor * orthogonality_matrix
+        # Add beam divergence effects
+        beam_evolution = self.oam_beam_physics.beam_divergence_evolution(
+            np.array([distance]), beam_params
+        )
+        beam_radius_at_rx = beam_evolution['beam_radius'][0]
         
-                                                                    
-        turbulence_matrix = np.abs(turbulence_screen)
+        # Mode-dependent divergence (higher l modes diverge more)
+        for i, mode_i in enumerate(modes):
+            for j, mode_j in enumerate(modes):
+                if i != j:
+                    # Power coupling efficiency between different modes
+                    import copy
+                    tx_params = copy.deepcopy(beam_params)
+                    tx_params.oam_mode_l = mode_i
+                    rx_params = copy.deepcopy(beam_params)
+                    rx_params.oam_mode_l = mode_j
+                    rx_params.waist_radius = beam_radius_at_rx
+                    
+                    coupling = self.oam_beam_physics.power_coupling_efficiency(
+                        tx_params, rx_params, distance, atmospheric_cn2=cn2
+                    )
+                    
+                    # Apply coupling efficiency as additional loss
+                    crosstalk_matrix[i, j] *= np.sqrt(coupling['total_efficiency'])
         
-                                                  
-        mode_sum_matrix = modes[:, None] + modes[None, :]
-        phase_correlation_matrix = np.exp(-mode_diff_matrix ** 2 / (2 * mode_sum_matrix ** 2))
+        # Apply pointing errors and atmospheric perturbations
+        if hasattr(self, 'pointing_error_std') and self.pointing_error_std > 0:
+            pointing_loss = np.exp(-2 * (self.pointing_error_std / beam_radius_at_rx)**2)
+            # Diagonal elements (self-coupling) get pointing loss
+            np.fill_diagonal(crosstalk_matrix, np.diag(crosstalk_matrix) * pointing_loss)
         
-                                                   
-        total_coupling_matrix = (diffraction_matrix + turbulence_matrix) * phase_correlation_matrix
-        total_coupling_matrix = np.minimum(0.3, total_coupling_matrix)                  
-        
-                                  
-        coupling_phases = np.random.uniform(0, 2 * np.pi, (self.num_modes, self.num_modes))
-        
-                                                 
-        off_diagonal_mask = ~np.eye(self.num_modes, dtype=bool)
-        crosstalk_matrix[off_diagonal_mask] = total_coupling_matrix[off_diagonal_mask] * np.exp(1j * coupling_phases[off_diagonal_mask])
-        
-                                                                 
-                                                                        
-        row_powers = np.sum(np.abs(crosstalk_matrix) ** 2, axis=1)
-        
-                                                               
-        normalization_factors = np.where(row_powers > 1e-15, 1.0 / np.sqrt(row_powers), 1.0)
-        
-                                                            
-        crosstalk_matrix = crosstalk_matrix * normalization_factors[:, None]
+        # Normalize to ensure power conservation
+        for i in range(self.num_modes):
+            row_power = np.sum(np.abs(crosstalk_matrix[i, :])**2)
+            if row_power > 1e-15:
+                crosstalk_matrix[i, :] /= np.sqrt(row_power)
         
         return crosstalk_matrix
         
