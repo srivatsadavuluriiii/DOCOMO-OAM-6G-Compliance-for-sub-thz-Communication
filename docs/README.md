@@ -291,20 +291,6 @@ print(f'Sensing accuracy: {sa.position_accuracy_cm:.2f} cm')
 4. **Physics Validation**: Comprehensive physics testing
 5. **Troubleshooting**: Common issues and solutions
 
-## Citation
-
-If you use this work in your research, please cite:
-
-```bibtex
-@article{oam6g2024,
-  title={Maximizing Multi-Gbps Throughput in 6G OAM Systems Through Deep Reinforcement Learning and Physical Modeling},
-  author={[Your Name]},
-  journal={[Target Journal]},
-  year={2024},
-  note={6G OAM Deep Reinforcement Learning System with DOCOMO Compliance}
-}
-```
-
 ## Contributing
 
 1. **Follow Standards**: Maintain code quality and documentation
