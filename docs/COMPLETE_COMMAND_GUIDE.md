@@ -1,6 +1,6 @@
-# 🚀 Complete Command Guide - 6G OAM Deep Reinforcement Learning Project
+#  Complete Command Guide - 6G OAM Deep Reinforcement Learning Project
 
-## 📋 Table of Contents
+##  Table of Contents
 
 1. [Project Setup](#-project-setup)
 2. [Environment Management](#-environment-management)
@@ -20,7 +20,7 @@
 
 ---
 
-## 🛠️ Project Setup
+##  Project Setup
 
 ### Initial Setup
 ```bash
@@ -64,7 +64,7 @@ python -c "import torch; print(f'CUDA available: {torch.cuda.is_available()}')"
 
 ---
 
-## 🌍 Environment Management
+##  Environment Management
 
 ### Virtual Environment Commands
 ```bash
@@ -105,7 +105,7 @@ env | grep -E "(OAM|CUDA|PYTHON)"
 
 ---
 
-## ⚙️ Configuration Management
+##  Configuration Management
 
 ### Configuration File Commands
 ```bash
@@ -128,7 +128,7 @@ python -c "
 import yaml
 with open('config/config.yaml', 'r') as f:
     config = yaml.safe_load(f)
-print('✅ Configuration loaded successfully')
+print(' Configuration loaded successfully')
 print(f'Available sections: {list(config.keys())}')
 "
 
@@ -138,7 +138,7 @@ python scripts/verification/verify_environment.py --config config/config.yaml
 
 ---
 
-## 🎯 Training Commands
+##  Training Commands
 
 ### Basic Training
 ```bash
@@ -243,7 +243,7 @@ python scripts/training/train_compliance.py \
 
 ---
 
-## 📊 Evaluation Commands
+##  Evaluation Commands
 
 ### Basic Evaluation
 ```bash
@@ -299,7 +299,7 @@ python scripts/evaluation/evaluate_rl.py \
 
 ---
 
-## 📈 Analysis Commands
+##  Analysis Commands
 
 ### Performance Analysis
 ```bash
@@ -364,7 +364,7 @@ print(f'Improvement: {((df.throughput.tail(10).mean() / df.throughput.head(10).m
 
 ---
 
-## ✅ Verification Commands
+##  Verification Commands
 
 ### Environment Verification
 ```bash
@@ -407,9 +407,9 @@ modules = [
 for module in modules:
     try:
         __import__(module)
-        print(f'✅ {module}')
+        print(f' {module}')
     except ImportError as e:
-        print(f'❌ {module}: {e}')
+        print(f' {module}: {e}')
 "
 
 # Memory usage check
@@ -427,7 +427,7 @@ if torch.cuda.is_available():
 
 ---
 
-## 🧪 Testing Commands
+## Testing Commands
 
 ### Unit Tests
 ```bash
@@ -483,7 +483,7 @@ phi = np.linspace(0, 2*np.pi, 20)
 R, PHI = np.meshgrid(r, phi, indexing='ij')
 
 result = oam.laguerre_gaussian_field(R, PHI, 0.0, params)
-print(f'✅ OAM field calculation successful')
+print(f' OAM field calculation successful')
 print(f'Beam radius: {result.beam_radius:.4f} m')
 print(f'Mode purity: {result.mode_purity:.4f}')
 "
@@ -499,17 +499,17 @@ docomo = docomo_module.DOCOMOComplianceManager()
 
 # Test energy efficiency
 ee = docomo.calculate_energy_efficiency(1000e9, 10, 300e9)
-print(f'✅ Energy efficiency: {ee.improvement_factor_vs_5g:.0f}x improvement')
+print(f' Energy efficiency: {ee.improvement_factor_vs_5g:.0f}x improvement')
 
 # Test sensing accuracy
 sa = docomo.calculate_sensing_accuracy(600e9, 50e9, 30, 256)
-print(f'✅ Sensing accuracy: {sa.position_accuracy_cm:.2f} cm')
+print(f' Sensing accuracy: {sa.position_accuracy_cm:.2f} cm')
 "
 ```
 
 ---
 
-## 📊 Visualization Commands
+##  Visualization Commands
 
 ### Basic Plots
 ```bash
@@ -621,7 +621,7 @@ plt.show()
 
 ---
 
-## 🔬 Physics Validation
+##  Physics Validation
 
 ### OAM Beam Physics
 ```bash
@@ -730,7 +730,7 @@ for freq in frequencies:
 
 ---
 
-## ⚡ Performance Tuning
+##  Performance Tuning
 
 ### Hyperparameter Optimization
 ```bash
@@ -803,7 +803,7 @@ print(f'Peak memory usage: {peak / 1024 / 1024:.1f} MB')
 
 ---
 
-## 🐛 Debugging Commands
+##  Debugging Commands
 
 ### Debug Training Issues
 ```bash
@@ -929,7 +929,7 @@ print(f'Link status: {enhanced[\"link_status\"]}')
 
 ---
 
-## 📂 Data Management
+##  Data Management
 
 ### Results Management
 ```bash
@@ -1014,7 +1014,7 @@ except FileNotFoundError:
 
 ---
 
-## 🚀 Advanced Usage
+##  Advanced Usage
 
 ### Custom Training Scenarios
 ```bash
@@ -1173,7 +1173,7 @@ jupyter nbconvert --to notebook analysis_notebook.py
 
 ---
 
-## 🆘 Troubleshooting
+##  Troubleshooting
 
 ### Common Issues and Solutions
 
@@ -1186,9 +1186,9 @@ export PYTHONPATH="${PYTHONPATH}:$(pwd)"
 python -c "import sys; print('\\n'.join(sys.path))"
 
 # Test individual imports
-python -c "from environment.docomo_6g_env import DOCOMO_6G_Environment; print('✅ Environment OK')"
-python -c "from models.agent import Agent; print('✅ Agent OK')"
-python -c "from simulator.channel_simulator import ChannelSimulator; print('✅ Simulator OK')"
+python -c "from environment.docomo_6g_env import DOCOMO_6G_Environment; print(' Environment OK')"
+python -c "from models.agent import Agent; print(' Agent OK')"
+python -c "from simulator.channel_simulator import ChannelSimulator; print(' Simulator OK')"
 ```
 
 #### Memory Issues
@@ -1228,7 +1228,7 @@ python -c "import torch; torch.cuda.empty_cache(); print('GPU cache cleared')"
 #### Configuration Issues
 ```bash
 # Validate YAML syntax
-python -c "import yaml; yaml.safe_load(open('config/config.yaml')); print('✅ Config valid')"
+python -c "import yaml; yaml.safe_load(open('config/config.yaml')); print(' Config valid')"
 
 # Check for missing sections
 python -c "
@@ -1239,9 +1239,9 @@ with open('config/config.yaml', 'r') as f:
 required = ['physics', 'docomo_6g_system', 'simulation']
 missing = [sec for sec in required if sec not in config]
 if missing:
-    print(f'❌ Missing sections: {missing}')
+    print(f' Missing sections: {missing}')
 else:
-    print('✅ All required sections present')
+    print(' All required sections present')
 "
 
 # Reset to default config (backup first!)
@@ -1295,7 +1295,7 @@ python scripts/training/train_compliance.py \
 
 ---
 
-## 📚 Quick Reference Summary
+##  Quick Reference Summary
 
 ### Most Common Commands
 ```bash
@@ -1318,7 +1318,7 @@ python scripts/verification/verify_environment.py
 python scripts/tuning/tune_agent.py --config config/config.yaml --trials 50
 
 # 7. Quick physics test
-python -c "from environment.docomo_6g_env import DOCOMO_6G_Environment; print('✅ Environment working')"
+python -c "from environment.docomo_6g_env import DOCOMO_6G_Environment; print(' Environment working')"
 
 # 8. View results
 ls -la results/*/
@@ -1354,7 +1354,7 @@ verify_*.py        # Verification scripts
 
 ---
 
-## 🎯 Performance Optimization Tips
+##  Performance Optimization Tips
 
 1. **GPU Usage**: Always use `--device cuda` for faster training
 2. **Batch Size**: Increase batch size if you have more GPU memory

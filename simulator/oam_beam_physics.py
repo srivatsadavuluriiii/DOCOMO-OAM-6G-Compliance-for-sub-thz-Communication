@@ -189,7 +189,7 @@ class OAMBeamPhysics:
         """
         Calculate overlap integral between two OAM modes
         
-        ⟨LG_l1^p1 | LG_l2^p2⟩ = ∫∫ E*_l1,p1(r,φ) × E_l2,p2(r,φ) r dr dφ
+        LG_l1^p1 | LG_l2^p2 = ∫∫ E*_l1,p1(r,φ) × E_l2,p2(r,φ) r dr dφ
         
         Args:
             l1, p1: First mode indices

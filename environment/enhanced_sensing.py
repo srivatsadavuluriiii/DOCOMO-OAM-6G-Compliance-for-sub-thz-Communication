@@ -268,20 +268,20 @@ class EnhancedSensingProcessor:
         if target_met:
             best_techniques = [name for name, result in results.items() 
                              if result['target_met']]
-            recommendations.append(f"✅ DOCOMO target achievable with: {', '.join(best_techniques)}")
+            recommendations.append(f"DOCOMO target achievable with: {', '.join(best_techniques)}")
         else:
             best_accuracy = min(result['accuracy_cm'] for result in results.values())
-            recommendations.append(f"🔄 Best achievable: {best_accuracy:.1f} cm (target: 1.0 cm)")
+            recommendations.append(f"Best achievable: {best_accuracy:.1f} cm (target: 1.0 cm)")
         
         # System recommendations
         recommendations.extend([
-            "🔧 Increase bandwidth to 100 GHz for sub-cm range resolution",
-            "📡 Use 512-element arrays for improved angular resolution", 
-            "🤝 Deploy distributed sensing with 4+ nodes for spatial diversity",
-            "🧠 Implement fusion sensing with radar+lidar+vision+IMU",
-            "⚡ Achieve 40 dB SNR through advanced signal processing",
-            "🕐 Use 50 ms coherent integration for enhanced sensitivity",
-            "🔀 Apply MIMO radar with 16×128 virtual array configuration"
+            "Increase bandwidth to 100 GHz for sub-cm range resolution",
+            "Use 512-element arrays for improved angular resolution", 
+            " Deploy distributed sensing with 4+ nodes for spatial diversity",
+            "Implement fusion sensing with radar+lidar+vision+IMU",
+            "Achieve 40 dB SNR through advanced signal processing",
+            " Use 50 ms coherent integration for enhanced sensitivity",
+            " Apply MIMO radar with 16×128 virtual array configuration"
         ])
         
         return recommendations
@@ -347,7 +347,7 @@ def analyze_coverage_limitations(frequency_hz: float, cell_radius_m: float,
             # Beamforming gain
             beamforming_gain_db = 20 * math.log10(math.sqrt(256))  # 256-element array
             if beamforming_gain_db >= power_deficit_db:
-                solutions.append(f"✅ Beamforming gain ({beamforming_gain_db:.1f} dB) can compensate")
+                solutions.append(f"Beamforming gain ({beamforming_gain_db:.1f} dB) can compensate")
             
             # Cell densification
             new_radius_m = cell_radius_m * 10**(-power_deficit_db / 20)
