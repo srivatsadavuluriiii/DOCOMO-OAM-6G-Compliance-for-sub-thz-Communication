@@ -77,12 +77,26 @@ class UltraHighMobilityModel:
         self.config = config
         mobility_config = config.get('docomo_6g_system', {}).get('mobility', {})
         
-                                    
+        # General mobility settings
         self.max_speed_kmh = mobility_config.get('max_speed_kmh', 500.0)
         self.max_acceleration_ms2 = mobility_config.get('acceleration_max_ms2', 10.0)
         self.prediction_horizon_ms = mobility_config.get('prediction_horizon_ms', 50.0)
         self.beam_prediction_enabled = mobility_config.get('beam_prediction_enabled', True)
         self.doppler_compensation = mobility_config.get('doppler_compensation', True)
+
+        # Handover thresholds
+        handover_cfg = mobility_config.get('handover', {})
+        self.handover_benefit_threshold = handover_cfg.get('benefit_threshold', 0.2)
+        self.handover_confidence_threshold = handover_cfg.get('confidence_threshold', 0.7)
+
+        # Path model settings
+        path_cfg = mobility_config.get('path', {})
+        self.path_model = path_cfg.get('model', 'random_walk')
+        self.path_target_position = np.array(path_cfg.get('target_position_m', [5000, 5000, 1.5]))
+        self.path_circular_center = np.array(path_cfg.get('center_m', [0, 0, 1.5]))
+        self.path_circular_radius = path_cfg.get('radius_m', 2000)
+        self.path_circular_direction = path_cfg.get('direction', 'clockwise')
+        self.path_angular_velocity = 0.0 # rad/s, for circular path
         
                              
         self.beam_tracking_accuracy_deg = 0.05                              
@@ -219,9 +233,75 @@ class UltraHighMobilityModel:
             'state': self.current_state,
             'speed_kmh': self.current_state.speed_kmh
         })
+
+        # For circular path, initialize angular velocity
+        if self.path_model == 'circular':
+            speed_ms = self.current_state.speed_ms
+            if self.path_circular_radius > 0:
+                self.path_angular_velocity = speed_ms / self.path_circular_radius
         
         return self.current_state
     
+    def _get_target_acceleration(self, dt: float) -> np.ndarray:
+        """Calculates the acceleration needed to follow a predefined path."""
+        if self.path_model == 'linear':
+            direction_vector = self.path_target_position - np.array([self.current_state.position_x, self.current_state.position_y, self.current_state.position_z])
+            distance_to_target = np.linalg.norm(direction_vector)
+            
+            if distance_to_target < 10.0: # Reached target
+                return np.zeros(3)
+
+            desired_velocity = (direction_vector / distance_to_target) * (self.max_speed_kmh / 3.6)
+            required_accel = (desired_velocity - np.array([self.current_state.velocity_x, self.current_state.velocity_y, self.current_state.velocity_z])) / dt
+            return required_accel
+
+        elif self.path_model == 'circular':
+            current_pos_relative = np.array([self.current_state.position_x, self.current_state.position_y, self.current_state.position_z]) - self.path_circular_center
+            # Centripetal acceleration: a = v^2 / r, directed towards the center
+            centripetal_accel = -current_pos_relative * (self.current_state.speed_ms**2) / (self.path_circular_radius**2)
+            
+            # Adjust tangential velocity
+            current_angle = np.arctan2(current_pos_relative[1], current_pos_relative[0])
+            if self.path_circular_direction == 'clockwise':
+                new_angle = current_angle - self.path_angular_velocity * dt
+            else: # counter_clockwise
+                new_angle = current_angle + self.path_angular_velocity * dt
+            
+            target_pos = self.path_circular_center + self.path_circular_radius * np.array([np.cos(new_angle), np.sin(new_angle), 0])
+            desired_velocity = (target_pos - np.array([self.current_state.position_x, self.current_state.position_y, self.current_state.position_z])) / dt
+            required_accel = (desired_velocity - np.array([self.current_state.velocity_x, self.current_state.velocity_y, self.current_state.velocity_z])) / dt
+            return centripetal_accel + required_accel
+
+        else: # random_walk
+            return np.random.normal(0, 0.5, 3)
+
+    def step_mobility(self, dt: float = 0.1):
+        """Advances the mobility model by one time step."""
+        
+        # Get target acceleration based on path model
+        target_accel = self._get_target_acceleration(dt)
+
+        # Apply noise and update state (similar to original random walk logic)
+        new_accel = target_accel + np.random.normal(0, 0.1, 3) # Less noise for path models
+        
+        accel_mag = np.linalg.norm(new_accel)
+        if accel_mag > self.max_acceleration_ms2:
+            new_accel = new_accel / accel_mag * self.max_acceleration_ms2
+
+        new_velocity = np.array([self.current_state.velocity_x, self.current_state.velocity_y, self.current_state.velocity_z]) + new_accel * dt
+        
+        speed = np.linalg.norm(new_velocity)
+        max_speed_ms = self.max_speed_kmh / 3.6
+        if speed > max_speed_ms:
+            new_velocity = new_velocity / speed * max_speed_ms
+
+        new_position = np.array([self.current_state.position_x, self.current_state.position_y, self.current_state.position_z]) + new_velocity * dt
+
+        self.update_mobility_state(
+            position=tuple(new_position),
+            velocity=tuple(new_velocity)
+        )
+
     def _kalman_predict(self):
         """Kalman filter prediction step"""
         F = self.kalman_filter['F']
@@ -513,8 +593,7 @@ class UltraHighMobilityModel:
         if best_candidate is not None:
             handover_benefit = (current_distance - best_distance) / current_distance
             
-                                                                         
-            if handover_benefit > 0.2 and confidence > 0.7:                            
+            if handover_benefit > self.handover_benefit_threshold and confidence > self.handover_confidence_threshold:
                 should_handover = True
         
                             

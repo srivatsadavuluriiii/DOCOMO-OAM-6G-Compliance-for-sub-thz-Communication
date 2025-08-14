@@ -1,0 +1,353 @@
+docomo_6g_system:
+  atmospheric:
+    enhanced_absorption_model: itu_r_p676_13
+    fog_scattering: true
+    molecular_absorption: true
+    rain_attenuation: true
+    scintillation_model: strong_turbulence
+    seasonal_variations: true
+    urban_effects: true
+    weather_adaptation: true
+  band_switch_optimization:
+    docomo_benchmarks: true
+    early_exemption_steps: 10
+    kpi_compliance_threshold: 0.95
+    min_dwell_steps: 3
+    min_gain_gbps: 0.5
+    min_interval_steps: 3
+    physics_validation: true
+    real_world_scenarios: true
+    regression_testing: true
+    sinr_hysteresis_db: 1.0
+    stickiness_bonus: 0.1
+    stickiness_window: 10
+    stress_testing: true
+    time_to_trigger_steps: 2
+  compliance_target: docomo_6g_kpi_2030
+  deployment_scenarios:
+    extended_reality:
+      latency_requirement_ms: 0.1
+      mobility_profile: pedestrian
+      sensing_accuracy_cm: 1.0
+      target_throughput_gbps: 500.0
+      user_density_per_km2: 10000
+    highway_mobility:
+      handover_frequency_max: 10
+      mobility_profile: high_speed
+      target_throughput_gbps: 50.0
+      user_density_per_km2: 1000
+    indoor_hotspot:
+      latency_requirement_ms: 0.05
+      mobility_profile: pedestrian
+      target_throughput_gbps: 1000.0
+      user_density_per_km2: 100000
+    industrial_iot:
+      mobility_profile: stationary
+      reliability_requirement: 0.9999999
+      target_throughput_mbps: 1.0
+      user_density_per_km2: 1000000
+    urban_dense:
+      coverage_requirement: 0.99
+      mobility_profile: mixed_speed
+      target_throughput_gbps: 100.0
+      user_density_per_km2: 10000000
+  frequency_bands:
+    mmwave_28:
+      antenna_gain_dbi: 25.0
+      bandwidth: 800.0e6
+      deployment: micro_cell
+      frequency: 28.0e9
+      max_range_km: 1.0
+      oam_modes:
+      - 1
+      - 2
+      - 3
+      - 4
+      target_latency_ms: 0.5
+      target_throughput_gbps: 10.0
+      tx_power_dbm: 30.0
+    mmwave_39:
+      antenna_gain_dbi: 28.0
+      bandwidth: 800.0e6
+      deployment: micro_cell
+      frequency: 39.0e9
+      max_range_km: 0.8
+      oam_modes:
+      - 1
+      - 2
+      - 3
+      - 4
+      - 5
+      target_latency_ms: 0.3
+      target_throughput_gbps: 15.0
+      tx_power_dbm: 30.0
+    mmwave_60:
+      antenna_gain_dbi: 30.0
+      bandwidth: 2.0e9
+      deployment: pico_cell
+      frequency: 60.0e9
+      max_range_km: 0.5
+      oam_modes:
+      - 1
+      - 2
+      - 3
+      - 4
+      - 5
+      - 6
+      target_latency_ms: 0.2
+      target_throughput_gbps: 30.0
+      tx_power_dbm: 25.0
+    sub_6ghz:
+      antenna_gain_dbi: 15.0
+      bandwidth: 100.0e6
+      deployment: macro_cell
+      frequency: 6.0e9
+      max_range_km: 10.0
+      oam_modes:
+      - 1
+      - 2
+      - 3
+      target_latency_ms: 1.0
+      target_throughput_gbps: 1.0
+      tx_power_dbm: 46.0
+    sub_thz_100:
+      antenna_gain_dbi: 41.0
+      bandwidth: 15.0e9
+      deployment: femto_cell
+      frequency: 100.0e9
+      max_range_km: 0.2
+      oam_modes:
+      - 1
+      - 2
+      - 3
+      - 4
+      - 5
+      - 6
+      - 7
+      - 8
+      target_latency_ms: 0.15
+      target_throughput_gbps: 100.0
+      tx_power_dbm: 20.0
+    sub_thz_140:
+      antenna_gain_dbi: 45.0
+      bandwidth: 10.0e9
+      deployment: femto_cell
+      frequency: 140.0e9
+      max_range_km: 0.15
+      oam_modes:
+      - 1
+      - 2
+      - 3
+      - 4
+      - 5
+      - 6
+      - 7
+      - 8
+      target_latency_ms: 0.1
+      target_throughput_gbps: 200.0
+      tx_power_dbm: 15.0
+    sub_thz_220:
+      antenna_gain_dbi: 49.0
+      bandwidth: 20.0e9
+      deployment: atto_cell
+      frequency: 220.0e9
+      max_range_km: 0.1
+      oam_modes:
+      - 1
+      - 2
+      - 3
+      - 4
+      - 5
+      - 6
+      - 7
+      - 8
+      target_latency_ms: 0.08
+      target_throughput_gbps: 500.0
+      tx_power_dbm: 10.0
+    sub_thz_300:
+      antenna_gain_dbi: 53.0
+      bandwidth: 20.0e9
+      deployment: atto_cell
+      frequency: 300.0e9
+      max_range_km: 0.05
+      oam_modes:
+      - 1
+      - 2
+      - 3
+      - 4
+      - 5
+      - 6
+      - 7
+      - 8
+      target_latency_ms: 0.05
+      target_throughput_gbps: 1000.0
+      tx_power_dbm: 5.0
+    thz_600:
+      antenna_gain_dbi: 55.0
+      bandwidth: 100.0e9
+      deployment: zepto_cell
+      frequency: 600.0e9
+      max_range_km: 0.01
+      oam_modes:
+      - 1
+      - 2
+      - 3
+      - 4
+      - 5
+      - 6
+      - 7
+      - 8
+      target_latency_ms: 0.01
+      target_throughput_gbps: 2000.0
+      tx_power_dbm: 0.0
+  kpi_targets:
+    connection_density_per_km2: 10000000
+    coverage_improvement: 100
+    energy_efficiency_improvement: 100
+    latency_ms: 0.1
+    mobility_kmh: 500.0
+    peak_data_rate_tbps: 1.0
+    reliability: 0.9999999
+    sensing_accuracy_cm: 1.0
+    spectrum_efficiency_improvement: 10
+    user_data_rate_gbps: 100.0
+  mobility:
+    acceleration_max_ms2: 10.0
+    beam_prediction_enabled: true
+    doppler_compensation: true
+    handover:
+      benefit_threshold: 0.2
+      confidence_threshold: 0.7
+    handover_prediction_ms: 20.0
+    initial_speed_kmh:
+      distribution: normal
+      mean: 200
+      std: 100
+    max_speed_kmh: 500.0
+    mobility_state_estimation: true
+    path:
+      center_m:
+      - 0
+      - 0
+      - 1.5
+      direction: clockwise
+      model: random_walk
+      radius_m: 2000
+      target_position_m:
+      - 5000
+      - 5000
+      - 1.5
+    prediction_horizon_ms: 50.0
+  monitoring:
+    anomaly_detection: true
+    compliance_reporting: true
+    energy_monitoring: true
+    kpi_tracking: true
+    predictive_maintenance: true
+    real_time_analytics: true
+  network:
+    base_stations:
+    - - 0
+      - 0
+      - 30
+    - - 2000
+      - 2000
+      - 30
+    - - -2000
+      - 2000
+      - 30
+    - - 2000
+      - -2000
+      - 30
+    - - -2000
+      - -2000
+      - 30
+  oam_system:
+    adaptive_mode_selection: true
+    beam_tracking_accuracy_deg: 0.05
+    beam_width_range:
+    - 0.001
+    - 0.1
+    crosstalk_threshold: -20
+    max_mode: 16
+    min_mode: 1
+    mode_prediction_enabled: true
+    mode_switching_time_us: 10
+  reinforcement_learning:
+    action_dimension: 8
+    agent_type: docomo_multi_objective_dqn
+    network_architecture:
+      activation: swish
+      batch_normalization: true
+      dropout_rate: 0.1
+      hidden_layers:
+      - 512
+      - 512
+      - 256
+      - 256
+      physics_informed: true
+    objectives:
+      energy_weight: 0.08
+      latency_weight: 0.25
+      mobility_weight: 0.05
+      reliability_weight: 0.1
+      spectrum_weight: 0.02
+      throughput_weight: 0.5
+    state_dimension: 20
+    training:
+      batch_size: 32
+      buffer_capacity: 200000
+      epsilon_decay: 0.9972405805044581
+      gamma: 0.9948348830606041
+      gradient_clipping: 1.0
+      hidden_layers:
+      - 512
+      - 256
+      - 128
+      high_freq_start_prob: 0.99
+      learning_rate: 4.9745808322672786e-05
+      lr_scheduler: cosine_annealing
+      optimal_start_band: true
+      replay_buffer_size: 100000
+      target_update_frequency: 500
+  research_alignment: ntt_docomo_white_paper_2025
+  validation:
+    kpi_compliance_threshold: 0.97
+  version: '2025.1'
+hardware_requirements:
+  cpu_cores: 16
+  gpu_memory_gb: 16
+  ram_gb: 64
+  storage_gb: 1000
+physics:
+  clutter:
+    enabled: true
+    loss_constant_C: 22.7
+    loss_factor_A: 26.0
+    loss_factor_B: 20.0
+    model: UMa_NLOS
+  pointing_error:
+    blockage:
+      enabled: true
+      model: urban
+      profiles:
+        suburban:
+          loss_mean_db: 20.0
+          loss_std_dev_db: 4.0
+          probability: 0.001
+        urban:
+          loss_mean_db: 25.0
+          loss_std_dev_db: 5.0
+          probability: 0.005
+    high_speed_threshold_kmh: 300.0
+    loss_of_lock_base_prob: 0.001
+    loss_of_lock_penalty_db: 10.0
+    loss_of_lock_speed_factor: 5.0
+    model: dynamic
+    tracking_speed_deg_s: 180.0
+simulation:
+  checkpoint_frequency: 500
+  early_stopping_patience: 1000
+  evaluation_frequency: 100
+  max_episodes: 10000
+  max_steps_per_episode: 900

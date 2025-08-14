@@ -1,0 +1,51 @@
+ DOCOMO 6G Professional Training System
+============================================================
+    Config: config/config.yaml
+    Output: results/docomo_6g_zero
+    Episodes: 0
+    Seed: 42
+  Using device: cpu
+ Loaded config from config/config.yaml
+ Initializing DOCOMO 6G Environment...
+ All parameters validated successfully
+ Validation Summary:
+   frequency_GHz: 28.0
+   wavelength_m: 0.0107068735
+   beam_width_rad: 0.03
+   pointing_error_rad: 0.005
+   oam_modes: 1-8
+   max_snr_dB: 106.94428732430866
+   turbulence_strength: 1e-14
+   atmospheric_conditions: T=20.0C, P=101.3kPa, H=50.0%
+ DOCOMO 6G Environment initialized
+    KPI Targets: 100.0 Gbps, 0.1 ms
+    Frequency Bands: 9 bands (6 GHz - 600 GHz)
+    Max Mobility: 500.0 km/h
+    State space: (20,)
+    Action space: 8
+    Frequency bands: 9
+ Initializing DQN Agent...
+     Model parameters: 73224
+
+ Starting DOCOMO 6G Training: 0 episodes
+============================================================
+
+============================================================
+ DOCOMO 6G Training Completed!
+     Total time: 0.00s (evaluation-only)
+    Best reward: -inf
+    Best DOCOMO compliance: 0.0%
+    Final epsilon: 1.0000
+    Buffer size: 0
+
+ Evaluating agent over 1 episodes...
+    Mean reward: 2000.0000 ± 0.0000
+    DOCOMO compliance: 98.0%
+
+ Results saved to: results/docomo_6g_zero
+    training_results.json - Complete training data
+    best_model.pth - Best performing model
+    plots/ - Training visualizations
+
+ DOCOMO 6G Training Successfully Completed!
+System ready for production deployment!

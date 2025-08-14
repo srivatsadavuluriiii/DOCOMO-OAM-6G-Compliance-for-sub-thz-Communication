@@ -1,0 +1,22 @@
+Using device: cpu
+ All parameters validated successfully
+ Validation Summary:
+   frequency_GHz: 28.0
+   wavelength_m: 0.0107068735
+   beam_width_rad: 0.03
+   pointing_error_rad: 0.005
+   oam_modes: 1-8
+   max_snr_dB: 106.94428732430866
+   turbulence_strength: 1e-14
+   atmospheric_conditions: T=20.0C, P=101.3kPa, H=50.0%
+ DOCOMO 6G Environment initialized
+    KPI Targets: 100.0 Gbps, 0.1 ms
+    Frequency Bands: 9 bands (6 GHz - 600 GHz)
+    Max Mobility: 500.0 km/h
+Warning: Could not load best_model.pth: Error(s) in loading state_dict for DQN:
+	size mismatch for model.0.weight: copying a param with shape torch.Size([256, 20]) from checkpoint, the shape in current model is torch.Size([128, 20]).
+	size mismatch for model.0.bias: copying a param with shape torch.Size([256]) from checkpoint, the shape in current model is torch.Size([128]).
+	size mismatch for model.2.weight: copying a param with shape torch.Size([256, 256]) from checkpoint, the shape in current model is torch.Size([128, 128]).
+	size mismatch for model.2.bias: copying a param with shape torch.Size([256]) from checkpoint, the shape in current model is torch.Size([128]).
+	size mismatch for model.4.weight: copying a param with shape torch.Size([8, 256]) from checkpoint, the shape in current model is torch.Size([8, 128]).
+Starting evaluation for 10 episodes...

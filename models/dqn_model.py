@@ -16,7 +16,8 @@ class DQN(nn.Module):
         state_dim: int,
         action_dim: int,
         hidden_layers: List[int] = [128, 128],
-        activation: str = "relu"
+        activation: str = "relu",
+        dueling: bool = False
     ):
         """
         Initialize the DQN model.
@@ -26,40 +27,53 @@ class DQN(nn.Module):
             action_dim: Dimension of the action space
             hidden_layers: List of hidden layer sizes
             activation: Activation function to use ('relu', 'leaky_relu', 'tanh')
+            dueling: Whether to use Dueling DQN architecture
         """
         super(DQN, self).__init__()
         
-                                                         
+        self.action_dim = action_dim
+        self.dueling = dueling
         self.activation = activation
         
-                     
-        layers = []
+        # Feature layer
+        feature_layers = []
         prev_dim = state_dim
         
-                       
         for hidden_dim in hidden_layers:
-            layers.append(nn.Linear(prev_dim, hidden_dim))
+            feature_layers.append(nn.Linear(prev_dim, hidden_dim))
             
-                                     
             if activation == "relu":
-                layers.append(nn.ReLU())
+                feature_layers.append(nn.ReLU())
             elif activation == "leaky_relu":
-                layers.append(nn.LeakyReLU(0.01))
+                feature_layers.append(nn.LeakyReLU(0.01))
             elif activation == "tanh":
-                layers.append(nn.Tanh())
+                feature_layers.append(nn.Tanh())
             else:
-                layers.append(nn.ReLU())                   
-                self.activation = "relu"                                     
+                feature_layers.append(nn.ReLU())
+                self.activation = "relu"
             
             prev_dim = hidden_dim
         
-                      
-        layers.append(nn.Linear(prev_dim, action_dim))
+        self.feature_layer = nn.Sequential(*feature_layers)
         
-                            
-        self.model = nn.Sequential(*layers)
+        if self.dueling:
+            # Value stream
+            self.value_stream = nn.Sequential(
+                nn.Linear(prev_dim, prev_dim // 2),
+                nn.ReLU(),
+                nn.Linear(prev_dim // 2, 1)
+            )
+            
+            # Advantage stream
+            self.advantage_stream = nn.Sequential(
+                nn.Linear(prev_dim, prev_dim // 2),
+                nn.ReLU(),
+                nn.Linear(prev_dim // 2, action_dim)
+            )
+        else:
+            # Standard Q-value output
+            self.output_layer = nn.Linear(prev_dim, action_dim)
         
-                            
         self.apply(self._init_weights)
     
     def _init_weights(self, module):
@@ -70,16 +84,13 @@ class DQN(nn.Module):
             module: PyTorch module to initialize
         """
         if isinstance(module, nn.Linear):
-                                                                         
             if self.activation == "relu":
                 nn.init.kaiming_normal_(module.weight, nonlinearity='relu')
             elif self.activation == "leaky_relu":
                 nn.init.kaiming_normal_(module.weight, nonlinearity='leaky_relu')
             elif self.activation == "tanh":
-                                                            
                 nn.init.xavier_normal_(module.weight)
             else:
-                                                
                 nn.init.kaiming_normal_(module.weight, nonlinearity='relu')
             
             if module.bias is not None:
@@ -95,7 +106,18 @@ class DQN(nn.Module):
         Returns:
             Q-values tensor of shape (batch_size, action_dim)
         """
-        return self.model(state)
+        features = self.feature_layer(state)
+        
+        if self.dueling:
+            value = self.value_stream(features)
+            advantage = self.advantage_stream(features)
+            
+            # Combine value and advantage to get Q-values
+            q_values = value + (advantage - advantage.mean(dim=1, keepdim=True))
+        else:
+            q_values = self.output_layer(features)
+            
+        return q_values
     
     def save(self, path: str) -> None:
         """

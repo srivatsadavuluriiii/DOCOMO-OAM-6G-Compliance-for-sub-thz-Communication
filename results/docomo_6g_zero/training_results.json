@@ -1,0 +1,403 @@
+{
+  "training_info": {
+    "episodes": 0,
+    "training_time": 1.9073486328125e-06,
+    "best_reward": -Infinity,
+    "best_compliance": 0.0,
+    "device": "cpu",
+    "model_parameters": 73224
+  },
+  "config": {
+    "docomo_6g_system": {
+      "version": "2025.1",
+      "compliance_target": "docomo_6g_kpi_2030",
+      "research_alignment": "ntt_docomo_white_paper_2025",
+      "kpi_targets": {
+        "peak_data_rate_tbps": 1.0,
+        "user_data_rate_gbps": 100.0,
+        "latency_ms": 0.1,
+        "reliability": 0.9999999,
+        "mobility_kmh": 500.0,
+        "connection_density_per_km2": 10000000,
+        "energy_efficiency_improvement": 100,
+        "spectrum_efficiency_improvement": 10,
+        "coverage_improvement": 100,
+        "sensing_accuracy_cm": 1.0
+      },
+      "frequency_bands": {
+        "sub_6ghz": {
+          "frequency": "6.0e9",
+          "bandwidth": "100.0e6",
+          "max_range_km": 10.0,
+          "target_throughput_gbps": 1.0,
+          "target_latency_ms": 1.0,
+          "antenna_gain_dbi": 15.0,
+          "tx_power_dbm": 46.0,
+          "deployment": "macro_cell",
+          "oam_modes": [
+            1,
+            2,
+            3
+          ]
+        },
+        "mmwave_28": {
+          "frequency": "28.0e9",
+          "bandwidth": "800.0e6",
+          "max_range_km": 1.0,
+          "target_throughput_gbps": 10.0,
+          "target_latency_ms": 0.5,
+          "antenna_gain_dbi": 25.0,
+          "tx_power_dbm": 30.0,
+          "deployment": "micro_cell",
+          "oam_modes": [
+            1,
+            2,
+            3,
+            4
+          ]
+        },
+        "mmwave_39": {
+          "frequency": "39.0e9",
+          "bandwidth": "800.0e6",
+          "max_range_km": 0.8,
+          "target_throughput_gbps": 15.0,
+          "target_latency_ms": 0.3,
+          "antenna_gain_dbi": 28.0,
+          "tx_power_dbm": 30.0,
+          "deployment": "micro_cell",
+          "oam_modes": [
+            1,
+            2,
+            3,
+            4,
+            5
+          ]
+        },
+        "mmwave_60": {
+          "frequency": "60.0e9",
+          "bandwidth": "2.0e9",
+          "max_range_km": 0.5,
+          "target_throughput_gbps": 30.0,
+          "target_latency_ms": 0.2,
+          "antenna_gain_dbi": 30.0,
+          "tx_power_dbm": 25.0,
+          "deployment": "pico_cell",
+          "oam_modes": [
+            1,
+            2,
+            3,
+            4,
+            5,
+            6
+          ]
+        },
+        "sub_thz_100": {
+          "frequency": "100.0e9",
+          "bandwidth": "15.0e9",
+          "max_range_km": 0.2,
+          "target_throughput_gbps": 100.0,
+          "target_latency_ms": 0.15,
+          "antenna_gain_dbi": 41.0,
+          "tx_power_dbm": 20.0,
+          "deployment": "femto_cell",
+          "oam_modes": [
+            1,
+            2,
+            3,
+            4,
+            5,
+            6,
+            7,
+            8
+          ]
+        },
+        "sub_thz_140": {
+          "frequency": "140.0e9",
+          "bandwidth": "10.0e9",
+          "max_range_km": 0.15,
+          "target_throughput_gbps": 200.0,
+          "target_latency_ms": 0.1,
+          "antenna_gain_dbi": 45.0,
+          "tx_power_dbm": 15.0,
+          "deployment": "femto_cell",
+          "oam_modes": [
+            1,
+            2,
+            3,
+            4,
+            5,
+            6,
+            7,
+            8
+          ]
+        },
+        "sub_thz_220": {
+          "frequency": "220.0e9",
+          "bandwidth": "20.0e9",
+          "max_range_km": 0.1,
+          "target_throughput_gbps": 500.0,
+          "target_latency_ms": 0.08,
+          "antenna_gain_dbi": 49.0,
+          "tx_power_dbm": 10.0,
+          "deployment": "atto_cell",
+          "oam_modes": [
+            1,
+            2,
+            3,
+            4,
+            5,
+            6,
+            7,
+            8
+          ]
+        },
+        "sub_thz_300": {
+          "frequency": "300.0e9",
+          "bandwidth": "20.0e9",
+          "max_range_km": 0.05,
+          "target_throughput_gbps": 1000.0,
+          "target_latency_ms": 0.05,
+          "antenna_gain_dbi": 53.0,
+          "tx_power_dbm": 5.0,
+          "deployment": "atto_cell",
+          "oam_modes": [
+            1,
+            2,
+            3,
+            4,
+            5,
+            6,
+            7,
+            8
+          ]
+        },
+        "thz_600": {
+          "frequency": "600.0e9",
+          "bandwidth": "100.0e9",
+          "max_range_km": 0.01,
+          "target_throughput_gbps": 2000.0,
+          "target_latency_ms": 0.01,
+          "antenna_gain_dbi": 55.0,
+          "tx_power_dbm": 0.0,
+          "deployment": "zepto_cell",
+          "oam_modes": [
+            1,
+            2,
+            3,
+            4,
+            5,
+            6,
+            7,
+            8
+          ]
+        }
+      },
+      "oam_system": {
+        "min_mode": 1,
+        "max_mode": 16,
+        "beam_width_range": [
+          0.001,
+          0.1
+        ],
+        "mode_switching_time_us": 10,
+        "beam_tracking_accuracy_deg": 0.05,
+        "crosstalk_threshold": -20,
+        "mode_prediction_enabled": true,
+        "adaptive_mode_selection": true
+      },
+      "mobility": {
+        "max_speed_kmh": 500.0,
+        "acceleration_max_ms2": 10.0,
+        "prediction_horizon_ms": 50.0,
+        "doppler_compensation": true,
+        "beam_prediction_enabled": true,
+        "handover_prediction_ms": 20.0,
+        "mobility_state_estimation": true
+      },
+      "atmospheric": {
+        "enhanced_absorption_model": "itu_r_p676_13",
+        "molecular_absorption": true,
+        "scintillation_model": "strong_turbulence",
+        "weather_adaptation": true,
+        "seasonal_variations": true,
+        "urban_effects": true,
+        "rain_attenuation": true,
+        "fog_scattering": true
+      },
+      "reinforcement_learning": {
+        "agent_type": "docomo_multi_objective_dqn",
+        "state_dimension": 20,
+        "action_dimension": 8,
+        "network_architecture": {
+          "hidden_layers": [
+            512,
+            512,
+            256,
+            256
+          ],
+          "physics_informed": true,
+          "batch_normalization": true,
+          "dropout_rate": 0.1,
+          "activation": "swish"
+        },
+        "training": {
+          "learning_rate": 0.0001,
+          "batch_size": 1024,
+          "buffer_capacity": 200000,
+          "target_update_frequency": 1000,
+          "gradient_clipping": 1.0,
+          "lr_scheduler": "cosine_annealing",
+          "high_freq_start_prob": 0.99,
+          "optimal_start_band": true
+        },
+        "objectives": {
+          "throughput_weight": 0.5,
+          "latency_weight": 0.25,
+          "energy_weight": 0.08,
+          "reliability_weight": 0.1,
+          "mobility_weight": 0.05,
+          "spectrum_weight": 0.02
+        }
+      },
+      "validation": {
+        "kpi_compliance_threshold": 0.97
+      },
+      "band_switch_optimization": {
+        "min_interval_steps": 28,
+        "time_to_trigger_steps": 16,
+        "sinr_hysteresis_db": 2.0,
+        "min_gain_gbps": 26.0,
+        "min_dwell_steps": 35,
+        "stickiness_window": 35,
+        "stickiness_bonus": 0.15,
+        "early_exemption_steps": 20,
+        "docomo_benchmarks": true,
+        "kpi_compliance_threshold": 0.95,
+        "physics_validation": true,
+        "real_world_scenarios": true,
+        "stress_testing": true,
+        "regression_testing": true
+      },
+      "monitoring": {
+        "kpi_tracking": true,
+        "real_time_analytics": true,
+        "predictive_maintenance": true,
+        "energy_monitoring": true,
+        "compliance_reporting": true,
+        "anomaly_detection": true
+      },
+      "deployment_scenarios": {
+        "urban_dense": {
+          "user_density_per_km2": 10000000,
+          "mobility_profile": "mixed_speed",
+          "target_throughput_gbps": 100.0,
+          "coverage_requirement": 0.99
+        },
+        "highway_mobility": {
+          "user_density_per_km2": 1000,
+          "mobility_profile": "high_speed",
+          "target_throughput_gbps": 50.0,
+          "handover_frequency_max": 10
+        },
+        "indoor_hotspot": {
+          "user_density_per_km2": 100000,
+          "mobility_profile": "pedestrian",
+          "target_throughput_gbps": 1000.0,
+          "latency_requirement_ms": 0.05
+        },
+        "industrial_iot": {
+          "user_density_per_km2": 1000000,
+          "mobility_profile": "stationary",
+          "target_throughput_mbps": 1.0,
+          "reliability_requirement": 0.9999999
+        },
+        "extended_reality": {
+          "user_density_per_km2": 10000,
+          "mobility_profile": "pedestrian",
+          "target_throughput_gbps": 500.0,
+          "latency_requirement_ms": 0.1,
+          "sensing_accuracy_cm": 1.0
+        }
+      }
+    },
+    "simulation": {
+      "max_episodes": 10000,
+      "max_steps_per_episode": 2000,
+      "evaluation_frequency": 100,
+      "checkpoint_frequency": 500,
+      "early_stopping_patience": 1000
+    },
+    "hardware_requirements": {
+      "gpu_memory_gb": 16,
+      "cpu_cores": 16,
+      "ram_gb": 64,
+      "storage_gb": 1000
+    }
+  },
+  "training_metrics": {
+    "episodes": [],
+    "rewards": [],
+    "losses": [],
+    "kpis": [],
+    "band_performance": {
+      "sub_6ghz": [],
+      "mmwave_28": [],
+      "mmwave_39": [],
+      "mmwave_60": [],
+      "sub_thz_100": [],
+      "sub_thz_140": [],
+      "sub_thz_220": [],
+      "sub_thz_300": [],
+      "thz_600": []
+    }
+  },
+  "final_evaluation": {
+    "mean_reward": 2000.0,
+    "std_reward": 0.0,
+    "min_reward": 2000.0,
+    "max_reward": 2000.0,
+    "band_usage": {
+      "sub_6ghz": 0,
+      "mmwave_28": 0,
+      "mmwave_39": 0,
+      "mmwave_60": 0,
+      "sub_thz_100": 200,
+      "sub_thz_140": 0,
+      "sub_thz_220": 0,
+      "sub_thz_300": 0,
+      "thz_600": 0
+    },
+    "avg_current_throughput_gbps": 163.32158306825457,
+    "avg_current_latency_ms": 0.06508914886932066,
+    "avg_current_reliability": 0.9999999,
+    "avg_current_mobility_kmh": 500.0017020642806,
+    "avg_current_energy_w": 1.5600015318578526,
+    "avg_avg_throughput_gbps": 179.18999162615924,
+    "avg_avg_latency_ms": 0.06138826942495146,
+    "avg_avg_reliability": 0.9999999000000003,
+    "avg_peak_throughput_gbps": 189.35195714623313,
+    "avg_min_latency_ms": 0.058779097894034446,
+    "avg_max_mobility_kmh": 500.0017020642806,
+    "avg_total_measurements": 200.0,
+    "avg_session_duration_min": 0.021639366666666666,
+    "avg_handover_count": 0.0,
+    "avg_error_count": 0.0,
+    "docomo_compliance": 0.9802090460276528,
+    "avg_episode_handovers": 0.0
+  },
+  "environment_info": {
+    "state_dim": 20,
+    "action_dim": "8",
+    "frequency_bands": [
+      "sub_6ghz",
+      "mmwave_28",
+      "mmwave_39",
+      "mmwave_60",
+      "sub_thz_100",
+      "sub_thz_140",
+      "sub_thz_220",
+      "sub_thz_300",
+      "thz_600"
+    ]
+  }
+}

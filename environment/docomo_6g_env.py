@@ -32,7 +32,7 @@ sys.path.insert(0, project_root)
 try:
     from models.multi_objective_reward import MultiObjectiveReward
 except ImportError:
-                                                 
+
     from ..models.multi_objective_reward import MultiObjectiveReward                
 
                                            
@@ -122,7 +122,7 @@ class DOCOMO_6G_Environment(gym.Env):
     """
     DOCOMO-aligned 6G OAM environment with comprehensive KPI tracking
     
-    State Space (20 dimensions):
+    State Space (19 dimensions):
     [0] SINR (dB)
     [1] Throughput (Gbps) 
     [2] Latency (ms)
@@ -142,7 +142,6 @@ class DOCOMO_6G_Environment(gym.Env):
     [16] Connection Count
     [17] Mobility Prediction (m/s change)
     [18] Weather Factor (0-1)
-    [19] Traffic Demand (Gbps)
     
     Action Space (8 discrete actions):
     [0] STAY - Maintain current configuration
@@ -152,21 +151,24 @@ class DOCOMO_6G_Environment(gym.Env):
     [4] BAND_DOWN - Switch to lower frequency band
     [5] BEAM_TRACK - Optimize beam tracking
     [6] PREDICT - Enable mobility prediction
-    [7] HANDOVER - Initiate handover
+    [7] OPTIMIZE_BAND - Automatically switch to the optimal band for the current distance
     """
     
     metadata = {'render.modes': ['human', 'rgb_array']}
     
-    def __init__(self, config_path: str = None, config: Dict[str, Any] = None):
+    def __init__(self, config_path: str = None, config: Dict[str, Any] = None, num_users: int = 1):
         """
         Initialize DOCOMO 6G environment
         
         Args:
             config_path: Path to DOCOMO configuration file
             config: Configuration dictionary (alternative to file)
+            num_users: Number of simultaneous users (agents) in the environment
         """
         super().__init__()
         
+        self.num_users = num_users
+        self.agent_ids = [f"agent_{i}" for i in range(self.num_users)]
                             
         if config is not None:
             self.config = config
@@ -177,6 +179,9 @@ class DOCOMO_6G_Environment(gym.Env):
             raise ValueError("Either config_path or config must be provided")
         
         self.docomo_config = self.config.get('docomo_6g_system', {})
+        network_cfg = self.docomo_config.get('network', {})
+        self.base_stations = [tuple(bs) for bs in network_cfg.get('base_stations', [[0, 0, 30]])]
+
         rl_training_cfg = (
             self.docomo_config.get('reinforcement_learning', {})
             .get('training', {})
@@ -184,12 +189,19 @@ class DOCOMO_6G_Environment(gym.Env):
         self.high_freq_start_prob = float(rl_training_cfg.get('high_freq_start_prob', 0.4))
         self.optimal_start_band = bool(rl_training_cfg.get('optimal_start_band', False))
         
-                                                                   
+        # Interference configuration (now also includes other agents as interferers)
+        interference_cfg = self.docomo_config.get('interference', {})
+        self.interference_enabled = interference_cfg.get('enabled', False)
+        # num_interfering_users now refers to non-learning, external interferers
+        self.num_external_interferers = interference_cfg.get('num_interfering_users', 0)
+        self.external_interferers = []
+        if self.interference_enabled and self.num_external_interferers > 0:
+            self._initialize_external_interferers()
+            
         self.frequency_bands = dict(DOCOMOFrequencyBands.BANDS)
         cfg_bands = self.docomo_config.get('frequency_bands', {})
         if isinstance(cfg_bands, dict) and cfg_bands:
             for band_name, band_cfg in cfg_bands.items():
-                                                                               
                 if band_name in self.frequency_bands:
                     for key in [
                         'frequency', 'bandwidth', 'max_range_km',
@@ -199,20 +211,92 @@ class DOCOMO_6G_Environment(gym.Env):
                         if key in band_cfg:
                             self.frequency_bands[band_name][key] = band_cfg[key]
                 else:
-                                                                  
                     self.frequency_bands[band_name] = band_cfg
                                              
         self.band_names = list(self.frequency_bands.keys())
         
-                                      
-        self.kpi_tracker = DOCOMOKPITracker(self.config)
-        self.atmospheric_models = DOCOMOAtmosphericModels()
-        self.mobility_model = UltraHighMobilityModel(self.config)
-        self.multi_objective_reward = MultiObjectiveReward(self.config)
+        # Initialize per-agent components
+        self.kpi_trackers: Dict[str, DOCOMOKPITracker] = {agent_id: DOCOMOKPITracker(self.config) for agent_id in self.agent_ids}
+        self.mobility_models: Dict[str, UltraHighMobilityModel] = {agent_id: UltraHighMobilityModel(self.config) for agent_id in self.agent_ids}
+        self.multi_objective_rewards: Dict[str, MultiObjectiveReward] = {agent_id: MultiObjectiveReward(self.config) for agent_id in self.agent_ids}
         
-                                                              
-                                                               
-        channel_config = {
+        self.atmospheric_models = DOCOMOAtmosphericModels() # Shared
+        self.physics_calculator = PhysicsCalculator(
+            config=self.config,
+            bandwidth=float(self.frequency_bands['mmwave_28']['bandwidth'])
+        ) # Shared
+        self.channel_simulator = ChannelSimulator(config=self.config) # Shared
+        
+        # Network slicing configuration
+        slicing_cfg = self.config.get('network_slicing', {})
+        self.slicing_enabled = slicing_cfg.get('enabled', False)
+        self.slice_types = slicing_cfg.get('slice_types', {})
+        self.slice_selection_distribution = slicing_cfg.get('selection_distribution', {})
+        # Per-agent current slice and QoS targets
+        self.current_slice_names: Dict[str, str] = {agent_id: "default" for agent_id in self.agent_ids}
+        self.current_qos_targets: Dict[str, Dict[str, float]] = {agent_id: {} for agent_id in self.agent_ids}
+        
+        # Initial speed configuration (config-driven)
+        # docomo_6g_system.mobility.initial_speed_kmh supports:
+        #   distribution: 'uniform' or 'normal'
+        #   uniform: min, max
+        #   normal: mean, std
+        # Values are clamped to [0, max_speed_kmh]
+        self.initial_speed_distribution = 'uniform'
+        self.initial_speed_min_kmh = 0.0
+        # cap default upper to mobility model's max
+        try:
+            self.initial_speed_max_kmh = float(getattr(list(self.mobility_models.values())[0], 'max_speed_kmh', 120.0))
+        except Exception:
+            self.initial_speed_max_kmh = 120.0
+        self.initial_speed_mean_kmh = 60.0
+        self.initial_speed_std_kmh = 20.0
+        try:
+            mobility_cfg = self.docomo_config.get('mobility', {}) if isinstance(self.docomo_config, dict) else {}
+            init_cfg = mobility_cfg.get('initial_speed_kmh', {}) if isinstance(mobility_cfg, dict) else {}
+            dist = str(init_cfg.get('distribution', self.initial_speed_distribution)).lower()
+            if dist in ('uniform', 'normal'):
+                self.initial_speed_distribution = dist
+            if 'min' in init_cfg:
+                self.initial_speed_min_kmh = float(init_cfg.get('min', self.initial_speed_min_kmh))
+            if 'max' in init_cfg:
+                self.initial_speed_max_kmh = float(init_cfg.get('max', self.initial_speed_max_kmh))
+            if 'mean' in init_cfg:
+                self.initial_speed_mean_kmh = float(init_cfg.get('mean', self.initial_speed_mean_kmh))
+            if 'std' in init_cfg:
+                self.initial_speed_std_kmh = float(init_cfg.get('std', self.initial_speed_std_kmh))
+            # Ensure sensible bounds
+            cap = float(getattr(list(self.mobility_models.values())[0], 'max_speed_kmh', self.initial_speed_max_kmh))
+            self.initial_speed_min_kmh = max(0.0, min(self.initial_speed_min_kmh, cap))
+            self.initial_speed_max_kmh = max(self.initial_speed_min_kmh, min(self.initial_speed_max_kmh, cap))
+            self.initial_speed_mean_kmh = max(0.0, min(self.initial_speed_mean_kmh, cap))
+            self.initial_speed_std_kmh = max(0.0, float(self.initial_speed_std_kmh))
+        except Exception:
+            pass
+        
+        # Initialize per-agent dynamic states
+        self.current_bands: Dict[str, str] = {agent_id: 'mmwave_28' for agent_id in self.agent_ids}
+        self.current_oam_modes: Dict[str, int] = {agent_id: 1 for agent_id in self.agent_ids}
+        self.beam_alignment_errors_deg: Dict[str, float] = {agent_id: np.random.uniform(0.1, 2.0) for agent_id in self.agent_ids}
+        self.beam_tracking_enabled_flags: Dict[str, bool] = {agent_id: False for agent_id in self.agent_ids}
+        self.prediction_confidences: Dict[str, float] = {agent_id: 0.5 for agent_id in self.agent_ids}
+        
+        self._pending_band_dir: Dict[str, Optional[int]] = {agent_id: None for agent_id in self.agent_ids}
+        self._pending_band_counter: Dict[str, int] = {agent_id: 0 for agent_id in self.agent_ids}
+        self._last_band_switch_step: Dict[str, int] = {agent_id: -9999 for agent_id in self.agent_ids}
+        self._band_stickiness_steps: Dict[str, int] = {agent_id: 0 for agent_id in self.agent_ids}
+        self.state_histories: Dict[str, deque] = {agent_id: deque(maxlen=100) for agent_id in self.agent_ids}
+        self.throughput_histories: Dict[str, deque] = {agent_id: deque(maxlen=50) for agent_id in self.agent_ids}
+        self.handover_histories: Dict[str, deque] = {agent_id: deque(maxlen=20) for agent_id in self.agent_ids}
+        self.episode_stats: Dict[str, Dict[str, Any]] = {agent_id: {
+            'total_reward': 0.0,
+            'peak_throughput_gbps': 0.0,
+            'min_latency_ms': float('inf'),
+            'handover_count': 0,
+            'compliance_score': 0.0
+        } for agent_id in self.agent_ids}
+        
+        self.channel_config = {
             'oam': {
                 'min_mode': 1,
                 'max_mode': 8,
@@ -223,111 +307,200 @@ class DOCOMO_6G_Environment(gym.Env):
                 'tx_power_dBm': self.frequency_bands['mmwave_28'].get('tx_power_dbm', 30.0),
             }
         }
-        self.physics_calculator = PhysicsCalculator(
-            bandwidth=float(self.frequency_bands['mmwave_28']['bandwidth'])
-        )
-        self.channel_simulator = ChannelSimulator(config=channel_config)
         
-                                       
-        self.action_space = spaces.Discrete(8)
+        # Action Space: Each agent has 8 discrete actions
+        self.action_space = spaces.Dict({agent_id: spaces.Discrete(8) for agent_id in self.agent_ids})
         
-                                              
-        self.observation_space = spaces.Box(
-            low=np.array([-30.0, 0.0, 0.0, 1.0, -139.0, -139.0, -139.0,                                                   
-                         0, 1, -1000.0, 0.0, 0.0, 0.0, -50.0,                                                                    
-                         0.0, 0.0, 0, -100.0, 0.0, 0.0]),                                                                          
-            high=np.array([50.0, 2000.0, 10.0, 10000.0, 139.0, 139.0, 139.0,                
+        # Observation Space (23 dimensions per agent + other agent info)
+        # Original 19: SINR, Throughput, Latency, Distance, VelX, VelY, VelZ, Band, OAM, Doppler, AtmosLoss, Energy, Reliability, Interference, PredConfidence, BeamAlignError, ConnectionCount, Acceleration, WeatherFactor
+        # New 4: TargetThroughput, TargetLatency, TargetReliability, TargetMobility (per agent)
+        # Plus 3*num_other_agents for other agent positions (x,y,z)
+        # Plus 1*num_other_agents for other agent current band (index)
+        # Plus 1*num_other_agents for other agent current OAM mode
+        # Total: 23 + (5 * (num_users - 1))
+        
+        single_agent_obs_dim = 23 # 19 base + 4 QoS
+        other_agent_info_dim = 5 # x, y, z, band_idx, oam_mode
+        total_obs_dim = single_agent_obs_dim + (other_agent_info_dim * (self.num_users - 1))
+        
+        single_obs_space = spaces.Box(
+            low=np.array([-30.0, 0.0, 0.0, 1.0, -139.0, -139.0, -139.0,
+                         0, 1, -1000.0, 0.0, 0.0, 0.0, -50.0,
+                         0.0, 0.0, 0, -100.0, 0.0, # Original 19
+                         0.0, 0.0, 0.0, 0.0]), # New 4 for QoS targets
+            high=np.array([50.0, 2000.0, 10.0, 10000.0, 139.0, 139.0, 139.0,
                           8, 8, 1000.0, 50.0, 100.0, 1.0, 50.0,
-                          1.0, 10.0, 1000000, 100.0, 1.0, 2000.0]),
+                          1.0, 10.0, 1000000, 100.0, 1.0, # Original 19
+                          2000.0, 100.0, 1.0, 500.0]), # New 4 for QoS targets
             dtype=np.float32
         )
         
-                           
-        self.current_band = 'mmwave_28'                     
-        self.current_oam_mode = 1
-        self.base_station_position = (0.0, 0.0, 30.0)              
+        if self.num_users > 1:
+            # Expand bounds for other agent info (position, band, oam_mode)
+            low_other_agents = np.tile(np.array([-10000.0, -10000.0, -10000.0, 0, 1]), (self.num_users - 1))
+            high_other_agents = np.tile(np.array([10000.0, 10000.0, 10000.0, 8, 8]), (self.num_users - 1))
+            
+            low = np.concatenate((single_obs_space.low, low_other_agents))
+            high = np.concatenate((single_obs_space.high, high_other_agents))
+            
+            self.observation_space = spaces.Dict({
+                agent_id: spaces.Box(low=low, high=high, dtype=np.float32) 
+                for agent_id in self.agent_ids
+            })
+        else:
+            self.observation_space = spaces.Dict({
+                self.agent_ids[0]: single_obs_space
+            })
         
-                                                
-        self.beam_alignment_error_deg = np.random.uniform(0.1, 2.0)                           
-        self.beam_tracking_enabled = False
-        self.prediction_confidence = 0.5                                 
-        
-                              
+        # Initial state (per-agent)
         self.step_count = 0
         self.episode_count = 0
         self.max_steps = self.config.get('simulation', {}).get('max_steps_per_episode', 2000)
                                                                         
-        self.min_band_switch_interval = int(self.docomo_config.get('band_switch_optimization', {}).get('min_interval_steps', 12))
-        self.band_time_to_trigger_steps = int(self.docomo_config.get('band_switch_optimization', {}).get('time_to_trigger_steps', 8))
-        self.band_sinr_hysteresis_db = float(self.docomo_config.get('band_switch_optimization', {}).get('sinr_hysteresis_db', 2.0))
-        self.band_switch_min_gain_gbps = float(self.docomo_config.get('band_switch_optimization', {}).get('min_gain_gbps', 5.0))
-        self.min_band_dwell_steps = int(self.docomo_config.get('band_switch_optimization', {}).get('min_dwell_steps', 0))
-        self._pending_band_dir: Optional[int] = None                  
-        self._pending_band_counter: int = 0
-        self._last_band_switch_step: int = -9999
-        self._band_stickiness_steps: int = 0
-        self._band_stickiness_window: int = int(self.docomo_config.get('band_switch_optimization', {}).get('stickiness_window', 20))
-        self._band_stickiness_bonus: float = float(self.docomo_config.get('band_switch_optimization', {}).get('stickiness_bonus', 0.1))
-        self._early_exemption_steps: int = int(self.docomo_config.get('band_switch_optimization', {}).get('early_exemption_steps', 0))
+        self.min_band_switch_interval = int(self.docomo_config.get('band_switch_optimization', {}).get('min_interval_steps', 3))
+        self.band_time_to_trigger_steps = int(self.docomo_config.get('band_switch_optimization', {}).get('time_to_trigger_steps', 2))
+        self.band_sinr_hysteresis_db = float(self.docomo_config.get('band_switch_optimization', {}).get('sinr_hysteresis_db', 1.0))
+        self.band_switch_min_gain_gbps = float(self.docomo_config.get('band_switch_optimization', {}).get('min_gain_gbps', 1.0))
+        self.min_band_dwell_steps = int(self.docomo_config.get('band_switch_optimization', {}).get('min_dwell_steps', 3))
+        self._early_exemption_steps: int = int(self.docomo_config.get('band_switch_optimization', {}).get('early_exemption_steps', 10))
         self._early_exemption_remaining: int = 999999 if self._early_exemption_steps <= 0 else 3                                
         
-                                                  
-        self.state_history = deque(maxlen=100)
-        self.throughput_history = deque(maxlen=50)
-        self.handover_history = deque(maxlen=20)
+        self._band_stickiness_window: int = int(self.docomo_config.get('band_switch_optimization', {}).get('stickiness_window', 20))
+        self._band_stickiness_bonus: float = float(self.docomo_config.get('band_switch_optimization', {}).get('stickiness_bonus', 0.1))
         
-                                
+        self.base_station_position = self.base_stations[0]
+        
         self.atmospheric_params = AtmosphericParameters()
         self._update_atmospheric_conditions()
         
-                    
-        self.episode_stats = {
-            'total_reward': 0.0,
-            'peak_throughput_gbps': 0.0,
-            'min_latency_ms': float('inf'),
-            'handover_count': 0,
-            'compliance_score': 0.0
-        }
+        # Do not return anything from __init__. Initial observation is provided by reset().
         
-                                                          
-        self._apply_band_to_simulator()
-
-        print(f" DOCOMO 6G Environment initialized")
-        print(f"    KPI Targets: {self.kpi_tracker.docomo_targets.user_data_rate_gbps} Gbps, {self.kpi_tracker.docomo_targets.latency_ms} ms")
-        print(f"    Frequency Bands: {len(self.frequency_bands)} bands (6 GHz - 600 GHz)")
-        print(f"    Max Mobility: {self.mobility_model.max_speed_kmh} km/h")
-    
-    def reset(self, seed: Optional[int] = None, options: Optional[dict] = None) -> Tuple[np.ndarray, Dict[str, Any]]:
-        """
-        Reset environment to initial state
+    def reconfigure(self, new_config: Dict[str, Any]):
+        """Reconfigure the environment with new settings for curriculum learning."""
+        self.config = new_config
+        # Re-initialize all per-agent components
+        for agent_id in self.agent_ids:
+            self.kpi_trackers[agent_id] = DOCOMOKPITracker(self.config)
+            self.mobility_models[agent_id] = UltraHighMobilityModel(self.config)
+            self.multi_objective_rewards[agent_id] = MultiObjectiveReward(self.config)
         
-        Returns:
-            Tuple of (observation, info)
-        """
+        # Re-initialize shared components if their config changes (e.g., bands)
+        self.frequency_bands = dict(DOCOMOFrequencyBands.BANDS)
+        cfg_bands = self.docomo_config.get('frequency_bands', {})
+        if isinstance(cfg_bands, dict) and cfg_bands:
+            for band_name, band_cfg in cfg_bands.items():
+                if band_name in self.frequency_bands:
+                    for key in [
+                        'frequency', 'bandwidth', 'max_range_km',
+                        'target_throughput_gbps', 'target_latency_ms',
+                        'oam_modes', 'antenna_gain_dbi', 'tx_power_dbm'
+                    ]:
+                        if key in band_cfg:
+                            self.frequency_bands[band_name][key] = band_cfg[key]
+                else:
+                    self.frequency_bands[band_name] = band_cfg
+        self.band_names = list(self.frequency_bands.keys())
+        
+        # Re-initialize physics and channel sim if needed (they take full config)
+        self.physics_calculator = PhysicsCalculator(config=self.config)
+        self.channel_simulator = ChannelSimulator(config=self.config)
+        
+        # Update initial speed distribution parameters if they changed
+        # This logic is copied from __init__ to ensure reconfigurability
+        mobility_cfg = self.docomo_config.get('mobility', {}) if isinstance(self.docomo_config, dict) else {}
+        init_cfg = mobility_cfg.get('initial_speed_kmh', {}) if isinstance(mobility_cfg, dict) else {}
+        dist = str(init_cfg.get('distribution', self.initial_speed_distribution)).lower()
+        if dist in ('uniform', 'normal'):
+            self.initial_speed_distribution = dist
+        if 'min' in init_cfg:
+            self.initial_speed_min_kmh = float(init_cfg.get('min', self.initial_speed_min_kmh))
+        if 'max' in init_cfg:
+            self.initial_speed_max_kmh = float(init_cfg.get('max', self.initial_speed_max_kmh))
+        if 'mean' in init_cfg:
+            self.initial_speed_mean_kmh = float(init_cfg.get('mean', self.initial_speed_mean_kmh))
+        if 'std' in init_cfg:
+            self.initial_speed_std_kmh = float(init_cfg.get('std', self.initial_speed_std_kmh))
+        cap = float(getattr(list(self.mobility_models.values())[0], 'max_speed_kmh', self.initial_speed_max_kmh))
+        self.initial_speed_min_kmh = max(0.0, min(self.initial_speed_min_kmh, cap))
+        self.initial_speed_max_kmh = max(self.initial_speed_min_kmh, min(self.initial_speed_max_kmh, cap))
+        self.initial_speed_mean_kmh = max(0.0, min(self.initial_speed_mean_kmh, cap))
+        self.initial_speed_std_kmh = max(0.0, float(self.initial_speed_std_kmh))
+        
+        # Re-initialize network slicing parameters as well
+        slicing_cfg = self.config.get('network_slicing', {})
+        self.slicing_enabled = slicing_cfg.get('enabled', False)
+        self.slice_types = slicing_cfg.get('slice_types', {})
+        self.slice_selection_distribution = slicing_cfg.get('selection_distribution', {})
+        
+        # Re-initialize external interferers if their config changed
+        interference_cfg = self.docomo_config.get('interference', {})
+        self.interference_enabled = interference_cfg.get('enabled', False)
+        self.num_external_interferers = interference_cfg.get('num_interfering_users', 0)
+        if self.interference_enabled and self.num_external_interferers > 0:
+            self._initialize_external_interferers()
+        else:
+            self.external_interferers = []
+                                                
+    def reset(self, seed: Optional[int] = None, options: Optional[dict] = None) -> Tuple[Dict[str, np.ndarray], Dict[str, Any]]:
+        """Reset environment to initial state and return (observation, info)."""
         super().reset(seed=seed)
         
-                        
         self.step_count = 0
         self.episode_count += 1
-        self._pending_band_dir = None
-        self._pending_band_counter = 0
-        self._last_band_switch_step = -9999
-        self._band_stickiness_steps = 0
         
-                                        
-        self.beam_alignment_error_deg = np.random.uniform(0.1, 2.0)
-        self.beam_tracking_enabled = False
-        self.prediction_confidence = 0.5
-
-                                                                                             
-        initial_distance = np.random.uniform(10.0, 200.0)               
+        observations = {}
+        infos = {}
+        
+        # Reset per-agent states
+        for agent_id in self.agent_ids:
+            self._pending_band_dir[agent_id] = None
+            self._pending_band_counter[agent_id] = 0
+            self._last_band_switch_step[agent_id] = -9999
+            self._band_stickiness_steps[agent_id] = 0
+            
+            self.beam_alignment_errors_deg[agent_id] = np.random.uniform(0.1, 2.0)
+            self.beam_tracking_enabled_flags[agent_id] = False
+            self.prediction_confidences[agent_id] = 0.5
+            
+            # Select network slice for this agent
+            if self.slicing_enabled and self.slice_types and self.slice_selection_distribution:
+                slice_names = list(self.slice_selection_distribution.keys())
+                probabilities = list(self.slice_selection_distribution.values())
+                probabilities_norm = np.array(probabilities) / np.sum(probabilities) # Normalize probabilities
+                
+                selected_slice = np.random.choice(slice_names, p=probabilities_norm)
+                self.current_slice_names[agent_id] = selected_slice
+                self.current_qos_targets[agent_id] = self.slice_types[selected_slice].get('qos_targets', {})
+                self.multi_objective_rewards[agent_id].set_qos_targets(self.current_qos_targets[agent_id])
+                self.multi_objective_rewards[agent_id].set_reward_weights(self.slice_types[selected_slice].get('reward_weights', {}))
+            else:
+                self.current_slice_names[agent_id] = "default"
+                self.current_qos_targets[agent_id] = {}
+                self.multi_objective_rewards[agent_id].set_qos_targets({})
+                self.multi_objective_rewards[agent_id].set_reward_weights({})
+                
+            # Sample initial position and velocity for each agent
+            initial_distance = np.random.uniform(10.0, 200.0)
         initial_angle = np.random.uniform(0, 2*np.pi)
         initial_position = (
             initial_distance * np.cos(initial_angle),
             initial_distance * np.sin(initial_angle),
-            1.5               
-        )
-        initial_speed_kmh = np.random.uniform(0.0, 120.0)
+                1.5
+            )
+            # Sample initial speed per episode using configured distribution
+        try:
+            cap = float(getattr(self.mobility_models[agent_id], 'max_speed_kmh', self.initial_speed_max_kmh))
+        except Exception:
+            cap = self.initial_speed_max_kmh
+        if self.initial_speed_distribution == 'normal':
+            initial_speed_kmh = float(np.random.normal(self.initial_speed_mean_kmh, self.initial_speed_std_kmh))
+            if not np.isfinite(initial_speed_kmh):
+                initial_speed_kmh = self.initial_speed_mean_kmh
+            initial_speed_kmh = max(0.0, min(cap, initial_speed_kmh))
+        else:
+            lo = float(min(self.initial_speed_min_kmh, self.initial_speed_max_kmh))
+            hi = float(max(self.initial_speed_min_kmh, self.initial_speed_max_kmh))
+            initial_speed_kmh = float(np.random.uniform(lo, min(hi, cap)))
         initial_speed_ms = initial_speed_kmh / 3.6
         velocity_angle = np.random.uniform(0, 2*np.pi)
         initial_velocity = (
@@ -335,80 +508,74 @@ class DOCOMO_6G_Environment(gym.Env):
             initial_speed_ms * np.sin(velocity_angle),
             0.0
         )
-                                                                                           
-        self.mobility_model.update_mobility_state(
-            position=initial_position,
-            velocity=initial_velocity,
-            timestamp=time.time()
+        self.mobility_models[agent_id].update_mobility_state(
+        position=initial_position,
+        velocity=initial_velocity,
+        timestamp=time.time()
         )
 
-                              
+            # Optionally choose a starting band based on config
         start_rand = np.random.random()
         if self.optimal_start_band:
-                                                                      
             start_pos = np.array(initial_position, dtype=float)
             distance_km = float(np.linalg.norm(start_pos)) / 1000.0
             per_band_tp = {}
             for b in self.band_names:
                 try:
-                                                          
                     max_range_km = float(self.frequency_bands[b].get('max_range_km', 0.0))
                     if max_range_km and distance_km > max_range_km:
                         per_band_tp[b] = 0.0
                         continue
-                    per_band_tp[b] = self._estimate_throughput_for_band(b)
+                            # Need to temporarily set current_band for _estimate_throughput_for_band
+                    original_band = self.current_bands[agent_id]
+                    self.current_bands[agent_id] = b
+                    self._apply_band_to_simulator(agent_id) # Apply per-agent
+                    per_band_tp[b] = self._estimate_throughput_for_band(agent_id, b)
+                    self.current_bands[agent_id] = original_band # Restore
+                    self._apply_band_to_simulator(agent_id) # Apply per-agent
                 except Exception:
                     per_band_tp[b] = 0.0
-                                                                                                           
             sub_thz = ['sub_thz_100', 'sub_thz_140', 'sub_thz_220', 'sub_thz_300']
             candidates = [b for b in sub_thz if per_band_tp.get(b, 0.0) >= 100.0]
-                                                        
-            chosen = None
             if candidates:
                 chosen = max(candidates, key=lambda b: per_band_tp.get(b, 0.0))
             else:
-                                                      
                 best_sub = max(sub_thz, key=lambda b: per_band_tp.get(b, 0.0))
                 if per_band_tp.get(best_sub, 0.0) > 0.0:
                     chosen = best_sub
                 else:
-                                                   
                     chosen = max(self.band_names, key=lambda b: per_band_tp.get(b, 0.0))
-            self.current_band = chosen if chosen else 'mmwave_28'
+                    self.current_bands[agent_id] = chosen if chosen else 'mmwave_28'
         else:
-                                                                         
             if start_rand < self.high_freq_start_prob:
                 high_freq_bands = ['sub_thz_100', 'sub_thz_140', 'sub_thz_220', 'sub_thz_300', 'thz_600']
                 band_weights = [0.4, 0.3, 0.15, 0.1, 0.05]
-                self.current_band = np.random.choice(high_freq_bands, p=band_weights)
+                self.current_bands[agent_id] = np.random.choice(high_freq_bands, p=band_weights)
             else:
                 standard_bands = ['mmwave_28', 'mmwave_39', 'mmwave_60']
-                self.current_band = np.random.choice(standard_bands)
+                self.current_bands[agent_id] = np.random.choice(standard_bands)
 
-                                                                                      
-        available_modes = self.frequency_bands[self.current_band]['oam_modes']
+                # Clamp current OAM mode to available range for the band
+                available_modes = self.frequency_bands[self.current_bands[agent_id]]['oam_modes']
         try:
             min_mode = int(min(available_modes))
             max_mode = int(max(available_modes))
             favored = [m for m in available_modes if m >= max_mode - 2]
-            self.current_oam_mode = int(np.random.choice(favored if favored else available_modes))
-            self.current_oam_mode = max(min_mode, min(max_mode, int(self.current_oam_mode)))
+            self.current_oam_modes[agent_id] = int(np.random.choice(favored if favored else available_modes))
+            self.current_oam_modes[agent_id] = max(min_mode, min(max_mode, int(self.current_oam_modes[agent_id])))
         except Exception:
-            self.current_oam_mode = available_modes[-1] if isinstance(available_modes, list) and available_modes else 1
-
-                                                                   
-        self._apply_band_to_simulator()
-        
-                                      
-        self._update_atmospheric_conditions()
-        
-                       
-        self.state_history.clear()
-        self.throughput_history.clear()
-        self.handover_history.clear()
-        
-                                  
-        self.episode_stats = {
+                    self.current_oam_modes[agent_id] = available_modes[-1] if isinstance(available_modes, list) and available_modes else 1
+                
+                # Apply band to simulator/physics (per-agent)
+        self._apply_band_to_simulator(agent_id)
+                
+                # Clear histories (per-agent)
+        self.state_histories[agent_id].clear()
+        self.throughput_histories[agent_id].clear()
+        self.handover_histories[agent_id].clear()
+                
+                # Reset episode stats (per-agent)
+        self.episode_stats[agent_id] = {
             'total_reward': 0.0,
             'peak_throughput_gbps': 0.0,
             'min_latency_ms': float('inf'),
@@ -416,45 +583,98 @@ class DOCOMO_6G_Environment(gym.Env):
             'compliance_score': 0.0
         }
         
-                                 
-        observation = self._get_observation()
+        # Update atmospheric conditions (shared)
+        self._update_atmospheric_conditions()
+
+        # Compute initial performance and build observations for all agents
+        all_performance_metrics = {agent_id: self._calculate_performance(agent_id) for agent_id in self.agent_ids}
         
-                      
-        info = {
+        for agent_id in self.agent_ids:
+            observation = self._get_observation(agent_id, all_performance_metrics)
+            observations[agent_id] = observation
+            
+            infos[agent_id] = {
             'episode': self.episode_count,
             'docomo_compliance': True,
-            'kpi_targets': self.kpi_tracker.docomo_targets.__dict__,
-            'frequency_band': self.current_band,
-            'oam_mode': self.current_oam_mode
-        }
+                'kpi_targets': self.kpi_trackers[agent_id].docomo_targets.__dict__,
+                'frequency_band': self.current_bands[agent_id],
+                'oam_mode': self.current_oam_modes[agent_id],
+                'slice_name': self.current_slice_names[agent_id],
+                'qos_targets': self.current_qos_targets[agent_id]
+            }
         
-        return observation, info
+        return observations, infos
     
-    def step(self, action: int) -> Tuple[np.ndarray, float, bool, bool, Dict[str, Any]]:
+    def _initialize_external_interferers(self):
+        """Initialize the external interfering users."""
+        self.external_interferers = []
+        for _ in range(self.num_external_interferers):
+            interferer_mobility = UltraHighMobilityModel(self.config)
+            
+            # Initialize interferer position and velocity
+            initial_distance = np.random.uniform(50.0, 500.0)
+            initial_angle = np.random.uniform(0, 2*np.pi)
+            initial_position = (
+                initial_distance * np.cos(initial_angle),
+                initial_distance * np.sin(initial_angle),
+                1.5
+            )
+            initial_speed_kmh = np.random.uniform(30, 120)
+            initial_speed_ms = initial_speed_kmh / 3.6
+            velocity_angle = np.random.uniform(0, 2*np.pi)
+            initial_velocity = (
+                initial_speed_ms * np.cos(velocity_angle),
+                initial_speed_ms * np.sin(velocity_angle),
+                0.0
+            )
+            interferer_mobility.update_mobility_state(
+                position=initial_position,
+                velocity=initial_velocity,
+                timestamp=time.time()
+            )
+            self.external_interferers.append(interferer_mobility)
+
+    def step(self, actions: Dict[str, int]) -> Tuple[Dict[str, np.ndarray], Dict[str, float], Dict[str, bool], Dict[str, bool], Dict[str, Any]]:
         """
-        Execute environment step
+        Execute environment step for all agents.
         
         Args:
-            action: Action to take (0-7)
+            actions: Dictionary of actions for each agent (agent_id: action)
             
         Returns:
-            Tuple of (observation, reward, terminated, truncated, info)
+            Tuple of (observations, rewards, terminateds, truncateds, infos)
         """
         self.step_count += 1
         
-                        
-        action_info = self._execute_action(action)
+        observations = {}
+        rewards = {}
+        terminateds = {}
+        truncateds = {}
+        infos = {}
         
-                                                     
-        self._update_mobility()
-        
-                                       
+        # 1. Update mobility and atmospheric conditions (shared for external interferers, per-agent for main agents)
+        for agent_id in self.agent_ids:
+            self.mobility_models[agent_id].step_mobility(dt=0.1)
+        if self.interference_enabled:
+            for interferer in self.external_interferers:
+                interferer.step_mobility(dt=0.1)
         self._update_atmospheric_conditions()
         
-                                      
-        performance_metrics = self._calculate_performance()
+        # 2. Execute actions for each agent and calculate initial performance metrics
+        all_performance_metrics = {agent_id: self._calculate_performance(agent_id) for agent_id in self.agent_ids}
         
-                                                        
+        action_infos: Dict[str, Dict[str, Any]] = {}
+        for agent_id, action in actions.items():
+            action_infos[agent_id] = self._execute_action(agent_id, action, all_performance_metrics[agent_id])
+        
+        # 3. Recalculate performance after all actions (especially band changes) are applied
+        all_performance_metrics = {agent_id: self._calculate_performance(agent_id) for agent_id in self.agent_ids}
+
+        for agent_id in self.agent_ids:
+            performance_metrics = all_performance_metrics[agent_id]
+            action_info = action_infos[agent_id]
+            
+            # Create measurement for KPI tracker
         from datetime import datetime
         measurement = PerformanceMeasurement(
             timestamp=datetime.now(),
@@ -463,8 +683,8 @@ class DOCOMO_6G_Environment(gym.Env):
             sinr_db=performance_metrics['sinr_db'],
             distance_m=performance_metrics['distance_m'],
             mobility_kmh=performance_metrics['mobility_kmh'],
-            band=self.current_band,
-            oam_mode=self.current_oam_mode,
+                band=self.current_bands[agent_id],
+                oam_mode=self.current_oam_modes[agent_id],
             energy_consumption_w=performance_metrics['energy_consumption_w'],
             reliability_score=performance_metrics['reliability_score'],
             handover_count=action_info.get('handover_occurred', 0),
@@ -473,44 +693,46 @@ class DOCOMO_6G_Environment(gym.Env):
             atmospheric_loss_db=performance_metrics['atmospheric_loss_db']
         )
         
-                            
-        compliance_scores = self.kpi_tracker.update(measurement)
+        compliance_scores = self.kpi_trackers[agent_id].update(measurement)
         
-                                          
-        next_observation = self._get_observation()
+            # Get next observation (pass pre-calculated metrics and other agents' states)
+        next_observation = self._get_observation(agent_id, all_performance_metrics)
+        observations[agent_id] = next_observation
         
-                                             
+        # Prepare info for reward calculation
         reward_info = {
             **performance_metrics,
             **action_info,
             'compliance_scores': compliance_scores,
             'handover_occurred': action_info.get('handover_occurred', False),
             'handover_successful': action_info.get('handover_successful', True),
-            'current_band': self.current_band,
-            'current_oam_mode': self.current_oam_mode
-        }
-        
-                                                       
-        current_state = self.state_history[-1] if self.state_history else np.zeros(20)
-        reward, reward_breakdown = self.multi_objective_reward.calculate(
-            state=current_state,
-            action=action,
+                'current_band': self.current_bands[agent_id],
+                'current_oam_mode': self.current_oam_modes[agent_id],
+                'slice_name': self.current_slice_names[agent_id],
+                'qos_targets': self.current_qos_targets[agent_id]
+            }
+            
+            # Calculate reward
+        current_state_history = self.state_histories[agent_id]
+        current_state_obs = current_state_history[-1] if current_state_history else np.zeros(self.observation_space[agent_id].shape[0])
+        reward, reward_breakdown = self.multi_objective_rewards[agent_id].calculate(
+                state=current_state_obs,
+                action=actions[agent_id],
             next_state=next_observation,
             info=reward_info
         )
+        rewards[agent_id] = reward
         
-                                   
-        self._update_episode_stats(performance_metrics, reward, compliance_scores)
+        self._update_episode_stats(agent_id, performance_metrics, reward, compliance_scores)
         
-                                
-        self.state_history.append(next_observation.copy())
-        self.throughput_history.append(performance_metrics['throughput_gbps'])
+        self.state_histories[agent_id].append(next_observation.copy())
+        self.throughput_histories[agent_id].append(performance_metrics['throughput_gbps'])
         
-                                      
-        terminated, truncated = self._check_termination(performance_metrics)
+        terminated, truncated = self._check_termination(agent_id, performance_metrics)
+        terminateds[agent_id] = terminated
+        truncateds[agent_id] = truncated
         
-                                       
-        info = {
+        infos[agent_id] = {
             'step': self.step_count,
             'episode': self.episode_count,
             'performance_metrics': performance_metrics,
@@ -518,17 +740,17 @@ class DOCOMO_6G_Environment(gym.Env):
             'reward_breakdown': reward_breakdown,
             'compliance_scores': compliance_scores,
             'docomo_compliance': compliance_scores.get('overall_current', 0.0) >= 0.95,
-            'kpi_report': self.kpi_tracker.get_current_kpis(),
-            'mobility_stats': self.mobility_model.get_mobility_statistics(),
+                'kpi_report': self.kpi_trackers[agent_id].get_current_kpis(),
+                'mobility_stats': self.mobility_models[agent_id].get_mobility_statistics(),
             'atmospheric_conditions': self.atmospheric_params.__dict__,
-            'episode_stats': self.episode_stats.copy(),
+                'episode_stats': self.episode_stats[agent_id].copy(),
             'terminated_reason': self._get_termination_reason(terminated, truncated, performance_metrics)
         }
         
-        return next_observation, reward, terminated, truncated, info
+        return observations, rewards, terminateds, truncateds, infos
     
-    def _execute_action(self, action: int) -> Dict[str, Any]:
-        """Execute the specified action and return action information"""
+    def _execute_action(self, agent_id: str, action: int, performance_metrics: Dict[str, Any]) -> Dict[str, Any]:
+        """Execute the specified action for a given agent and return action information"""
         action_info = {
             'action': action,
             'action_name': self._get_action_name(action),
@@ -539,28 +761,28 @@ class DOCOMO_6G_Environment(gym.Env):
             'beam_tracking_enabled': False
         }
         
-        prev_mode = self.current_oam_mode
-        prev_band = self.current_band
+        prev_mode = self.current_oam_modes[agent_id]
+        prev_band = self.current_bands[agent_id]
         
         if action == 0:        
             pass              
             
         elif action == 1:          
-            if self.current_oam_mode < 8:
-                available_modes = self.frequency_bands[self.current_band]['oam_modes']
-                if self.current_oam_mode + 1 <= max(available_modes):
-                    self.current_oam_mode += 1
+            if self.current_oam_modes[agent_id] < 8:
+                available_modes = self.frequency_bands[self.current_bands[agent_id]]['oam_modes']
+                if self.current_oam_modes[agent_id] + 1 <= max(available_modes):
+                    self.current_oam_modes[agent_id] += 1
                     action_info['mode_changed'] = True
                     
         elif action == 2:            
-            if self.current_oam_mode > 1:
-                available_modes = self.frequency_bands[self.current_band]['oam_modes']
-                if self.current_oam_mode - 1 >= min(available_modes):
-                    self.current_oam_mode -= 1
+            if self.current_oam_modes[agent_id] > 1:
+                available_modes = self.frequency_bands[self.current_bands[agent_id]]['oam_modes']
+                if self.current_oam_modes[agent_id] - 1 >= min(available_modes):
+                    self.current_oam_modes[agent_id] -= 1
                     action_info['mode_changed'] = True
                     
         elif action == 3:                                                                         
-            current_band_idx = self.band_names.index(self.current_band)
+            current_band_idx = self.band_names.index(self.current_bands[agent_id])
             if current_band_idx < len(self.band_names) - 1:
                 new_band = self.band_names[current_band_idx + 1]
                                                                                  
@@ -571,46 +793,40 @@ class DOCOMO_6G_Environment(gym.Env):
                 early_exempt = False
                 if (self._early_exemption_steps > 0 and self._early_exemption_remaining > 0 and self.step_count <= self._early_exemption_steps):
                                                                   
-                    current_tp = self._estimate_throughput_for_band(self.current_band)
-                    candidate_tp = self._estimate_throughput_for_band(new_band)
+                    current_tp = self._estimate_throughput_for_band(agent_id, self.current_bands[agent_id])
+                    candidate_tp = self._estimate_throughput_for_band(agent_id, new_band)
                     if candidate_tp - current_tp >= self.band_switch_min_gain_gbps:
                         early_exempt = True
                         self._early_exemption_remaining -= 1
                                                                     
                 if not early_exempt:
-                    if (self.step_count - self._last_band_switch_step) < max(self.min_band_switch_interval, self.min_band_dwell_steps):
+                    if (self.step_count - self._last_band_switch_step[agent_id]) < max(self.min_band_switch_interval, self.min_band_dwell_steps):
                         action_info['ignored_band_switch'] = True
                         return action_info
                                                       
-                if self._pending_band_dir == +1:
-                    self._pending_band_counter += 1
+                if self._pending_band_dir[agent_id] == +1:
+                    self._pending_band_counter[agent_id] += 1
                 else:
-                    self._pending_band_dir = +1
-                    self._pending_band_counter = 1
-                if not early_exempt and self._pending_band_counter < self.band_time_to_trigger_steps:
+                    self._pending_band_dir[agent_id] = +1
+                    self._pending_band_counter[agent_id] = 1
+                if not early_exempt and self._pending_band_counter[agent_id] < self.band_time_to_trigger_steps:
                     action_info['pending_band_switch'] = True
                     return action_info
                                                                       
-                current_tp = self._estimate_throughput_for_band(self.current_band)
-                candidate_tp = self._estimate_throughput_for_band(new_band)
+                current_tp = self._estimate_throughput_for_band(agent_id, self.current_bands[agent_id])
+                candidate_tp = self._estimate_throughput_for_band(agent_id, new_band)
                 if candidate_tp - current_tp < self.band_switch_min_gain_gbps:
                     action_info['insufficient_tp_gain'] = candidate_tp - current_tp
                     return action_info
                                                                     
-                distance_km = self.mobility_model.current_state.position_x**2 + self.mobility_model.current_state.position_y**2
+                distance_km = self.mobility_models[agent_id].current_state.position_x**2 + self.mobility_models[agent_id].current_state.position_y**2
                 distance_km = np.sqrt(distance_km) / 1000.0
                 
                                                                                                    
                 max_range = self.frequency_bands[new_band]['max_range_km']
-                if new_band in ['sub_thz_100', 'sub_thz_140', 'sub_thz_220', 'sub_thz_300', 'thz_600']:
-                                                                                            
-                    max_range *= 3.0                                      
-                                                                                     
-                    distance_factor = min(distance_km / (max_range / 3.0), 1.0)
-                    action_info['distance_compensation'] = (1.0 - distance_factor) * 2.0
                 
                 if distance_km <= max_range:
-                    self.current_band = new_band
+                    self.current_bands[agent_id] = new_band
                                                                                                
                     available_modes = self.frequency_bands[new_band]['oam_modes']
                                                                            
@@ -620,23 +836,23 @@ class DOCOMO_6G_Environment(gym.Env):
                         max_mode = int(max(available_modes))
                         favored = [m for m in available_modes if m >= max_mode - 2]
                         if favored:
-                            self.current_oam_mode = int(np.random.choice(favored))
+                            self.current_oam_modes[agent_id] = int(np.random.choice(favored))
                         else:
-                            self.current_oam_mode = max_mode
+                            self.current_oam_modes[agent_id] = max_mode
                                           
-                        self.current_oam_mode = max(min_mode, min(max_mode, int(self.current_oam_mode)))
+                        self.current_oam_modes[agent_id] = max(min_mode, min(max_mode, int(self.current_oam_modes[agent_id])))
                     except Exception:
-                        self.current_oam_mode = available_modes[-1] if isinstance(available_modes, list) and available_modes else 1
+                        self.current_oam_modes[agent_id] = available_modes[-1] if isinstance(available_modes, list) and available_modes else 1
                     
                     action_info['band_changed'] = True
                     action_info['handover_occurred'] = True
-                    self._last_band_switch_step = self.step_count
-                    self._pending_band_dir = None
-                    self._pending_band_counter = 0
-                    self._band_stickiness_steps = 0
+                    self._last_band_switch_step[agent_id] = self.step_count
+                    self._pending_band_dir[agent_id] = None
+                    self._pending_band_counter[agent_id] = 0
+                    self._band_stickiness_steps[agent_id] = 0
 
                                                                     
-                    self._apply_band_to_simulator()
+                    self._apply_band_to_simulator(agent_id)
                     
                                                                             
                     try:
@@ -654,214 +870,180 @@ class DOCOMO_6G_Environment(gym.Env):
                         action_info['high_freq_bonus'] = 1.0
                     
         elif action == 4:                        
-            current_band_idx = self.band_names.index(self.current_band)
+            current_band_idx = self.band_names.index(self.current_bands[agent_id])
             if current_band_idx > 0:
                 new_band = self.band_names[current_band_idx - 1]
                                                                     
-                if (self.step_count - self._last_band_switch_step) < self.min_band_switch_interval:
+                if (self.step_count - self._last_band_switch_step[agent_id]) < self.min_band_switch_interval:
                     action_info['ignored_band_switch'] = True
                     return action_info
                                                         
-                if self._pending_band_dir == -1:
-                    self._pending_band_counter += 1
+                if self._pending_band_dir[agent_id] == -1:
+                    self._pending_band_counter[agent_id] += 1
                 else:
-                    self._pending_band_dir = -1
-                    self._pending_band_counter = 1
-                if self._pending_band_counter < self.band_time_to_trigger_steps:
+                    self._pending_band_dir[agent_id] = -1
+                    self._pending_band_counter[agent_id] = 1
+                if self._pending_band_counter[agent_id] < self.band_time_to_trigger_steps:
                     action_info['pending_band_switch'] = True
                     return action_info
                                                                                        
-                current_tp = self._estimate_throughput_for_band(self.current_band)
-                candidate_tp = self._estimate_throughput_for_band(new_band)
+                current_tp = self._estimate_throughput_for_band(agent_id, self.current_bands[agent_id])
+                candidate_tp = self._estimate_throughput_for_band(agent_id, new_band)
                                                                                                  
                 if current_tp > 5.0 and (current_tp - candidate_tp) > (self.band_switch_min_gain_gbps / 2.0):
                     action_info['downswitch_avoided_due_tp_loss'] = current_tp - candidate_tp
                     return action_info
-                self.current_band = new_band
+                self.current_bands[agent_id] = new_band
                                                                         
                 available_modes = self.frequency_bands[new_band]['oam_modes']
                 try:
                     min_mode = int(min(available_modes))
                     max_mode = int(max(available_modes))
-                    if self.current_oam_mode < min_mode:
-                        self.current_oam_mode = min_mode
-                    elif self.current_oam_mode > max_mode:
-                        self.current_oam_mode = max_mode
+                    if self.current_oam_modes[agent_id] < min_mode:
+                        self.current_oam_modes[agent_id] = min_mode
+                    elif self.current_oam_modes[agent_id] > max_mode:
+                        self.current_oam_modes[agent_id] = max_mode
                 except Exception:
-                    self.current_oam_mode = available_modes[0] if isinstance(available_modes, list) and available_modes else 1
+                    self.current_oam_modes[agent_id] = available_modes[0] if isinstance(available_modes, list) and available_modes else 1
                 action_info['band_changed'] = True
                 action_info['handover_occurred'] = True
-                self._last_band_switch_step = self.step_count
-                self._pending_band_dir = None
-                self._pending_band_counter = 0
-                self._band_stickiness_steps = 0
+                self._last_band_switch_step[agent_id] = self.step_count
+                self._pending_band_dir[agent_id] = None
+                self._pending_band_counter[agent_id] = 0
+                self._band_stickiness_steps[agent_id] = 0
 
                                                                 
-                self._apply_band_to_simulator()
+                self._apply_band_to_simulator(agent_id)
                 
         elif action == 5:                                           
                                                                      
             action_info['beam_tracking_enabled'] = True
                                                     
-            self.beam_alignment_error_deg *= 0.8
+            self.beam_alignment_errors_deg[agent_id] *= 0.8
                                         
             action_info['beam_optimization_bonus'] = 1.5
             
         elif action == 6:                                          
                                                                
-            self.mobility_model.beam_prediction_enabled = True
+            self.mobility_models[agent_id].beam_prediction_enabled = True
                                                          
             velocity_vector = np.array([
-                self.mobility_model.current_state.velocity_x,
-                self.mobility_model.current_state.velocity_y,
-                self.mobility_model.current_state.velocity_z
+                self.mobility_models[agent_id].current_state.velocity_x,
+                self.mobility_models[agent_id].current_state.velocity_y,
+                self.mobility_models[agent_id].current_state.velocity_z
             ])
                                                                       
             prediction_accuracy = np.exp(-np.linalg.norm(velocity_vector) / 50.0)                        
-            self.beam_alignment_error_deg *= (1.0 - 0.3 * prediction_accuracy)
+            self.beam_alignment_errors_deg[agent_id] *= (1.0 - 0.3 * prediction_accuracy)
             action_info['prediction_bonus'] = prediction_accuracy
             
-        elif action == 7:            
-                                                                        
-            handover_decision = self.mobility_model.should_trigger_handover(
-                current_bs_position=self.base_station_position,
-                candidate_bs_positions=[(100.0, 100.0, 30.0), (-100.0, -100.0, 30.0)],                   
-                prediction_time_ms=50.0
-            )
+        elif action == 7: # OPTIMIZE_BAND
+            distance_m = performance_metrics['distance_m']
+            optimal_band = self._get_optimal_band_for_distance(agent_id, distance_m)
             
-            if handover_decision['should_handover']:
+            if self.current_bands[agent_id] != optimal_band:
+                self.current_bands[agent_id] = optimal_band
+                action_info['band_changed'] = True
                 action_info['handover_occurred'] = True
-                action_info['handover_successful'] = np.random.random() > 0.05                    
-                self.handover_history.append({
-                    'step': self.step_count,
-                    'successful': action_info['handover_successful'],
-                    'benefit': handover_decision['handover_benefit']
-                })
+                self._last_band_switch_step[agent_id] = self.step_count
+                self._apply_band_to_simulator(agent_id)
         
                                
         if action_info['handover_occurred']:
-            self.episode_stats['handover_count'] += 1
+            self.episode_stats[agent_id]['handover_count'] += 1
         else:
                                                                          
-            self._band_stickiness_steps += 1
-            if self._band_stickiness_steps >= self._band_stickiness_window:
+            self._band_stickiness_steps[agent_id] += 1
+            if self._band_stickiness_steps[agent_id] >= self._band_stickiness_window:
                 action_info['band_stickiness_bonus'] = self._band_stickiness_bonus
                                           
-                self._band_stickiness_steps = 0
+                self._band_stickiness_steps[agent_id] = 0
         
         return action_info
 
-    def _estimate_throughput_for_band(self, band_name: str) -> float:
-        """Estimate instantaneous throughput (Gbps) if we were on the given band, at current position.
+    def _estimate_throughput_for_band(self, agent_id: str, band_name: str) -> float:
+        """Estimate instantaneous throughput (Gbps) if using the given band at current position.
 
-        Temporarily applies band settings to simulator/physics, probes SINR and computes throughput,
-        then restores current band's configuration. Safe and lightweight for single-step estimates.
+        Temporarily applies the candidate band's settings, probes SINR, computes throughput,
+        then restores the current band's configuration. Safe and lightweight for single-step estimates.
         """
+        prev_band = self.current_bands[agent_id]
         try:
-                               
-            prev_band = self.current_band
-                                  
-            self.current_band = band_name
-            self._apply_band_to_simulator()
-                                            
-            cs = self.mobility_model.current_state
+            # Switch to candidate band
+            self.current_bands[agent_id] = band_name
+            self._apply_band_to_simulator(agent_id)
+
+            # Current position and mode (clamped within candidate band's supported modes)
+            cs = self.mobility_models[agent_id].current_state
             pos = np.array([cs.position_x, cs.position_y, cs.position_z], dtype=float)
-                                                              
-            try:
-                oam_modes = self.frequency_bands[self.current_band].get('oam_modes', [1, 8])
-                if isinstance(oam_modes, list) and oam_modes:
-                    min_mode = int(min(oam_modes))
-                    max_mode = int(max(oam_modes))
-                    cand_mode = int(self.current_oam_mode)
-                    if cand_mode < min_mode:
-                        cand_mode = min_mode
-                    elif cand_mode > max_mode:
-                        cand_mode = max_mode
-                else:
-                    cand_mode = int(self.current_oam_mode)
-            except Exception:
-                cand_mode = int(self.current_oam_mode)
-            try:
-                _, sinr_db = self.channel_simulator.run_step(pos, cand_mode)
-            except Exception:
-                                               
-                self.current_band = prev_band
-                self._apply_band_to_simulator()
-                return 0.0
+
+            oam_modes = self.frequency_bands[self.current_bands[agent_id]]['oam_modes']
+            if isinstance(oam_modes, list) and oam_modes:
+                min_mode = int(min(oam_modes))
+                max_mode = int(max(oam_modes))
+                cand_mode = int(max(min(self.current_oam_modes[agent_id], max_mode), min_mode))
+            else:
+                cand_mode = int(self.current_oam_modes[agent_id])
+
+            # Consider interference from other agents and external interferers
+            interferer_positions = []
+            if self.interference_enabled:
+                for other_agent_id in self.agent_ids:
+                    if other_agent_id != agent_id:
+                        interferer_positions.append(self.mobility_models[other_agent_id].current_state.position)
+                interferer_positions.extend([interferer.current_state.position for interferer in self.external_interferers])
+            
+            _, sinr_db = self.channel_simulator.run_step(pos, cand_mode, cs.speed_kmh, interferer_positions=interferer_positions if interferer_positions else None)
+
+            # Convert SINR to throughput and return in Gbps
             tp_bps = self.physics_calculator.calculate_throughput(sinr_db) * 0.95
-                                                                                   
-            self.current_band = prev_band
-            self._apply_band_to_simulator()
             return float(tp_bps / 1e9)
         except Exception:
-                                                                 
+            return 0.0
+        finally:
+            # Restore previous band configuration
             try:
-                self.current_band = prev_band                                        
-                self._apply_band_to_simulator()
+                self.current_bands[agent_id] = prev_band
+                self._apply_band_to_simulator(agent_id)
             except Exception:
                 pass
-            return 0.0
-    
-    def _update_mobility(self):
-        """Update mobility state (simulate movement)"""
-                                                        
-        current_state = self.mobility_model.current_state
-        
-                                                                           
-        accel_noise = np.random.normal(0, 0.5, 3)              
-        
-                                                   
-        new_accel = np.array([
-            current_state.acceleration_x + accel_noise[0],
-            current_state.acceleration_y + accel_noise[1], 
-            current_state.acceleration_z + accel_noise[2]
-        ])
-        
-                                      
-        accel_mag = np.linalg.norm(new_accel)
-        if accel_mag > self.mobility_model.max_acceleration_ms2:
-            new_accel = new_accel / accel_mag * self.mobility_model.max_acceleration_ms2
-        
-                                           
-        dt = 0.1                   
-        new_velocity = np.array([
-            current_state.velocity_x + new_accel[0] * dt,
-            current_state.velocity_y + new_accel[1] * dt,
-            current_state.velocity_z + new_accel[2] * dt
-        ])
-        
-                     
-        speed = np.linalg.norm(new_velocity)
-        max_speed_ms = self.mobility_model.max_speed_kmh / 3.6
-        if speed > max_speed_ms:
-            new_velocity = new_velocity / speed * max_speed_ms
-        
-                         
-        new_position = np.array([
-            current_state.position_x + new_velocity[0] * dt,
-            current_state.position_y + new_velocity[1] * dt,
-            current_state.position_z + new_velocity[2] * dt
-        ])
-        
-                               
-        self.mobility_model.update_mobility_state(
-            position=tuple(new_position),
-            velocity=tuple(new_velocity),
-            timestamp=time.time()
+
+    def _handle_handover_decision(self, agent_id: str) -> Tuple[bool, bool, Optional[int]]:
+        """
+        Checks if a handover is necessary and returns the decision for a given agent.
+        Called when a handover-related action is considered.
+        """
+        candidate_base_stations = [bs for bs in self.base_stations if bs != self.base_station_position]
+        if not candidate_base_stations:
+            return False, True, None
+
+        handover_decision = self.mobility_models[agent_id].should_trigger_handover(
+            current_bs_position=self.base_station_position,
+            candidate_bs_positions=candidate_base_stations,
+            prediction_time_ms=50.0
         )
+        
+        if handover_decision['should_handover']:
+            successful = np.random.random() > 0.05 # 95% success rate
+            best_candidate_index = handover_decision['best_candidate_index']
+            if successful and best_candidate_index is not None:
+                self.base_station_position = candidate_base_stations[best_candidate_index]
+            return True, successful, best_candidate_index
+            
+        return False, True, None
+
+    def _update_mobility(self, agent_id: str):
+        """Update mobility state by stepping the mobility model for a given agent."""
+        self.mobility_models[agent_id].step_mobility(dt=0.1)
     
     def _update_atmospheric_conditions(self):
-        """Update atmospheric conditions (could be weather-based)"""
-                                                 
-                                                             
+        """Update atmospheric conditions (could be weather-based) - shared for all agents"""
         
-                                           
         self.atmospheric_params.temperature_c += np.random.normal(0, 0.1)
         self.atmospheric_params.humidity_percent = np.clip(
             self.atmospheric_params.humidity_percent + np.random.normal(0, 1), 0, 100
         )
         
-                                    
         if np.random.random() < 0.01:                      
             conditions = list(AtmosphericCondition)
             self.atmospheric_params.condition = np.random.choice(conditions)
@@ -875,107 +1057,90 @@ class DOCOMO_6G_Environment(gym.Env):
             else:
                 self.atmospheric_params.rain_rate_mm_h = 0.0
     
-    def _calculate_performance(self) -> Dict[str, float]:
-        """Calculate comprehensive system performance metrics"""
-                              
-        current_state = self.mobility_model.current_state
+    def _calculate_performance(self, agent_id: str) -> Dict[str, float]:
+        """Calculate comprehensive system performance metrics for a given agent"""
+        current_state = self.mobility_models[agent_id].current_state
         distance_m = np.sqrt(current_state.position_x**2 + current_state.position_y**2)
 
-                                     
-        band_spec = self.frequency_bands[self.current_band]
+        band_spec = self.frequency_bands[self.current_bands[agent_id]]
         frequency_hz = float(band_spec['frequency'])
         frequency_ghz = frequency_hz / 1e9
         bandwidth_hz = float(band_spec['bandwidth'])
 
-                                                                                  
         atmospheric_losses = self.atmospheric_models.calculate_total_atmospheric_loss(
             frequency_ghz=frequency_ghz,
             distance_km=distance_m / 1000.0,
             params=self.atmospheric_params
         )
 
-                                                         
-        beam_angles = self.mobility_model.predict_beam_angles(
+        beam_angles = self.mobility_models[agent_id].predict_beam_angles(
             base_station_position=self.base_station_position,
             prediction_time_ms=10.0
         )
-        beam_alignment_error_deg = beam_angles['tracking_error_deg']
+        beam_alignment_error_deg = self.beam_alignment_errors_deg[agent_id] # Use stored value for consistency
 
-                                                                  
         user_position = np.array([
             current_state.position_x,
             current_state.position_y,
             current_state.position_z,
         ], dtype=float)
-                                                                        
+        
         try:
-            oam_modes = self.frequency_bands[self.current_band].get('oam_modes', [1, 8])
+            oam_modes = self.frequency_bands[self.current_bands[agent_id]].get('oam_modes', [1, 8])
             if isinstance(oam_modes, list) and oam_modes:
                 min_mode = int(min(oam_modes))
                 max_mode = int(max(oam_modes))
-                if self.current_oam_mode < min_mode:
-                    self.current_oam_mode = min_mode
-                elif self.current_oam_mode > max_mode:
-                    self.current_oam_mode = max_mode
+                if self.current_oam_modes[agent_id] < min_mode:
+                    self.current_oam_modes[agent_id] = min_mode
+                elif self.current_oam_modes[agent_id] > max_mode:
+                    self.current_oam_modes[agent_id] = max_mode
         except Exception:
             pass
-                                                          
-        try:
-            oam_modes = self.frequency_bands[self.current_band].get('oam_modes', [1, 8])
-            if isinstance(oam_modes, list) and oam_modes:
-                min_mode = int(min(oam_modes))
-                max_mode = int(max(oam_modes))
-                if self.current_oam_mode < min_mode:
-                    self.current_oam_mode = min_mode
-                elif self.current_oam_mode > max_mode:
-                    self.current_oam_mode = max_mode
-        except Exception:
-            pass
-        _, sinr_db = self.channel_simulator.run_step(user_position, int(self.current_oam_mode))
+        
+        # Calculate interference from other active agents and external interferers
+        interferer_positions = []
+        if self.interference_enabled:
+            for other_agent_id in self.agent_ids:
+                if other_agent_id != agent_id:
+                    interferer_positions.append(self.mobility_models[other_agent_id].current_state.position)
+            interferer_positions.extend([interferer.current_state.position for interferer in self.external_interferers])
+        
+        _, sinr_db = self.channel_simulator.run_step(user_position, int(self.current_oam_modes[agent_id]), current_state.speed_kmh, interferer_positions=interferer_positions if interferer_positions else None)
 
-                                                                                                         
         throughput_bps = self.physics_calculator.calculate_throughput(sinr_db)
-                                                                           
         throughput_bps *= 0.95
         throughput_gbps = throughput_bps / 1e9
 
-                                                                      
         propagation_latency_ms = (distance_m / 3e8) * 1000                  
-                                                                                  
-        processing_latency_ms = 0.03 + (self.current_oam_mode - 1) * 0.005
-                                                                 
-        if self.beam_tracking_enabled:
+        processing_latency_ms = 0.03 + (self.current_oam_modes[agent_id] - 1) * 0.005
+        if self.beam_tracking_enabled_flags[agent_id]:
             processing_latency_ms *= 0.9
-        if getattr(self.mobility_model, 'beam_prediction_enabled', False):
+        if getattr(self.mobility_models[agent_id], 'beam_prediction_enabled', False):
             processing_latency_ms *= 0.9
-                                                               
         switching_latency_ms = 0.0
-        if self.step_count == self._last_band_switch_step:
+        if self.step_count == self._last_band_switch_step[agent_id]:
             switching_latency_ms = 0.01
         total_latency_ms = propagation_latency_ms + processing_latency_ms + switching_latency_ms
 
-                                     
-        doppler_info = self.mobility_model.calculate_doppler_shift(
+        doppler_info = self.mobility_models[agent_id].calculate_doppler_shift(
             frequency_ghz=frequency_ghz,
             base_station_position=self.base_station_position
         )
 
-                                                                                                 
         base_energy_w = 0.5
         frequency_energy_w = frequency_ghz / 300.0
-        oam_energy_w = self.current_oam_mode * 0.05
+        oam_energy_w = self.current_oam_modes[agent_id] * 0.05
         mobility_energy_w = current_state.speed_kmh / 500.0 * 0.5
         total_energy_w = base_energy_w + frequency_energy_w + oam_energy_w + mobility_energy_w
-                                                               
-        if self._is_link_stable():
+        
+        if self._is_link_stable(agent_id):
             total_energy_w *= 0.9
-        if self._is_using_optimal_band(distance_m):
+        if self._is_using_optimal_band(agent_id, distance_m):
             total_energy_w *= 0.9
-        if self.beam_tracking_enabled:
+        if self.beam_tracking_enabled_flags[agent_id]:
             total_energy_w *= 0.95
         total_energy_w = max(total_energy_w, 0.1)
 
-                                                         
         if sinr_db > 20:
             reliability_score = 0.9999999
         elif sinr_db > 10:
@@ -984,15 +1149,12 @@ class DOCOMO_6G_Environment(gym.Env):
             reliability_score = 0.99999
         else:
             reliability_score = 0.999
-                                                                   
-                                                                        
+        
         reliability_score = max(0.0, reliability_score)
 
-                                                                     
         path_loss_db = self.physics_calculator.calculate_path_loss(distance_m, frequency_hz)
 
-                                                                                    
-        interference_db = 0.0
+        interference_db = 0.0 # This will be updated by channel sim
 
         return {
             'sinr_db': sinr_db,
@@ -1007,79 +1169,102 @@ class DOCOMO_6G_Environment(gym.Env):
             'doppler_shift_hz': doppler_info['doppler_shift_hz'],
             'frequency_ghz': frequency_ghz,
             'bandwidth_mhz': bandwidth_hz / 1e6,
-                                          
-            'oam_crosstalk_db': -max(0, (self.current_oam_mode - 1) * 2.0),
+            'oam_crosstalk_db': -max(0, (self.current_oam_modes[agent_id] - 1) * 2.0),
             'path_loss_db': path_loss_db,
             'interference_db': interference_db,
             'in_atmospheric_window': self.atmospheric_models.is_atmospheric_window(frequency_ghz),
-            'using_optimal_band': self._is_using_optimal_band(distance_m),
-            'link_stable': self._is_link_stable(),
+            'using_optimal_band': self._is_using_optimal_band(agent_id, distance_m),
+            'link_stable': self._is_link_stable(agent_id),
             'error_rate': max(1e-9, 1.0 / (10**(sinr_db/10.0))),
-            'handover_success_rate': self._calculate_handover_success_rate(),
+            'handover_success_rate': self._calculate_handover_success_rate(agent_id),
             'mobility_prediction_accuracy': beam_angles['confidence'],
             'doppler_compensated': True,
             'beam_tracking_active': True,
             'multi_band_active': False,
-            'oam_mode_efficiency': max(0.0, 1.0 - (self.current_oam_mode - 1) * 0.1)
+            'oam_mode_efficiency': max(0.0, 1.0 - (self.current_oam_modes[agent_id] - 1) * 0.1)
         }
     
-    def _get_observation(self) -> np.ndarray:
-        """Get current observation vector"""
-        if not self.mobility_model.mobility_history:
-            return np.zeros(20, dtype=np.float32)
+    def _get_observation(self, requesting_agent_id: str, all_performance_metrics: Dict[str, Dict[str, Any]]) -> np.ndarray:
+        """Get current observation vector for a specific agent, including other agent info"""
+        if not self.mobility_models[requesting_agent_id].mobility_history:
+            num_obs_dims = self.observation_space[requesting_agent_id].shape[0]
+            return np.zeros(num_obs_dims, dtype=np.float32)
         
-                                       
-        perf = self._calculate_performance()
-        current_state = self.mobility_model.current_state
+        current_state = self.mobility_models[requesting_agent_id].current_state
+        performance_metrics = all_performance_metrics[requesting_agent_id]
         
-                                  
+        # Base 19 + 4 QoS dimensions
         obs = np.array([
-            perf['sinr_db'],                                              
-            perf['throughput_gbps'],                                             
-            perf['latency_ms'],                                             
-            perf['distance_m'],                                              
-            current_state.velocity_x,                                          
-            current_state.velocity_y,                                          
-            current_state.velocity_z,                                          
-            self.band_names.index(self.current_band),                           
-            self.current_oam_mode,                                                  
-            perf['doppler_shift_hz'],                                            
-            perf['atmospheric_loss_db'],                                             
-            perf['energy_consumption_w'],                                              
-            perf['reliability_score'],                                                
-            perf['interference_db'],                                                   
-            perf['mobility_prediction_accuracy'],                                         
-            perf['beam_alignment_error_deg'],                                            
-            1,                                                                                     
-            current_state.acceleration_magnitude,                                       
-            self._get_weather_factor(),                                            
-            perf['throughput_gbps']                                                                     
+            performance_metrics['sinr_db'],
+            performance_metrics['throughput_gbps'],
+            performance_metrics['latency_ms'],
+            performance_metrics['distance_m'],
+            current_state.velocity_x,
+            current_state.velocity_y,
+            current_state.velocity_z,
+            self.band_names.index(self.current_bands[requesting_agent_id]),
+            self.current_oam_modes[requesting_agent_id],
+            performance_metrics['doppler_shift_hz'],
+            performance_metrics['atmospheric_loss_db'],
+            performance_metrics['energy_consumption_w'],
+            performance_metrics['reliability_score'],
+            performance_metrics['interference_db'],
+            performance_metrics['mobility_prediction_accuracy'],
+            self.beam_alignment_errors_deg[requesting_agent_id], # Use per-agent beam error
+            1, # Placeholder for Connection Count
+            current_state.acceleration_magnitude,
+            self._get_weather_factor(),
         ], dtype=np.float32)
+        
+        # Append QoS targets
+        qos_obs = np.array([
+            self.current_qos_targets[requesting_agent_id].get('min_throughput_gbps', 0.0),
+            self.current_qos_targets[requesting_agent_id].get('max_latency_ms', 0.0),
+            self.current_qos_targets[requesting_agent_id].get('min_reliability', 0.0),
+            self.current_qos_targets[requesting_agent_id].get('max_mobility_kmh', 0.0)
+        ], dtype=np.float32)
+        obs = np.concatenate((obs, qos_obs))
+        
+        # Append other agents' information
+        if self.num_users > 1:
+            other_agents_info = []
+            for other_agent_id in self.agent_ids:
+                if other_agent_id != requesting_agent_id:
+                    other_agent_state = self.mobility_models[other_agent_id].current_state
+                    other_agent_band_idx = self.band_names.index(self.current_bands[other_agent_id])
+                    other_agent_oam_mode = self.current_oam_modes[other_agent_id]
+                    other_agents_info.extend([
+                        other_agent_state.position_x,
+                        other_agent_state.position_y,
+                        other_agent_state.position_z,
+                        float(other_agent_band_idx),
+                        float(other_agent_oam_mode)
+                    ])
+            obs = np.concatenate((obs, np.array(other_agents_info, dtype=np.float32)))
         
         return obs
     
-    def _is_using_optimal_band(self, distance_m: float) -> bool:
-        """Check if using optimal frequency band for current distance"""
-        optimal_band = self._get_optimal_band_for_distance(distance_m)
-        return self.current_band == optimal_band
+    def _is_using_optimal_band(self, agent_id: str, distance_m: float) -> bool:
+        """Check if using optimal frequency band for current distance for a given agent"""
+        optimal_band = self._get_optimal_band_for_distance(agent_id, distance_m)
+        return self.current_bands[agent_id] == optimal_band
     
-    def _get_optimal_band_for_distance(self, distance_m: float) -> str:
-        """Get optimal frequency band for given distance"""
+    def _get_optimal_band_for_distance(self, agent_id: str, distance_m: float) -> str:
+        """Get optimal frequency band for given distance for a given agent"""
         distance_km = distance_m / 1000.0
         
-                                                                  
         for band_name in reversed(self.band_names):                                
             if distance_km <= self.frequency_bands[band_name]['max_range_km']:
                 return band_name
         
         return self.band_names[0]                                
     
-    def _is_link_stable(self) -> bool:
-        """Check if link is stable based on recent performance"""
-        if len(self.throughput_history) < 10:
+    def _is_link_stable(self, agent_id: str) -> bool:
+        """Check if link is stable based on recent performance for a given agent"""
+        if len(self.throughput_histories[agent_id]) < 10:
             return True                                           
         
-        recent_throughput = list(self.throughput_history)[-10:]
+        recent_throughput = list(self.throughput_histories[agent_id])[-10:]
         throughput_std = np.std(recent_throughput)
         throughput_mean = np.mean(recent_throughput)
         
@@ -1089,12 +1274,12 @@ class DOCOMO_6G_Environment(gym.Env):
         
         return True
     
-    def _calculate_handover_success_rate(self) -> float:
-        """Calculate recent handover success rate"""
-        if not self.handover_history:
+    def _calculate_handover_success_rate(self, agent_id: str) -> float:
+        """Calculate recent handover success rate for a given agent"""
+        if not self.handover_histories[agent_id]:
             return 1.0                    
         
-        recent_handovers = list(self.handover_history)[-10:]                     
+        recent_handovers = list(self.handover_histories[agent_id])[-10:]                     
         if not recent_handovers:
             return 1.0
         
@@ -1102,7 +1287,7 @@ class DOCOMO_6G_Environment(gym.Env):
         return successful / len(recent_handovers)
     
     def _get_weather_factor(self) -> float:
-        """Get weather impact factor (0=bad, 1=good)"""
+        """Get weather impact factor (0=bad, 1=good) - shared for all agents"""
         if self.atmospheric_params.condition == AtmosphericCondition.CLEAR:
             return 1.0
         elif self.atmospheric_params.condition in [AtmosphericCondition.LIGHT_RAIN, AtmosphericCondition.FOG_LIGHT]:
@@ -1114,29 +1299,27 @@ class DOCOMO_6G_Environment(gym.Env):
         else:
             return 0.7
     
-    def _update_episode_stats(self, performance: Dict[str, float], reward: float, compliance: Dict[str, float]):
-        """Update episode-level statistics"""
-        self.episode_stats['total_reward'] += reward
-        self.episode_stats['peak_throughput_gbps'] = max(
-            self.episode_stats['peak_throughput_gbps'],
+    def _update_episode_stats(self, agent_id: str, performance: Dict[str, float], reward: float, compliance: Dict[str, float]):
+        """Update episode-level statistics for a given agent"""
+        self.episode_stats[agent_id]['total_reward'] += reward
+        self.episode_stats[agent_id]['peak_throughput_gbps'] = max(
+            self.episode_stats[agent_id]['peak_throughput_gbps'],
             performance['throughput_gbps']
         )
-        self.episode_stats['min_latency_ms'] = min(
-            self.episode_stats['min_latency_ms'],
+        self.episode_stats[agent_id]['min_latency_ms'] = min(
+            self.episode_stats[agent_id]['min_latency_ms'],
             performance['latency_ms']
         )
-        self.episode_stats['compliance_score'] = compliance.get('overall_current', 0.0)
+        self.episode_stats[agent_id]['compliance_score'] = compliance.get('overall_current', 0.0)
     
-    def _check_termination(self, performance: Dict[str, float]) -> Tuple[bool, bool]:
-        """Check if episode should terminate"""
+    def _check_termination(self, agent_id: str, performance: Dict[str, float]) -> Tuple[bool, bool]:
+        """Check if episode should terminate for a given agent"""
         terminated = False
         truncated = False
         
-                                       
         if self.step_count >= self.max_steps:
             truncated = True
         
-                                              
         if performance['sinr_db'] < -20.0:                         
             terminated = True
         elif performance['throughput_gbps'] < 0.01:                            
@@ -1166,22 +1349,24 @@ class DOCOMO_6G_Environment(gym.Env):
         """Get human-readable action name"""
         action_names = [
             'STAY', 'OAM_UP', 'OAM_DOWN', 'BAND_UP', 'BAND_DOWN',
-            'BEAM_TRACK', 'PREDICT', 'HANDOVER'
+            'BEAM_TRACK', 'PREDICT', 'OPTIMIZE_BAND'
         ]
         return action_names[action] if 0 <= action < len(action_names) else 'UNKNOWN'
     
     def render(self, mode='human'):
         """Render environment state"""
         if mode == 'human':
-            current_kpis = self.kpi_tracker.get_current_kpis()
-            compliance = self.kpi_tracker.get_compliance_score()
-            
-            print(f"\n DOCOMO 6G Environment - Step {self.step_count}")
-            print(f"    Band: {self.current_band} | OAM Mode: {self.current_oam_mode}")
-            print(f"    Throughput: {current_kpis.get('current_throughput_gbps', 0):.2f} Gbps")
-            print(f"    Latency: {current_kpis.get('current_latency_ms', 0):.3f} ms") 
-            print(f"    Speed: {current_kpis.get('current_mobility_kmh', 0):.1f} km/h")
-            print(f"    Compliance: {compliance.get('overall_current', 0)*100:.1f}%")
+            print(f"\n DOCOMO 6G Environment - Step {self.step_count} (Multi-Agent)")
+            for agent_id in self.agent_ids:
+                current_kpis = self.kpi_trackers[agent_id].get_current_kpis()
+                compliance = self.kpi_trackers[agent_id].get_compliance_score()
+                
+                print(f"  Agent {agent_id}: ")
+                print(f"    Band: {self.current_bands[agent_id]} | OAM Mode: {self.current_oam_modes[agent_id]}")
+                print(f"    Throughput: {current_kpis.get('current_throughput_gbps', 0):.2f} Gbps")
+                print(f"    Latency: {current_kpis.get('current_latency_ms', 0):.3f} ms") 
+                print(f"    Speed: {current_kpis.get('current_mobility_kmh', 0):.1f} km/h")
+                print(f"    Compliance: {compliance.get('overall_current', 0)*100:.1f}%")
             
         return None
     
@@ -1189,29 +1374,28 @@ class DOCOMO_6G_Environment(gym.Env):
         """Clean up environment"""
         pass
     
-    def get_docomo_report(self) -> Dict[str, Any]:
-        """Generate comprehensive DOCOMO compliance report"""
-        return self.kpi_tracker.get_docomo_report()
+    def get_docomo_report(self, agent_id: str) -> Dict[str, Any]:
+        """Generate comprehensive DOCOMO compliance report for a given agent"""
+        return self.kpi_trackers[agent_id].get_docomo_report()
     
-    def save_docomo_report(self, filepath: str):
-        """Save DOCOMO compliance report to file"""
-        self.kpi_tracker.save_report(filepath)
+    def save_docomo_report(self, agent_id: str, filepath: str):
+        """Save DOCOMO compliance report to file for a given agent"""
+        self.kpi_trackers[agent_id].save_report(filepath)
 
-    def _apply_band_to_simulator(self) -> None:
-        """Apply current band's frequency/bandwidth/power to simulator and physics calculator."""
-        band_spec = self.frequency_bands[self.current_band]
+    def _apply_band_to_simulator(self, agent_id: str) -> None:
+        """Apply current band's frequency/bandwidth/power to simulator and physics calculator for a given agent."""
+        band_spec = self.frequency_bands[self.current_bands[agent_id]]
         system_cfg = {
             'frequency': float(band_spec.get('frequency', 28.0e9)),
             'bandwidth': float(band_spec.get('bandwidth', 400e6)),
             'tx_power_dBm': float(band_spec.get('tx_power_dbm', getattr(self.channel_simulator, 'tx_power_dBm', 30.0)))
         }
-                                                               
+        
         antenna_gain = band_spec.get('antenna_gain_dbi', None)
         if antenna_gain is not None:
             system_cfg['tx_antenna_gain_dBi'] = float(antenna_gain)
             system_cfg['rx_antenna_gain_dBi'] = float(antenna_gain)
 
-                                   
         oam_modes = band_spec.get('oam_modes', [1, 8])
         min_mode = min(oam_modes) if isinstance(oam_modes, list) and oam_modes else 1
         max_mode = max(oam_modes) if isinstance(oam_modes, list) and oam_modes else 8
@@ -1223,19 +1407,18 @@ class DOCOMO_6G_Environment(gym.Env):
                 'max_mode': int(max_mode)
             }
         }
-                                                                  
+        
         try:
             self.channel_simulator._update_config(cfg)
-                                                          
+            
             self.channel_simulator.wavelength = 3e8 / self.channel_simulator.frequency
             self.channel_simulator.k = 2 * np.pi / self.channel_simulator.wavelength
             self.channel_simulator.num_modes = self.channel_simulator.max_mode - self.channel_simulator.min_mode + 1
             self.channel_simulator.H = np.eye(self.channel_simulator.num_modes, dtype=complex)
         except Exception:
-                                                                       
+            
             pass
 
-                                                           
         try:
             self.physics_calculator.bandwidth = float(system_cfg['bandwidth'])
             if hasattr(self.physics_calculator, 'reset_cache'):

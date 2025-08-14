@@ -90,6 +90,9 @@ class MultiObjectiveReward:
             spectrum=objectives.get('spectrum_weight', 0.05)
         )
         
+        # Dynamic QoS targets and reward weights for network slicing
+        self.current_qos_targets = {}
+        self.current_reward_weights = {}
                                                                              
         self.reward_scale = 3.0                                                     
         self.penalty_scale = 1.5                                           
@@ -112,6 +115,14 @@ class MultiObjectiveReward:
         self.baseline_spectrum_efficiency = 1.0                                
         self.baseline_handover_rate = 0.1                           
         
+    def set_qos_targets(self, qos_targets: Dict[str, float]):
+        """Set dynamic QoS targets based on the current network slice."""
+        self.current_qos_targets = qos_targets
+
+    def set_reward_weights(self, reward_weights: Dict[str, float]):
+        """Set dynamic reward weights based on the current network slice."""
+        self.current_reward_weights = reward_weights
+
     def calculate(self, 
                  state: np.ndarray,
                  action: int,
@@ -242,7 +253,8 @@ class MultiObjectiveReward:
             return -1.0                               
         
                                                                         
-        base_reward = min(throughput_gbps / self.target_throughput_gbps, 3.0)                              
+        target_tp = self.current_qos_targets.get('min_throughput_gbps', self.target_throughput_gbps)
+        base_reward = min(throughput_gbps / target_tp, 3.0)                              
         
                                                                                
         distance_bonus = max(0.0, (500.0 - distance_m) / 500.0) * 0.3                   
@@ -266,8 +278,8 @@ class MultiObjectiveReward:
             high_freq_bonus = 0.0
         
                                                        
-        if throughput_gbps > self.target_throughput_gbps:
-            excellence_bonus = math.log(throughput_gbps / self.target_throughput_gbps) * 0.8                   
+        if throughput_gbps > target_tp:
+            excellence_bonus = math.log(throughput_gbps / target_tp) * 0.8                   
         else:
             excellence_bonus = 0.0
         
@@ -285,12 +297,13 @@ class MultiObjectiveReward:
             return -1.0                   
         
                                                                  
-        if latency_ms <= self.target_latency_ms:
+        target_lat = self.current_qos_targets.get('max_latency_ms', self.target_latency_ms)
+        if latency_ms <= target_lat:
                                         
-            reward = 1.0 + (self.target_latency_ms - latency_ms) / self.target_latency_ms
+            reward = 1.0 + (target_lat - latency_ms) / target_lat
         else:
                                                       
-            excess_factor = latency_ms / self.target_latency_ms
+            excess_factor = latency_ms / target_lat
             reward = 1.0 / excess_factor                     
         
                                          
@@ -345,7 +358,8 @@ class MultiObjectiveReward:
                                     info: Dict[str, Any]) -> float:
         """Calculate reliability reward (DOCOMO: 99.99999% target)"""
                                  
-        reliability_ratio = reliability_score / self.target_reliability
+        target_rel = self.current_qos_targets.get('min_reliability', self.target_reliability)
+        reliability_ratio = reliability_score / target_rel
         
         if reliability_ratio >= 1.0:
             reward = 1.0                                  
@@ -381,7 +395,8 @@ class MultiObjectiveReward:
                                  info: Dict[str, Any]) -> float:
         """Calculate mobility reward (DOCOMO: 500 km/h target)"""
                                       
-        mobility_ratio = min(velocity_kmh / self.target_mobility_kmh, 1.0)
+        target_mob = self.current_qos_targets.get('max_mobility_kmh', self.target_mobility_kmh)
+        mobility_ratio = min(velocity_kmh / target_mob, 1.0)
         base_reward = mobility_ratio * 1.0
         
                                             
@@ -552,13 +567,16 @@ class MultiObjectiveReward:
     def _calculate_total_reward(self, components: RewardComponents) -> float:
         """Calculate weighted total reward with enhanced high-frequency band incentives"""
                               
+        # Use dynamic weights if available, otherwise fallback to default configured weights
+        weights = self.current_reward_weights if self.current_reward_weights else self.weights.__dict__
+
         total_reward = (
-            self.weights.throughput * components.throughput_reward +
-            self.weights.latency * components.latency_reward +
-            self.weights.energy * components.energy_reward +
-            self.weights.reliability * components.reliability_reward +
-            self.weights.mobility * components.mobility_reward +
-            self.weights.spectrum * components.spectrum_reward +
+            weights.get('throughput_bonus', weights.get('throughput', 0.25)) * components.throughput_reward +
+            weights.get('latency_penalty', weights.get('latency', 0.25)) * components.latency_reward +
+            weights.get('energy_efficiency_bonus', weights.get('energy', 0.20)) * components.energy_reward +
+            weights.get('reliability_bonus', weights.get('reliability', 0.15)) * components.reliability_reward +
+            weights.get('mobility_bonus', weights.get('mobility', 0.10)) * components.mobility_reward +
+            weights.get('spectrum', 0.05) * components.spectrum_reward +
             0.1 * components.stability_reward +                               
             components.handover_penalty +
             components.physics_bonus
@@ -689,12 +707,15 @@ class MultiObjectiveReward:
         mobility_compliance = min(mobility_kmh / self.target_mobility_kmh, 1.0)
         
                                    
+        # Use dynamic weights for compliance calculation as well
+        weights = self.current_reward_weights if self.current_reward_weights else self.weights.__dict__
+
         overall_compliance = (
-            self.weights.throughput * throughput_compliance +
-            self.weights.latency * latency_compliance +
-            self.weights.reliability * reliability_compliance +
-            self.weights.mobility * mobility_compliance +
-            0.2 * (components.energy_reward + 1.0) / 2.0                           
+            weights.get('throughput_bonus', weights.get('throughput', 0.25)) * throughput_compliance +
+            weights.get('latency_penalty', weights.get('latency', 0.25)) * latency_compliance +
+            weights.get('reliability_bonus', weights.get('reliability', 0.15)) * reliability_compliance +
+            weights.get('mobility_bonus', weights.get('mobility', 0.10)) * mobility_compliance +
+            weights.get('energy_efficiency_bonus', weights.get('energy', 0.20)) * (components.energy_reward + 1.0) / 2.0                           
         )
         
         return min(overall_compliance, 1.0)

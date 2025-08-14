@@ -13,6 +13,7 @@ from typing import Dict, Any, Tuple, List, Optional
 import scipy.special as sp
 from scipy.constants import c as speed_of_light
 from utils.exception_handler import safe_calculation, graceful_degradation, get_exception_handler
+from environment.physics_calculator import PhysicsCalculator
 
 class ChannelSimulator:
     """
@@ -44,6 +45,8 @@ class ChannelSimulator:
         Args:
             config: Dictionary containing simulation parameters
         """
+        self.config = config or {}
+        self.physics_calculator = PhysicsCalculator(self.config)
                             
         self.frequency = 28.0e9                   
         self.wavelength = speed_of_light / self.frequency
@@ -190,6 +193,8 @@ class ChannelSimulator:
                     self.atmospheric_absorption_dB_per_km = float(physics_cfg['atmospheric_absorption_dB_per_km'])
                 except Exception:
                     self.atmospheric_absorption_dB_per_km = None
+            if 'pe_model' in physics_cfg:
+                self.physics_calculator.pe_model = physics_cfg['pe_model']
     
     def _validate_parameters(self):
         """Comprehensive validation of all simulation parameters with cross-parameter checks."""
@@ -374,38 +379,27 @@ class ChannelSimulator:
             print(f"   {key}: {value}")
 
     @safe_calculation("path_loss_calculation", fallback_value=1e6)
-    def _calculate_path_loss(self, distance: float) -> float:
+    def _calculate_path_loss(self, distance: float, frequency_ghz: float) -> float:
         """
-        Calculate total path loss including free-space and atmospheric absorption.
-        
-        Implements:
-        - Free-space path loss: L_fs = (4πd/λ)² (Friis, 1946)
-        - Atmospheric absorption: ITU-R P.676-13 model
-        
-        Args:
-            distance: Distance between transmitter and receiver in meters
-            
-        Returns:
-            Total path loss in linear scale (free-space + atmospheric)
-            
-        References:
-        - Friis, H. T. (1946). A note on a simple transmission formula. 
-          Proceedings of the IRE, 34(5), 254-256.
-        - ITU-R P.676-13 (2022). Attenuation by atmospheric gases. 
-          International Telecommunication Union.
+        Calculate total path loss including free-space, atmospheric, and clutter loss.
         """
-                                            
-        free_space_loss = (4 * np.pi * distance / self.wavelength) ** 2
+        # Free-space path loss (dB)
+        free_space_loss_db = self.physics_calculator.calculate_path_loss(distance, self.frequency)
         
-                                                       
-        atmospheric_loss = self._calculate_atmospheric_absorption(distance)
+        # Atmospheric absorption (dB)
+        atmospheric_loss_db = self._calculate_atmospheric_absorption(distance)
         
-                                                       
-        total_path_loss = free_space_loss * atmospheric_loss
+        # Clutter loss (dB)
+        clutter_loss_db = self.physics_calculator.calculate_clutter_loss(distance, frequency_ghz)
         
-        return total_path_loss
+        # Stochastic blockage loss (dB)
+        blockage_loss_db = self.physics_calculator.calculate_blockage_loss(frequency_ghz)
+        
+        total_loss_db = free_space_loss_db + atmospheric_loss_db + clutter_loss_db + blockage_loss_db
+        # Return linear loss factor
+        return 10**(total_loss_db / 10)
     
-    @safe_calculation("atmospheric_absorption_calculation", fallback_value=1.0)
+    @safe_calculation("atmospheric_absorption_calculation", fallback_value=0.0)
     def _calculate_atmospheric_absorption(self, distance: float) -> float:
         """
         Calculate atmospheric absorption using ITU-R P.676 model.
@@ -417,7 +411,7 @@ class ChannelSimulator:
             distance: Distance in meters
             
         Returns:
-            Atmospheric absorption factor (linear scale)
+            Atmospheric attenuation in dB
         """
                                                                         
         if self.atmospheric_absorption_dB_per_km is not None:
@@ -443,10 +437,7 @@ class ChannelSimulator:
                                                       
         atmospheric_attenuation_dB = gamma_total * distance_km
         
-                                 
-        atmospheric_loss = 10 ** (atmospheric_attenuation_dB / 10)
-        
-        return atmospheric_loss
+        return atmospheric_attenuation_dB
     
     def _generate_turbulence_screen(self, distance: float) -> np.ndarray:
         """
@@ -704,42 +695,34 @@ class ChannelSimulator:
         
         return fading_matrix
     
-    def _get_pointing_error_loss(self, oam_mode: int) -> float:
+    def _get_pointing_error_loss(self, oam_mode: int, user_speed_kmh: float) -> float:
         """
         Calculate loss due to pointing errors with OAM mode sensitivity.
         
-        Pointing errors occur when there's misalignment between the transmitter and receiver.
-        Higher OAM modes are more sensitive to pointing errors due to their more complex
-        phase structure.
-        
-        Args:
-            oam_mode: Current OAM mode
-            
-        Returns:
-            Pointing error loss in linear scale
+        Uses either a simple geometric or an advanced dynamic model based on config.
         """
-                                        
-        pointing_error = np.random.normal(0, self.pointing_error_std)
-        
-                                                                
-                                                       
-        mode_sensitivity = 1.0 + 0.2 * (oam_mode - self.min_mode)
-        
-                                                                                  
-        pointing_loss = np.exp(-(pointing_error * mode_sensitivity)**2 / (2 * self.beam_width**2))
-        
-        return max(pointing_loss, 0.01)                           
-    
+        misalignment_rad = np.random.normal(0, self.pointing_error_std)
+        misalignment_deg = np.degrees(misalignment_rad)
 
-    
+        if self.physics_calculator.pe_model == 'dynamic':
+            loss_db = self.physics_calculator.calculate_dynamic_pointing_loss(misalignment_deg, user_speed_kmh)
+            return 10**(-loss_db / 10.0)
+        else:
+            # Original geometric model
+            mode_sensitivity = 1.0 + 0.2 * (oam_mode - self.min_mode)
+            pointing_loss = np.exp(-(misalignment_rad * mode_sensitivity)**2 / (2 * self.beam_width**2))
+            return max(pointing_loss, 0.01)
+
     @safe_calculation("simulation_step", fallback_value=(np.eye(8, dtype=complex), -10.0))                          
-    def run_step(self, user_position: np.ndarray, current_oam_mode: int) -> Tuple[np.ndarray, float]:
+    def run_step(self, user_position: np.ndarray, current_oam_mode: int, user_speed_kmh: float, interferer_positions: Optional[List[np.ndarray]] = None) -> Tuple[np.ndarray, float]:
         """
         Run one step of the channel simulation.
         
         Args:
             user_position: 3D position of the user [x, y, z] in meters
             current_oam_mode: Current OAM mode being used
+            user_speed_kmh: Current user speed in km/h for dynamic pointing loss
+            interferer_positions: List of 3D positions of interfering users
             
         Returns:
             Tuple of (channel matrix H, SINR in dB)
@@ -760,8 +743,8 @@ class ChannelSimulator:
         elif distance > 50000:             
             distance = 50000
         
-                                                                           
-        path_loss = self._calculate_path_loss(distance)
+        frequency_ghz = self.frequency / 1e9
+        path_loss = self._calculate_path_loss(distance, frequency_ghz)
         
                                    
         turbulence_screen = self._generate_turbulence_screen(distance)
@@ -773,7 +756,7 @@ class ChannelSimulator:
         fading_matrix = self._get_rician_fading_gain()
         
                                                       
-        pointing_loss = self._get_pointing_error_loss(current_oam_mode)
+        pointing_loss = self._get_pointing_error_loss(current_oam_mode, user_speed_kmh)
         
                                                      
                                                     
@@ -824,50 +807,66 @@ class ChannelSimulator:
         interference_power = np.sum(mode_powers[interference_mask])
         
                                          
+        # Calculate interference power from other users
+        if interferer_positions:
+            inter_user_interference = self._calculate_interference_power(interferer_positions)
+        else:
+            inter_user_interference = 0.0
+
+        # Total noise and interference
         noise_power = self._calculate_noise_power()
+        total_noise_interference = interference_power + noise_power + inter_user_interference
         
-                                                          
-                                                           
-        
-                                                
         if signal_power < 1e-30:
-                                                         
             sinr_dB = -150.0
         else:
-                                                                     
-            denominator = interference_power + noise_power
-            
-                                                             
-                                                          
+            denominator = total_noise_interference
             denominator = max(denominator, 1e-12)
-            
-                                                     
             sinr = signal_power / denominator
             
-                                         
             if np.isnan(sinr) or np.isinf(sinr):
                 if np.isinf(sinr):
-                                                               
                     sinr_dB = 60.0
                 else:
-                                            
                     sinr_dB = -150.0
             else:
-                                                  
                 if sinr > 0:
-                                                                       
                     sinr_clamped = min(sinr, 1e12)                            
                     sinr_dB = 10 * np.log10(sinr_clamped)
                 else:
-                                                       
                     sinr_dB = -150.0
             
-                                                                       
-                                                         
             sinr_dB = max(min(sinr_dB, 40.0), -20.0)
         
         return self.H, sinr_dB
     
+    def _calculate_interference_power(self, interferer_positions: List[np.ndarray]) -> float:
+        """
+        Calculate the total interference power from other users.
+        
+        Args:
+            interferer_positions: List of 3D positions of interfering users.
+            
+        Returns:
+            Total interference power in watts.
+        """
+        total_interference_power = 0.0
+        interferer_tx_power_W = 10 ** (self.tx_power_dBm / 10) / 1000
+
+        for pos in interferer_positions:
+            distance = np.linalg.norm(pos)
+            if distance < 1.0:
+                distance = 1.0
+            
+            # Simplified path loss for interferers
+            path_loss = (4 * np.pi * distance * self.frequency / speed_of_light)**2
+            
+            if path_loss > 1e-12:
+                received_power = interferer_tx_power_W / path_loss
+                total_interference_power += received_power
+                
+        return total_interference_power
+
     def _calculate_noise_power(self) -> float:
         """
         Calculate thermal noise power in watts.
@@ -897,5 +896,5 @@ if __name__ == "__main__":
     mode = (sim.min_mode + sim.max_mode) // 2
     for d in [50.0, 100.0, 200.0]:
         pos = np.array([d, 0.0, 0.0], dtype=float)
-        _, sinr_db = sim.run_step(pos, mode)
+        _, sinr_db = sim.run_step(pos, mode, 0.0) # Pass user_speed_kmh=0.0 for static model
         print(f"distance={d:6.1f} m  mode={mode}  SINR={sinr_db:6.2f} dB")

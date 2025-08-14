@@ -1,0 +1,128 @@
+ DOCOMO 6G Professional Training System
+============================================================
+    Config: config/config.yaml
+    Output: results/docomo_6g_long
+    Episodes: 1000
+    Seed: 42
+  Using device: cpu
+ Loaded config from config/config.yaml
+ Initializing DOCOMO 6G Environment...
+ All parameters validated successfully
+ Validation Summary:
+   frequency_GHz: 28.0
+   wavelength_m: 0.0107068735
+   beam_width_rad: 0.03
+   pointing_error_rad: 0.005
+   oam_modes: 1-8
+   max_snr_dB: 106.94428732430866
+   turbulence_strength: 1e-14
+   atmospheric_conditions: T=20.0C, P=101.3kPa, H=50.0%
+ DOCOMO 6G Environment initialized
+    KPI Targets: 100.0 Gbps, 0.1 ms
+    Frequency Bands: 9 bands (6 GHz - 600 GHz)
+    Max Mobility: 500.0 km/h
+    State space: (20,)
+    Action space: 8
+    Frequency bands: 9
+ Initializing DQN Agent...
+     Model parameters: 73224
+
+ Starting DOCOMO 6G Training: 1000 episodes
+============================================================
+Episode   10: Reward=2000.00, Loss=1796.2564, Steps=200, ε=0.802, Time=0.94s
+          KPIs: T=174.2Gbps, L=0.042ms, R=1.0000
+          Band: sub_thz_100 (100 GHz) - 200 uses
+          [DOCOMO] T: 174.2/100 Gbps | L: 0.042/0.100 ms | R: 0.9999999/0.9999999 | M: 500.0/500 km/h | Compliance: 98.0%
+Episode   20: Reward=2000.00, Loss=6251.9936, Steps=200, ε=0.604, Time=0.90s
+          KPIs: T=194.4Gbps, L=0.047ms, R=1.0000
+          Band: sub_thz_220 (220 GHz) - 200 uses
+          [DOCOMO] T: 194.4/100 Gbps | L: 0.047/0.100 ms | R: 0.9999999/0.9999999 | M: 500.0/500 km/h | Compliance: 98.0%
+Episode   30: Reward=2000.00, Loss=15796.3594, Steps=200, ε=0.406, Time=1.02s
+          KPIs: T=210.8Gbps, L=0.033ms, R=1.0000
+          Band: sub_thz_220 (220 GHz) - 200 uses
+          [DOCOMO] T: 210.8/100 Gbps | L: 0.033/0.100 ms | R: 0.9999999/0.9999999 | M: 500.0/500 km/h | Compliance: 98.0%
+Episode   40: Reward=2000.00, Loss=29340.0438, Steps=200, ε=0.208, Time=1.48s
+          KPIs: T=149.1Gbps, L=0.060ms, R=1.0000
+          Band: sub_thz_100 (100 GHz) - 200 uses
+          [DOCOMO] T: 149.1/100 Gbps | L: 0.060/0.100 ms | R: 0.9999999/0.9999999 | M: 500.0/500 km/h | Compliance: 98.0%
+Episode   50: Reward=2000.00, Loss=51854.7003, Steps=200, ε=0.010, Time=0.85s
+          KPIs: T=162.8Gbps, L=0.064ms, R=1.0000
+          Band: sub_thz_100 (100 GHz) - 200 uses
+          [DOCOMO] T: 162.8/100 Gbps | L: 0.064/0.100 ms | R: 0.9999999/0.9999999 | M: 500.0/500 km/h | Compliance: 98.0%
+Episode   60: Reward=2000.00, Loss=87343.2190, Steps=200, ε=0.010, Time=1.17s
+          KPIs: T=168.5Gbps, L=0.065ms, R=1.0000
+          Band: sub_thz_100 (100 GHz) - 200 uses
+          [DOCOMO] T: 168.5/100 Gbps | L: 0.065/0.100 ms | R: 0.9999999/0.9999999 | M: 500.0/500 km/h | Compliance: 98.0%
+Episode   70: Reward=2000.00, Loss=143158.9642, Steps=200, ε=0.010, Time=1.76s
+          KPIs: T=171.8Gbps, L=0.033ms, R=1.0000
+          Band: sub_thz_100 (100 GHz) - 200 uses
+          [DOCOMO] T: 171.8/100 Gbps | L: 0.033/0.100 ms | R: 0.9999999/0.9999999 | M: 500.0/500 km/h | Compliance: 98.0%
+Episode   80: Reward=2000.00, Loss=206722.2078, Steps=200, ε=0.010, Time=1.24s
+          KPIs: T=142.5Gbps, L=0.064ms, R=1.0000
+          Band: sub_thz_100 (100 GHz) - 200 uses
+          [DOCOMO] T: 142.5/100 Gbps | L: 0.064/0.100 ms | R: 0.9999999/0.9999999 | M: 500.0/500 km/h | Compliance: 98.0%
+Episode   90: Reward=2000.00, Loss=305836.7060, Steps=200, ε=0.010, Time=1.02s
+          KPIs: T=195.1Gbps, L=0.033ms, R=1.0000
+          Band: sub_thz_220 (220 GHz) - 200 uses
+          [DOCOMO] T: 195.1/100 Gbps | L: 0.033/0.100 ms | R: 0.9999999/0.9999999 | M: 500.0/500 km/h | Compliance: 98.0%
+Episode  100: Reward=2000.00, Loss=425418.0675, Steps=200, ε=0.010, Time=1.13s
+          KPIs: T=212.1Gbps, L=0.064ms, R=1.0000
+          Band: sub_thz_220 (220 GHz) - 200 uses
+          [DOCOMO] T: 212.1/100 Gbps | L: 0.064/0.100 ms | R: 0.9999999/0.9999999 | M: 500.0/500 km/h | Compliance: 98.0%
+Episode  110: Reward=2000.00, Loss=610001.5456, Steps=200, ε=0.010, Time=1.28s
+          KPIs: T=171.4Gbps, L=0.063ms, R=1.0000
+          Band: sub_thz_100 (100 GHz) - 200 uses
+          [DOCOMO] T: 171.4/100 Gbps | L: 0.063/0.100 ms | R: 0.9999999/0.9999999 | M: 500.0/500 km/h | Compliance: 98.0%
+Episode  120: Reward=2000.00, Loss=784714.9863, Steps=200, ε=0.010, Time=1.10s
+          KPIs: T=245.5Gbps, L=0.032ms, R=1.0000
+          Band: sub_thz_220 (220 GHz) - 200 uses
+          [DOCOMO] T: 245.5/100 Gbps | L: 0.032/0.100 ms | R: 0.9999999/0.9999999 | M: 500.0/500 km/h | Compliance: 98.0%
+Episode  130: Reward=2000.00, Loss=998029.2429, Steps=200, ε=0.010, Time=1.09s
+          KPIs: T=188.7Gbps, L=0.060ms, R=1.0000
+          Band: sub_thz_220 (220 GHz) - 200 uses
+          [DOCOMO] T: 188.7/100 Gbps | L: 0.060/0.100 ms | R: 0.9999999/0.9999999 | M: 500.0/500 km/h | Compliance: 98.0%
+Episode  140: Reward=2000.00, Loss=1193603.9092, Steps=200, ε=0.010, Time=1.43s
+          KPIs: T=172.4Gbps, L=0.033ms, R=1.0000
+          Band: sub_thz_220 (220 GHz) - 200 uses
+          [DOCOMO] T: 172.4/100 Gbps | L: 0.033/0.100 ms | R: 0.9999999/0.9999999 | M: 500.0/500 km/h | Compliance: 98.0%
+Episode  150: Reward=2000.00, Loss=1351154.7988, Steps=200, ε=0.010, Time=1.18s
+          KPIs: T=220.3Gbps, L=0.063ms, R=1.0000
+          Band: sub_thz_220 (220 GHz) - 200 uses
+          [DOCOMO] T: 220.3/100 Gbps | L: 0.063/0.100 ms | R: 0.9999999/0.9999999 | M: 500.0/500 km/h | Compliance: 98.0%
+Episode  160: Reward=2000.00, Loss=1759642.7939, Steps=200, ε=0.010, Time=1.26s
+          KPIs: T=207.7Gbps, L=0.063ms, R=1.0000
+          Band: sub_thz_220 (220 GHz) - 200 uses
+          [DOCOMO] T: 207.7/100 Gbps | L: 0.063/0.100 ms | R: 0.9999999/0.9999999 | M: 500.0/500 km/h | Compliance: 98.0%
+Episode  170: Reward=2000.00, Loss=2060595.6575, Steps=200, ε=0.010, Time=1.16s
+          KPIs: T=221.5Gbps, L=0.064ms, R=1.0000
+          Band: sub_thz_220 (220 GHz) - 200 uses
+          [DOCOMO] T: 221.5/100 Gbps | L: 0.064/0.100 ms | R: 0.9999999/0.9999999 | M: 500.0/500 km/h | Compliance: 98.0%
+Episode  180: Reward=2000.00, Loss=2425345.0275, Steps=200, ε=0.010, Time=1.22s
+          KPIs: T=161.9Gbps, L=0.059ms, R=1.0000
+          Band: sub_thz_100 (100 GHz) - 200 uses
+          [DOCOMO] T: 161.9/100 Gbps | L: 0.059/0.100 ms | R: 0.9999999/0.9999999 | M: 500.0/500 km/h | Compliance: 98.0%
+Episode  190: Reward=2000.00, Loss=2867002.9973, Steps=200, ε=0.010, Time=1.20s
+          KPIs: T=166.6Gbps, L=0.063ms, R=1.0000
+          Band: sub_thz_100 (100 GHz) - 200 uses
+          [DOCOMO] T: 166.6/100 Gbps | L: 0.063/0.100 ms | R: 0.9999999/0.9999999 | M: 500.0/500 km/h | Compliance: 98.0%
+Episode  200: Reward=2000.00, Loss=3605934.8366, Steps=200, ε=0.010, Time=1.30s
+          KPIs: T=169.0Gbps, L=0.060ms, R=1.0000
+          Band: sub_thz_100 (100 GHz) - 200 uses
+          [DOCOMO] T: 169.0/100 Gbps | L: 0.060/0.100 ms | R: 0.9999999/0.9999999 | M: 500.0/500 km/h | Compliance: 98.0%
+Episode  210: Reward=2000.00, Loss=3893653.2222, Steps=200, ε=0.010, Time=1.16s
+          KPIs: T=157.6Gbps, L=0.065ms, R=1.0000
+          Band: sub_thz_100 (100 GHz) - 200 uses
+          [DOCOMO] T: 157.6/100 Gbps | L: 0.065/0.100 ms | R: 0.9999999/0.9999999 | M: 500.0/500 km/h | Compliance: 98.0%
+Episode  220: Reward=2000.00, Loss=4706996.8050, Steps=200, ε=0.010, Time=1.26s
+          KPIs: T=202.6Gbps, L=0.064ms, R=1.0000
+          Band: sub_thz_220 (220 GHz) - 200 uses
+          [DOCOMO] T: 202.6/100 Gbps | L: 0.064/0.100 ms | R: 0.9999999/0.9999999 | M: 500.0/500 km/h | Compliance: 98.0%
+Episode  230: Reward=2000.00, Loss=5617698.2494, Steps=200, ε=0.010, Time=1.05s
+          KPIs: T=156.2Gbps, L=0.064ms, R=1.0000
+          Band: sub_thz_100 (100 GHz) - 200 uses
+          [DOCOMO] T: 156.2/100 Gbps | L: 0.064/0.100 ms | R: 0.9999999/0.9999999 | M: 500.0/500 km/h | Compliance: 98.0%
+Episode  240: Reward=2000.00, Loss=5870443.6778, Steps=200, ε=0.010, Time=1.19s
+          KPIs: T=246.2Gbps, L=0.040ms, R=1.0000
+          Band: sub_thz_220 (220 GHz) - 200 uses
+          [DOCOMO] T: 246.2/100 Gbps | L: 0.040/0.100 ms | R: 0.9999999/0.9999999 | M: 500.0/500 km/h | Compliance: 98.0%
+Episode  250: Reward=1999.63, Loss=6055339.5200, Steps=200, ε=0.010, Time=1.08s

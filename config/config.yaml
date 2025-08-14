@@ -20,6 +20,15 @@ docomo_6g_system:
     coverage_improvement: 100             # 100% seamless coverage
     sensing_accuracy_cm: 1.0              # 1 cm sensing accuracy
 
+  # Network Topology
+  network:
+    base_stations:
+      - [0, 0, 30]
+      - [2000, 2000, 30]
+      - [-2000, 2000, 30]
+      - [2000, -2000, 30]
+      - [-2000, -2000, 30]
+
   # Enhanced Multi-Band Frequency Configuration (DOCOMO Standard)
   frequency_bands:
     # Coverage Layer - Sub-6 GHz
@@ -140,7 +149,27 @@ docomo_6g_system:
   mobility:
     max_speed_kmh: 500.0                  # DOCOMO extreme mobility target
     acceleration_max_ms2: 10.0            # High acceleration scenarios
-    prediction_horizon_ms: 50.0           # Predictive capability
+    # Values are clamped to [0, max_speed_kmh]
+    initial_speed_kmh:
+      distribution: normal
+      mean: 200
+      std: 100
+    
+    handover:
+      benefit_threshold: 0.2
+      confidence_threshold: 0.7
+
+    path:
+      model: 'random_walk' # 'random_walk', 'linear', 'circular'
+      # For linear model
+      target_position_m: [5000, 5000, 1.5]
+      # For circular model
+      center_m: [0, 0, 1.5]
+      radius_m: 2000
+      direction: 'clockwise'
+
+    # Beam tracking and Doppler settings
+    prediction_horizon_ms: 50.0
     doppler_compensation: true            # Advanced Doppler handling
     beam_prediction_enabled: true         # Predictive beam steering
     handover_prediction_ms: 20.0          # Early handover decisions
@@ -181,6 +210,8 @@ docomo_6g_system:
       lr_scheduler: "cosine_annealing"    # Learning rate scheduling
       high_freq_start_prob: 0.99          # Prefer starting on sub-THz bands (further increased)
       optimal_start_band: true            # Start on optimal band for initial distance
+      double_dqn: true                    # Use Double DQN
+      dueling_dqn: true                   # Use Dueling DQN
       
     # DOCOMO Multi-Objective Weights
     objectives:
@@ -196,14 +227,14 @@ docomo_6g_system:
     kpi_compliance_threshold: 0.97        # 97% compliance required (raised)
   # Band switch optimization (stabilize high-band selection)
   band_switch_optimization:
-    min_interval_steps: 28
-    time_to_trigger_steps: 16
-    sinr_hysteresis_db: 2.0
-    min_gain_gbps: 26.0
-    min_dwell_steps: 35
-    stickiness_window: 35
-    stickiness_bonus: 0.15
-    early_exemption_steps: 20
+    min_interval_steps: 3
+    time_to_trigger_steps: 2
+    sinr_hysteresis_db: 1.0
+    min_gain_gbps: 0.5
+    min_dwell_steps: 3
+    stickiness_window: 10
+    stickiness_bonus: 0.10
+    early_exemption_steps: 10
     docomo_benchmarks: true               # DOCOMO compliance testing
     kpi_compliance_threshold: 0.95        # 95% compliance required
     # Raise threshold to reflect new stability
@@ -258,7 +289,7 @@ docomo_6g_system:
 # Simulation Parameters
 simulation:
   max_episodes: 10000                     # Extended training
-  max_steps_per_episode: 2000            # Longer episodes
+  max_steps_per_episode: 900            # Longer episodes
   evaluation_frequency: 100              # Regular evaluation
   checkpoint_frequency: 500              # Model checkpointing
   early_stopping_patience: 1000         # Extended patience
@@ -269,3 +300,113 @@ hardware_requirements:
   cpu_cores: 16                          # Multi-core processing
   ram_gb: 64                             # Large memory for buffering
   storage_gb: 1000                       # Large dataset storage
+
+physics:
+  clutter:
+    enabled: true
+    model: 'UMa_NLOS'
+    loss_factor_A: 26.0
+    loss_factor_B: 20.0
+    loss_constant_C: 22.7
+  pointing_error:
+    model: 'dynamic'
+    tracking_speed_deg_s: 180.0
+    high_speed_threshold_kmh: 300.0
+    loss_of_lock_base_prob: 0.001
+    loss_of_lock_speed_factor: 5.0
+    loss_of_lock_penalty_db: 10.0
+
+    blockage:
+      enabled: true
+      model: 'urban' # Defines the active profile
+      profiles:
+        urban:
+          probability: 0.005 # 0.5% chance per step
+          loss_mean_db: 25.0
+          loss_std_dev_db: 5.0
+        suburban:
+          probability: 0.001 # 0.1% chance per step
+          loss_mean_db: 20.0
+          loss_std_dev_db: 4.0
+
+  interference:
+    enabled: true
+    num_interfering_users: 10
+    interferer_tx_power_dbm: 25.0
+    interferer_frequency_bands: ["sub_6ghz", "mmwave_28"]
+
+curriculum:
+  enabled: true
+  stages:
+    - name: "Stage 1: Basic Mobility"
+      episodes: 500
+      config_overrides:
+        docomo_6g_system:
+          mobility:
+            max_speed_kmh: 50
+            initial_speed_kmh:
+              distribution: "uniform"
+              min: 10
+              max: 50
+          frequency_bands:
+            sub_thz_100: null # Disable
+            sub_thz_140: null
+            sub_thz_220: null
+            sub_thz_300: null
+            thz_600: null
+          atmospheric:
+            enhanced_absorption_model: "none"
+    - name: "Stage 2: Advanced Mobility & Bands"
+      episodes: 1000
+      config_overrides:
+        docomo_6g_system:
+          mobility:
+            max_speed_kmh: 250
+            initial_speed_kmh:
+              distribution: "normal"
+              mean: 150
+              std: 50
+          atmospheric:
+            enhanced_absorption_model: "itu_r_p676_13"
+            scintillation_model: "strong_turbulence"
+    - name: "Stage 3: Full Complexity"
+      episodes: 1500
+      config_overrides: {} # Use default config
+
+network_slicing:
+  enabled: true
+  slice_types:
+    urllc:
+      name: "Ultra-Reliable Low-Latency Communication"
+      qos_targets:
+        min_throughput_gbps: 0.1
+        max_latency_ms: 0.5
+        min_reliability: 0.9999999
+        max_mobility_kmh: 50
+      reward_weights:
+        latency_penalty: 0.7
+        reliability_bonus: 0.3
+    embb:
+      name: "Enhanced Mobile Broadband"
+      qos_targets:
+        min_throughput_gbps: 100.0
+        max_latency_ms: 5.0
+        min_reliability: 0.9999
+        max_mobility_kmh: 300
+      reward_weights:
+        throughput_bonus: 0.6
+        mobility_bonus: 0.2
+    mmtc:
+      name: "Massive Machine Type Communications"
+      qos_targets:
+        min_throughput_gbps: 0.001
+        max_latency_ms: 100.0
+        min_reliability: 0.9
+        max_mobility_kmh: 10
+      reward_weights:
+        connection_density_bonus: 0.5
+        energy_efficiency_bonus: 0.3
+  selection_distribution: # Probability of selecting each slice type
+    urllc: 0.2
+    embb: 0.6
+    mmtc: 0.2

@@ -50,7 +50,9 @@ class Agent:
         batch_size: int = 64,
         target_update_freq: int = 10,
         device: Optional[torch.device] = None,
-        replay_buffer: Optional[ReplayBufferInterface] = None
+        replay_buffer: Optional[ReplayBufferInterface] = None,
+        double_dqn: bool = False,
+        dueling_dqn: bool = False
     ):
         """
         Initialize the DQN agent.
@@ -66,6 +68,8 @@ class Agent:
             target_update_freq (int): Episodes between target network updates (default: 10)
             device (Optional[torch.device]): PyTorch device to use (defaults to CUDA if available)
             replay_buffer (Optional[ReplayBufferInterface]): Custom replay buffer for dependency injection
+            double_dqn (bool): Whether to use Double DQN
+            dueling_dqn (bool): Whether to use Dueling DQN architecture
             
         Returns:
             Agent: Initialized DQN agent instance.
@@ -82,15 +86,16 @@ class Agent:
             ...     batch_size=128
             ... )  # Custom configuration
         """
-                    
+        self.double_dqn = double_dqn
+        
         if device is None:
             self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
         else:
             self.device = device
         
                              
-        self.policy_net = DQN(state_dim, action_dim, hidden_layers).to(self.device)
-        self.target_net = DQN(state_dim, action_dim, hidden_layers).to(self.device)
+        self.policy_net = DQN(state_dim, action_dim, hidden_layers, dueling=dueling_dqn).to(self.device)
+        self.target_net = DQN(state_dim, action_dim, hidden_layers, dueling=dueling_dqn).to(self.device)
         
                                                           
         self.target_net.load_state_dict(self.policy_net.state_dict())
@@ -104,7 +109,7 @@ class Agent:
             self.replay_buffer = replay_buffer
         else:
                                                                
-            self.replay_buffer = ReplayBuffer(buffer_capacity, state_dim, self.device)
+            self.replay_buffer = ReplayBuffer(buffer_capacity, self.state_dim, self.device)
         
                              
         self.gamma = gamma
@@ -173,13 +178,15 @@ class Agent:
         
                                  
         with torch.no_grad():
-                                                                     
-            next_q_values = self.target_net(next_states).max(1)[0]
+            if self.double_dqn:
+                # Double DQN: Select action with policy_net, evaluate with target_net
+                next_actions = self.policy_net(next_states).argmax(1, keepdim=True)
+                next_q_values = self.target_net(next_states).gather(1, next_actions).squeeze(1)
+            else:
+                # Standard DQN
+                next_q_values = self.target_net(next_states).max(1)[0]
             
-                                                            
             target_q_values = rewards + self.gamma * next_q_values * (1 - dones)
-            
-                                       
             target_q_values = target_q_values.unsqueeze(1)
         
                                                  

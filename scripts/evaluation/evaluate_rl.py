@@ -144,8 +144,9 @@ def evaluate(args: argparse.Namespace) -> None:
     action_dim = env.action_space.n
     
                                                                  
-    network_cfg = config.get('network', {}) if isinstance(config, dict) else {}
-    hidden_layers = network_cfg.get('hidden_layers', [128, 128])
+    # Use agent config to match training defaults
+    agent_cfg = config.get('agent', {}) if isinstance(config, dict) else {}
+    hidden_layers = agent_cfg.get('hidden_layers', [256, 256])
     agent = Agent(
         state_dim=state_dim,
         action_dim=action_dim,
@@ -178,7 +179,9 @@ def evaluate(args: argparse.Namespace) -> None:
     
                      
     episode_rewards = []
-    episode_throughputs = []
+    episode_throughputs = []  # kept for backward compatibility (last-step TP)
+    episode_avg_throughputs = []
+    episode_peak_throughputs = []
     episode_handovers = []
     episode_sinrs = []
     episode_modes = []
@@ -192,6 +195,9 @@ def evaluate(args: argparse.Namespace) -> None:
         done = False
         truncated = False
         episode_reward = 0
+        ep_steps = 0
+        ep_sum_tp_bps = 0.0
+        ep_peak_tp_bps = 0.0
         episode_sinr_values = []
         episode_mode_values = []
         episode_distance_values = []
@@ -201,9 +207,10 @@ def evaluate(args: argparse.Namespace) -> None:
             collected_states.append(state)
             
                                      
-            episode_sinr_values.append(state[0])        
-            episode_distance_values.append(state[1])            
-            episode_mode_values.append(state[5])                
+            # Observation indices: 0-SINR(dB), 1-Throughput(Gbps), 2-Latency(ms), 3-Distance(m), 8-OAM mode
+            episode_sinr_values.append(state[0])
+            episode_distance_values.append(state[3])
+            episode_mode_values.append(state[8])
             
                                                               
             action = agent.choose_action(state, epsilon=0.0)
@@ -213,6 +220,16 @@ def evaluate(args: argparse.Namespace) -> None:
             
                              
             episode_reward += reward
+            # Track throughput metrics per step
+            try:
+                perf = info.get('performance_metrics', {})
+                tp_bps = float(perf.get('throughput_gbps', 0.0)) * 1e9
+                ep_sum_tp_bps += tp_bps
+                if tp_bps > ep_peak_tp_bps:
+                    ep_peak_tp_bps = tp_bps
+            except Exception:
+                pass
+            ep_steps += 1
             state = next_state
             
                                  
@@ -221,10 +238,16 @@ def evaluate(args: argparse.Namespace) -> None:
         
                                
         episode_rewards.append(episode_reward)
+        # Per-episode averages and peaks
+        if ep_steps > 0:
+            episode_avg_throughputs.append(ep_sum_tp_bps / ep_steps)
+        else:
+            episode_avg_throughputs.append(0.0)
+        episode_peak_throughputs.append(ep_peak_tp_bps)
+        # Keep last KPI throughput for legacy field
         try:
-                                        
             kpis = env.kpi_tracker.get_current_kpis()
-            episode_throughputs.append(kpis.get('current_throughput_gbps', 0.0) * 1e9)
+            episode_throughputs.append(float(kpis.get('current_throughput_gbps', 0.0)) * 1e9)
         except Exception:
             episode_throughputs.append(0.0)
         try:
@@ -238,19 +261,33 @@ def evaluate(args: argparse.Namespace) -> None:
         
                         
         if args.verbose or episode % 10 == 0:
-            print(f"Episode {episode}/{args.episodes} | "
-                  f"Reward: {episode_reward:.2f} | "
-                  f"Throughput: {env.episode_throughput:.2e} | "
-                  f"Handovers: {env.episode_handovers}")
+            try:
+                ep_avg_tp = episode_avg_throughputs[-1]
+                ep_peak_tp = episode_peak_throughputs[-1]
+                ep_handovers = int(getattr(env, 'episode_stats', {}).get('handover_count', 0))
+            except Exception:
+                ep_avg_tp = 0.0
+                ep_peak_tp = 0.0
+                ep_handovers = 0
+            print(
+                f"Episode {episode}/{args.episodes} | "
+                f"Reward: {episode_reward:.2f} | "
+                f"Avg TP: {ep_avg_tp:.2e} bps | Peak TP: {ep_peak_tp:.2e} bps | "
+                f"Handovers: {ep_handovers}"
+            )
     
                                
-    avg_reward = np.mean(episode_rewards)
-    avg_throughput = np.mean(episode_throughputs)
-    avg_handovers = np.mean(episode_handovers)
+    avg_reward = float(np.mean(episode_rewards)) if episode_rewards else 0.0
+    avg_throughput = float(np.mean(episode_throughputs)) if episode_throughputs else 0.0
+    overall_avg_throughput_bps = float(np.mean(episode_avg_throughputs)) if episode_avg_throughputs else 0.0
+    overall_peak_throughput_bps = float(np.max(episode_peak_throughputs)) if episode_peak_throughputs else 0.0
+    avg_handovers = float(np.mean(episode_handovers)) if episode_handovers else 0.0
     
     print("\nEvaluation Results:")
     print(f"  Average Reward: {avg_reward:.2f}")
-    print(f"  Average Throughput: {avg_throughput:.2e} bps")
+    print(f"  Average Throughput (last-step KPI): {avg_throughput:.2e} bps")
+    print(f"  Overall Avg Throughput (per-episode): {overall_avg_throughput_bps:.2e} bps")
+    print(f"  Overall Peak Throughput: {overall_peak_throughput_bps:.2e} bps")
     print(f"  Average Handovers: {avg_handovers:.2f}")
     
                                    
@@ -308,11 +345,15 @@ def evaluate(args: argparse.Namespace) -> None:
     
                              
     metrics = {
-        "avg_reward": float(avg_reward),
-        "avg_throughput": float(avg_throughput),
-        "avg_handovers": float(avg_handovers),
+        "avg_reward": avg_reward,
+        "avg_throughput_last_step_bps": avg_throughput,
+        "overall_avg_throughput_bps": overall_avg_throughput_bps,
+        "overall_peak_throughput_bps": overall_peak_throughput_bps,
+        "avg_handovers": avg_handovers,
         "rewards": [float(r) for r in episode_rewards],
-        "throughputs": [float(t) for t in episode_throughputs],
+        "throughputs_last_step_bps": [float(t) for t in episode_throughputs],
+        "throughputs_avg_bps": [float(t) for t in episode_avg_throughputs],
+        "throughputs_peak_bps": [float(t) for t in episode_peak_throughputs],
         "handovers": [int(h) for h in episode_handovers]
     }
     

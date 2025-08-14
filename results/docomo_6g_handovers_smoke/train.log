@@ -1,0 +1,89 @@
+ DOCOMO 6G Professional Training System
+============================================================
+    Config: config/config.yaml
+    Output: results/docomo_6g_handovers_smoke
+    Episodes: 100
+    Seed: 42
+  Using device: cpu
+ Loaded config from config/config.yaml
+ Initializing DOCOMO 6G Environment...
+ All parameters validated successfully
+ Validation Summary:
+   frequency_GHz: 28.0
+   wavelength_m: 0.0107068735
+   beam_width_rad: 0.03
+   pointing_error_rad: 0.005
+   oam_modes: 1-8
+   max_snr_dB: 109.95458728094847
+   turbulence_strength: 1e-14
+   atmospheric_conditions: T=20.0C, P=101.3kPa, H=50.0%
+    State space: (19,)
+    Action space: 8
+    Frequency bands: 9
+ Initializing DQN Agent...
+     Model parameters: 72968
+
+ Starting DOCOMO 6G Training: 100 episodes
+============================================================
+Episode   10: Reward= 679.32, Loss=784.1559, Steps=247, ε=0.819, Time=1.08s
+          KPIs: T=0.0Gbps, L=0.038ms, R=0.9990
+          Band: mmwave_39 (39 GHz) - 84 uses
+          [DOCOMO] T: 0.0/100 Gbps | L: 0.038/0.100 ms | R: 0.9990000/0.9999999 | M: 118.7/500 km/h | Compliance: 63.0%
+Episode   20: Reward= 418.10, Loss=716.0827, Steps=166, ε=0.615, Time=0.67s
+          KPIs: T=0.0Gbps, L=0.034ms, R=0.9990
+          Band: mmwave_60 (60 GHz) - 75 uses
+          [DOCOMO] T: 0.0/100 Gbps | L: 0.034/0.100 ms | R: 0.9990000/0.9999999 | M: 187.4/500 km/h | Compliance: 63.0%
+Episode   30: Reward= 264.72, Loss=706.9539, Steps=102, ε=0.424, Time=0.42s
+          KPIs: T=0.0Gbps, L=0.039ms, R=0.9990
+          Band: mmwave_28 (28 GHz) - 41 uses
+          [DOCOMO] T: 0.0/100 Gbps | L: 0.039/0.100 ms | R: 0.9990000/0.9999999 | M: 372.4/500 km/h | Compliance: 63.0%
+Episode   40: Reward= 274.74, Loss=922.2605, Steps=141, ε=0.301, Time=0.68s
+          KPIs: T=0.0Gbps, L=0.039ms, R=0.9990
+          Band: mmwave_60 (60 GHz) - 36 uses
+          [DOCOMO] T: 0.0/100 Gbps | L: 0.039/0.100 ms | R: 0.9990000/0.9999999 | M: 320.2/500 km/h | Compliance: 63.0%
+Episode   50: Reward= 477.02, Loss=973.3633, Steps=156, ε=0.118, Time=0.76s
+          KPIs: T=0.0Gbps, L=0.036ms, R=0.9990
+          Band: sub_thz_100 (100 GHz) - 86 uses
+          [DOCOMO] T: 0.0/100 Gbps | L: 0.036/0.100 ms | R: 0.9990000/0.9999999 | M: 353.2/500 km/h | Compliance: 63.0%
+Episode   60: Reward= 311.34, Loss=1120.7470, Steps=167, ε=0.010, Time=1.15s
+          KPIs: T=0.0Gbps, L=0.033ms, R=0.9990
+          Band: sub_thz_140 (140 GHz) - 51 uses
+          [DOCOMO] T: 0.0/100 Gbps | L: 0.033/0.100 ms | R: 0.9990000/0.9999999 | M: 146.9/500 km/h | Compliance: 63.0%
+Episode   70: Reward= 229.71, Loss=1158.7490, Steps=104, ε=0.010, Time=0.63s
+          KPIs: T=0.0Gbps, L=0.039ms, R=0.9990
+          Band: sub_thz_140 (140 GHz) - 42 uses
+          [DOCOMO] T: 0.0/100 Gbps | L: 0.039/0.100 ms | R: 0.9990000/0.9999999 | M: 359.1/500 km/h | Compliance: 63.0%
+Episode   80: Reward= 269.89, Loss=1028.6973, Steps=122, ε=0.010, Time=0.75s
+          KPIs: T=0.0Gbps, L=0.038ms, R=0.9990
+          Band: mmwave_60 (60 GHz) - 78 uses
+          [DOCOMO] T: 0.0/100 Gbps | L: 0.038/0.100 ms | R: 0.9990000/0.9999999 | M: 185.5/500 km/h | Compliance: 63.0%
+Episode   90: Reward= 318.16, Loss=1123.3936, Steps=136, ε=0.010, Time=0.77s
+          KPIs: T=0.0Gbps, L=0.038ms, R=0.9990
+          Band: mmwave_39 (39 GHz) - 57 uses
+          [DOCOMO] T: 0.0/100 Gbps | L: 0.038/0.100 ms | R: 0.9990000/0.9999999 | M: 111.1/500 km/h | Compliance: 63.0%
+Episode  100: Reward= 486.19, Loss=1011.4104, Steps=177, ε=0.010, Time=0.85s
+          KPIs: T=0.0Gbps, L=0.039ms, R=0.9990
+          Band: mmwave_60 (60 GHz) - 101 uses
+          [DOCOMO] T: 0.0/100 Gbps | L: 0.039/0.100 ms | R: 0.9990000/0.9999999 | M: 222.2/500 km/h | Compliance: 63.0%
+
+============================================================
+ DOCOMO 6G Training Completed!
+     Total time: 94.17s (0.94s/episode)
+    Best reward: 1721.3932
+    Best DOCOMO compliance: 65.5%
+    Final epsilon: 0.0100
+    Buffer size: 18261
+
+ Evaluating agent over 5 episodes...
+    Loaded best model for evaluation: results/docomo_6g_handovers_smoke/best_model.pth
+    Mean reward: 953.4342 ± 170.5652
+    DOCOMO compliance: 63.1%
+    docomo_training_curves.png - Training progress visualization
+
+ Results saved to: results/docomo_6g_handovers_smoke
+    training_results.json - Complete training data
+    best_model.pth - Best performing model
+    plots/ - Training visualizations
+
+ DOCOMO 6G Training Successfully Completed!
+System ready for production deployment!

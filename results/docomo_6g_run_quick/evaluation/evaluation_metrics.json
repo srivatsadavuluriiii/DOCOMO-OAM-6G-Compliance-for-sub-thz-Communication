@@ -1,0 +1,27 @@
+{
+  "avg_reward": 16257.721409595533,
+  "avg_throughput_last_step_bps": 58747540708.52237,
+  "overall_avg_throughput_bps": 106122802782.88101,
+  "overall_peak_throughput_bps": 252469276194.97748,
+  "avg_handovers": 0.0,
+  "rewards": [
+    19818.236233466214,
+    12697.206585724853
+  ],
+  "throughputs_last_step_bps": [
+    115577947734.61061,
+    1917133682.434127
+  ],
+  "throughputs_avg_bps": [
+    134750882630.82127,
+    77494722934.94075
+  ],
+  "throughputs_peak_bps": [
+    189351957146.23312,
+    252469276194.97748
+  ],
+  "handovers": [
+    0,
+    0
+  ]
+}
