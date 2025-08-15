@@ -168,10 +168,21 @@ for config_file in configs:
     print()
 "
 
-# Check for required sections in each config
-python scripts/verification/verify_environment.py --config config/config.yaml
-python scripts/verification/verify_environment.py --config config/lab_thz_only.yaml  
-python scripts/verification/verify_environment.py --config config/outdoor_focused.yaml
+# Check for required sections in each config (basic verification)
+python -c "
+try:
+    from environment.docomo_6g_env import DOCOMO_6G_Environment
+    import yaml
+    configs = ['config/config.yaml', 'config/lab_thz_only.yaml', 'config/outdoor_focused.yaml']
+    for config_file in configs:
+        with open(config_file, 'r') as f:
+            config = yaml.safe_load(f)
+        env = DOCOMO_6G_Environment(config=config)
+        print(f'✅ {config_file}: Environment created successfully')
+        env.close()
+except Exception as e:
+    print(f'❌ Configuration error: {e}')
+"
 ```
 
 ---
@@ -319,28 +330,28 @@ python scripts/training/train_compliance.py \
     --num-users 4
 ```
 
-### Network Slicing Training
+### Network Slicing Training (Using Different User Counts)
 ```bash
-# eMBB slice training
+# eMBB slice training (high throughput, few users)
 python scripts/training/train_compliance.py \
     --config config/config.yaml \
     --output-dir results/embb_slice \
     --episodes 1000 \
-    --slice-type embb
+    --num-users 1
 
-# uRLLC slice training
+# uRLLC slice training (low latency, moderate users)
 python scripts/training/train_compliance.py \
     --config config/config.yaml \
     --output-dir results/urllc_slice \
     --episodes 1000 \
-    --slice-type urllc
+    --num-users 2
 
-# mMTC slice training
+# mMTC slice training (massive connectivity)
 python scripts/training/train_compliance.py \
     --config config/config.yaml \
     --output-dir results/mmtc_slice \
     --episodes 1000 \
-    --slice-type mmtc
+    --num-users 4
 ```
 
 ---
@@ -353,21 +364,21 @@ python scripts/training/train_compliance.py \
 ```bash
 # Evaluate lab THz model (700+ Gbps expected)
 python scripts/evaluation/evaluate_rl.py \
-    --model-path results/lab_final/best_model.pth \
+    --model-dir results/lab_final \
     --config config/lab_thz_only.yaml \
     --episodes 100 \
     --output-dir results/evaluation_lab
 
 # Evaluate indoor model (10+ Gbps expected)  
 python scripts/evaluation/evaluate_rl.py \
-    --model-path results/indoor_final/best_model.pth \
+    --model-dir results/indoor_final \
     --config config/config.yaml \
     --episodes 100 \
     --output-dir results/evaluation_indoor
 
 # Evaluate outdoor model (5-6 Gbps expected)
 python scripts/evaluation/evaluate_rl.py \
-    --model-path results/outdoor_final/best_model.pth \
+    --model-dir results/outdoor_final \
     --config config/outdoor_focused.yaml \
     --episodes 100 \
     --output-dir results/evaluation_outdoor
@@ -377,21 +388,21 @@ python scripts/evaluation/evaluate_rl.py \
 ```bash
 # Quick lab check (THz performance)
 python scripts/evaluation/evaluate_rl.py \
-    --model-path results/lab_final/best_model.pth \
+    --model-dir results/lab_final \
     --config config/lab_thz_only.yaml \
     --episodes 10 \
     --output-dir results/quick_eval_lab
 
 # Quick indoor check
 python scripts/evaluation/evaluate_rl.py \
-    --model-path results/indoor_final/best_model.pth \
+    --model-dir results/indoor_final \
     --config config/config.yaml \
     --episodes 10 \
     --output-dir results/quick_eval_indoor
 
 # Quick outdoor check
 python scripts/evaluation/evaluate_rl.py \
-    --model-path results/outdoor_final/best_model.pth \
+    --model-dir results/outdoor_final \
     --config config/outdoor_focused.yaml \
     --episodes 10 \
     --output-dir results/quick_eval_outdoor
@@ -401,35 +412,32 @@ python scripts/evaluation/evaluate_rl.py \
 ```bash
 # Full performance evaluation
 python scripts/evaluation/evaluate_rl.py \
-    --model-path results/basic_training/model_best.pth \
+    --model-dir results/indoor_final \
     --config config/config.yaml \
     --episodes 1000 \
     --output-dir results/full_evaluation \
-    --save-trajectories \
-    --detailed-metrics
+    --verbose
 
 # Compare multiple models
 python scripts/evaluation/evaluate_rl.py \
-    --model-path results/model1/model_best.pth \
-    --baseline-path results/model2/model_best.pth \
-    --config config/config.yaml \
+    --model-dir results/lab_final \
+    --config config/lab_thz_only.yaml \
     --episodes 500 \
-    --output-dir results/model_comparison
+    --output-dir results/lab_comparison \
+    --verbose
 
-# Evaluate with different scenarios
+# Evaluate with different configurations
 python scripts/evaluation/evaluate_rl.py \
-    --model-path results/basic_training/model_best.pth \
+    --model-dir results/indoor_final \
     --config config/config.yaml \
     --episodes 200 \
-    --scenario urban_dense \
-    --output-dir results/urban_evaluation
+    --output-dir results/indoor_evaluation
 
 python scripts/evaluation/evaluate_rl.py \
-    --model-path results/basic_training/model_best.pth \
-    --config config/config.yaml \
+    --model-dir results/outdoor_final \
+    --config config/outdoor_focused.yaml \
     --episodes 200 \
-    --scenario highway_mobility \
-    --output-dir results/highway_evaluation
+    --output-dir results/outdoor_evaluation
 ```
 
 ---
@@ -442,21 +450,24 @@ python scripts/evaluation/evaluate_rl.py \
 ```bash
 # Lab THz analysis (700+ Gbps performance)
 python scripts/analysis/plot_distance_vs_metrics.py \
-    --results-dir results/lab_final \
-    --output-dir analysis/lab_thz_analysis \
-    --title "Lab THz Performance (300-600 GHz)"
+    --config config/lab_thz_only.yaml \
+    --model-dir results/lab_final \
+    --output analysis/lab_thz_analysis \
+    --episodes 100
 
 # Indoor analysis (10+ Gbps performance)
 python scripts/analysis/plot_distance_vs_metrics.py \
-    --results-dir results/indoor_final \
-    --output-dir analysis/indoor_analysis \
-    --title "Indoor Performance (Sub-THz)"
+    --config config/config.yaml \
+    --model-dir results/indoor_final \
+    --output analysis/indoor_analysis \
+    --episodes 100
 
 # Outdoor analysis (5-6 Gbps performance)
 python scripts/analysis/plot_distance_vs_metrics.py \
-    --results-dir results/outdoor_final \
-    --output-dir analysis/outdoor_analysis \
-    --title "Outdoor mmWave Performance"
+    --config config/outdoor_focused.yaml \
+    --model-dir results/outdoor_final \
+    --output analysis/outdoor_analysis \
+    --episodes 100
 ```
 
 #### 🔍 **Cross-Scenario Comparison**
@@ -584,24 +595,43 @@ print(f'Improvement: {((df.throughput.tail(10).mean() / df.throughput.head(10).m
 
 ### Environment Verification
 ```bash
-# Basic environment check
-python scripts/verification/verify_environment.py
+# Basic environment check (Python imports)
+python -c "
+import sys
+modules = [
+    'environment.docomo_6g_env',
+    'models.agent', 
+    'models.dqn_model',
+    'simulator.channel_simulator',
+    'simulator.oam_beam_physics',
+    'environment.physics_calculator',
+    'environment.unified_physics_engine'
+]
 
-# Detailed environment verification
-python scripts/verification/verify_environment.py \
-    --config config/config.yaml \
-    --detailed \
-    --check-gpu
+for module in modules:
+    try:
+        __import__(module)
+        print(f'✅ {module}')
+    except ImportError as e:
+        print(f'❌ {module}: {e}')
+"
 
-# DOCOMO baseline verification
-python scripts/verification/verify_docomo_100m.py \
-    --config config/config.yaml
+# Test environment creation
+python -c "
+from environment.docomo_6g_env import DOCOMO_6G_Environment
+import yaml
 
-# Physics verification
-python scripts/verification/verify_oam_physics.py \
-    --config config/config.yaml \
-    --frequency 300e9 \
-    --bandwidth 20e9
+configs = ['config/config.yaml', 'config/lab_thz_only.yaml', 'config/outdoor_focused.yaml']
+for config_file in configs:
+    try:
+        with open(config_file, 'r') as f:
+            config = yaml.safe_load(f)
+        env = DOCOMO_6G_Environment(config=config)
+        print(f'✅ {config_file}: Environment OK')
+        env.close()
+    except Exception as e:
+        print(f'❌ {config_file}: {e}')
+"
 ```
 
 ### System Health Checks
@@ -950,32 +980,41 @@ for freq in frequencies:
 
 ### Hyperparameter Optimization
 ```bash
-# Basic hyperparameter tuning
-python scripts/tuning/tune_agent.py \
-    --config config/config.yaml \
-    --trials 50 \
-    --study-name basic_tuning
+# Install optuna if needed
+pip install optuna
 
-# Extensive hyperparameter search
-python scripts/tuning/tune_agent.py \
-    --config config/config.yaml \
-    --trials 200 \
-    --study-name extensive_tuning \
-    --timeout 3600  # 1 hour timeout
+# Basic hyperparameter tuning (if optuna available)
+python scripts/tuning/tune_agent.py --config config/config.yaml || echo "Install optuna for hyperparameter tuning"
 
-# Resume existing study
-python scripts/tuning/tune_agent.py \
+# Manual hyperparameter testing
+python scripts/training/train_compliance.py \
     --config config/config.yaml \
-    --trials 100 \
-    --study-name basic_tuning \
-    --resume
+    --output-dir results/lr_0001 \
+    --episodes 100 \
+    --seed 42
 
-# Tune specific parameters
-python scripts/tuning/tune_agent.py \
+python scripts/training/train_compliance.py \
     --config config/config.yaml \
-    --trials 100 \
-    --study-name learning_rate_tuning \
-    --param-focus learning_rate
+    --output-dir results/lr_0005 \
+    --episodes 100 \
+    --seed 43
+
+# Compare results manually
+python -c "
+import json
+import os
+
+results_dirs = ['results/lr_0001', 'results/lr_0005']
+for result_dir in results_dirs:
+    try:
+        with open(os.path.join(result_dir, 'training_results.json'), 'r') as f:
+            data = json.load(f)
+        agent_data = data['training_metrics']['agents_metrics']['agent_0']
+        final_throughput = agent_data.get('avg_throughput_gbps', [0])[-1] if agent_data.get('avg_throughput_gbps') else 0
+        print(f'{result_dir}: {final_throughput:.1f} Gbps')
+    except Exception as e:
+        print(f'{result_dir}: No results yet')
+"
 ```
 
 ### Performance Profiling
@@ -1413,13 +1452,12 @@ python -c "from simulator.channel_simulator import ChannelSimulator; print(' Sim
 free -h  # Linux
 vm_stat | grep "Pages free"  # macOS
 
-# Reduce batch size in training
+# Reduce episode count for memory constraints
 python scripts/training/train_compliance.py \
     --config config/config.yaml \
     --output-dir results/low_memory \
-    --episodes 100 \
-    --batch-size 16 \
-    --memory-limit 4000000000  # 4GB limit
+    --episodes 50 \
+    --max-steps 200
 ```
 
 #### GPU Issues
@@ -1467,12 +1505,12 @@ cp config/config.yaml config/config_backup.yaml
 
 #### Training Convergence Issues
 ```bash
-# Check learning rate
+# Test with fewer episodes for debugging
 python scripts/training/train_compliance.py \
     --config config/config.yaml \
     --output-dir results/debug_lr \
-    --episodes 50 \
-    --learning-rate 1e-5  # Lower learning rate
+    --episodes 20 \
+    --max-steps 100
 
 # Check reward scaling
 python -c "
@@ -1500,13 +1538,13 @@ print(f'Reward range: [{np.min(rewards):.3f}, {np.max(rewards):.3f}]')
 print(f'Reward mean: {np.mean(rewards):.3f} ± {np.std(rewards):.3f}')
 "
 
-# Enable detailed logging
+# Enable detailed logging with frequent saves
 python scripts/training/train_compliance.py \
     --config config/config.yaml \
     --output-dir results/detailed_debug \
     --episodes 20 \
-    --log-level DEBUG \
-    --save-every 5
+    --log-interval 2 \
+    --save-interval 5
 ```
 
 ---
@@ -1538,14 +1576,14 @@ python scripts/verification/verify_environment.py --config config/outdoor_focuse
 pytest tests/physics/ -v
 
 # 6. Quick evaluation of best models
-python scripts/evaluation/evaluate_rl.py --model-path results/lab_quick/best_model.pth --config config/lab_thz_only.yaml --episodes 10
-python scripts/evaluation/evaluate_rl.py --model-path results/indoor_quick/best_model.pth --config config/config.yaml --episodes 10
-python scripts/evaluation/evaluate_rl.py --model-path results/outdoor_quick/best_model.pth --config config/outdoor_focused.yaml --episodes 10
+python scripts/evaluation/evaluate_rl.py --model-dir results/lab_quick --config config/lab_thz_only.yaml --episodes 10
+python scripts/evaluation/evaluate_rl.py --model-dir results/indoor_quick --config config/config.yaml --episodes 10
+python scripts/evaluation/evaluate_rl.py --model-dir results/outdoor_quick --config config/outdoor_focused.yaml --episodes 10
 
 # 7. Generate comprehensive analysis
-python scripts/analysis/plot_distance_vs_metrics.py --results-dir results/lab_quick --output-dir analysis/lab/
-python scripts/analysis/plot_distance_vs_metrics.py --results-dir results/indoor_quick --output-dir analysis/indoor/
-python scripts/analysis/plot_distance_vs_metrics.py --results-dir results/outdoor_quick --output-dir analysis/outdoor/
+python scripts/analysis/plot_distance_vs_metrics.py --config config/lab_thz_only.yaml --model-dir results/lab_quick --output analysis/lab --episodes 50
+python scripts/analysis/plot_distance_vs_metrics.py --config config/config.yaml --model-dir results/indoor_quick --output analysis/indoor --episodes 50
+python scripts/analysis/plot_distance_vs_metrics.py --config config/outdoor_focused.yaml --model-dir results/outdoor_quick --output analysis/outdoor --episodes 50
 
 # 8. Advanced signal quality analysis
 python scripts/analysis/signal_quality_analyzer.py config/lab_thz_only.yaml analysis/lab_signal/
