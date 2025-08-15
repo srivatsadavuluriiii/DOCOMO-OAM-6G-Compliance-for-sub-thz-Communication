@@ -254,7 +254,20 @@ class MultiObjectiveReward:
         
                                                                         
         target_tp = self.current_qos_targets.get('min_throughput_gbps', self.target_throughput_gbps)
-        base_reward = min(throughput_gbps / target_tp, 3.0)                              
+        # Enhanced reward for lab THz - no cap to encourage exploration
+        base_reward = throughput_gbps / target_tp
+        
+        # Apply lab THz exploration boost
+        current_band = info.get('current_band', 'mmwave_28') if info else 'mmwave_28'
+        if 'thz_' in current_band and distance_m <= 10:  # Lab THz conditions
+            # Strong incentive for breaking through 100+ Gbps
+            if throughput_gbps >= 100.0:
+                base_reward *= 2.0  # 2x reward for achieving 100+ Gbps 
+            elif throughput_gbps >= 80.0:
+                base_reward *= 1.5  # 1.5x reward for 80+ Gbps
+        else:
+            # Keep reasonable cap for non-lab scenarios
+            base_reward = min(base_reward, 3.0)                              
         
                                                                                
         distance_bonus = max(0.0, (500.0 - distance_m) / 500.0) * 0.3                   
@@ -263,17 +276,23 @@ class MultiObjectiveReward:
         sinr_bonus = max(0.0, (sinr_db - 5.0) / 25.0) * 0.5                       
         
                                                                                 
-        current_band = info.get('current_band', 'mmwave_28') if info else 'mmwave_28'
-        high_freq_bands = ['sub_thz_100', 'sub_thz_140', 'sub_thz_220', 'sub_thz_300', 'thz_600']
+        # Enhanced THz band rewards for lab exploration
+        high_freq_bands = ['sub_thz_100', 'sub_thz_140', 'sub_thz_220', 'sub_thz_300', 'thz_300', 'thz_400', 'thz_600']
         if current_band in high_freq_bands:
             band_multipliers = {
                 'sub_thz_100': 1.20,         
                 'sub_thz_140': 1.30,         
                 'sub_thz_220': 1.40,           
-                'sub_thz_300': 1.50,         
-                'thz_600': 1.60                      
+                'sub_thz_300': 1.50,
+                'thz_300': 2.0,    # Strong bonus for 300 GHz lab
+                'thz_400': 2.5,    # Even stronger for 400 GHz
+                'thz_600': 3.0     # Maximum bonus for 600 GHz                     
             }
             high_freq_bonus = band_multipliers.get(current_band, 1.0) - 1.0
+            
+            # Extra lab THz exploration bonus
+            if 'thz_' in current_band and distance_m <= 10:
+                high_freq_bonus *= 1.5  # 1.5x boost for lab THz
         else:
             high_freq_bonus = 0.0
         
