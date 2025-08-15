@@ -84,17 +84,24 @@ class UltraHighMobilityModel:
         self.beam_prediction_enabled = mobility_config.get('beam_prediction_enabled', True)
         self.doppler_compensation = mobility_config.get('doppler_compensation', True)
 
-        # Handover thresholds
+        # Handover thresholds - make handovers much less frequent
         handover_cfg = mobility_config.get('handover', {})
-        self.handover_benefit_threshold = handover_cfg.get('benefit_threshold', 0.2)
-        self.handover_confidence_threshold = handover_cfg.get('confidence_threshold', 0.7)
+        self.handover_benefit_threshold = handover_cfg.get('benefit_threshold', 0.8)  # Very high threshold
+        self.handover_confidence_threshold = handover_cfg.get('confidence_threshold', 0.95)  # Very high confidence needed
 
-        # Path model settings
+        # Path model settings - check both main mobility config and nested path config
+        main_mobility = mobility_config
         path_cfg = mobility_config.get('path', {})
-        self.path_model = path_cfg.get('model', 'random_walk')
-        self.path_target_position = np.array(path_cfg.get('target_position_m', [5000, 5000, 1.5]))
+        
+        # Support both nested and direct mobility config formats
+        self.path_model = main_mobility.get('path_type', path_cfg.get('model', 'random_walk'))
+        self.max_speed_kmh = main_mobility.get('speed_kmh', self.max_speed_kmh)  # Override with config speed
+        self.path_circular_radius = main_mobility.get('radius_m', path_cfg.get('radius_m', 2000))
+        
+        # Initial position from config
+        init_pos = main_mobility.get('initial_position', path_cfg.get('target_position_m', [5000, 5000, 1.5]))
+        self.path_target_position = np.array(init_pos)
         self.path_circular_center = np.array(path_cfg.get('center_m', [0, 0, 1.5]))
-        self.path_circular_radius = path_cfg.get('radius_m', 2000)
         self.path_circular_direction = path_cfg.get('direction', 'clockwise')
         self.path_angular_velocity = 0.0 # rad/s, for circular path
         
@@ -104,7 +111,12 @@ class UltraHighMobilityModel:
         self.mobility_state_estimation = True                      
         
                         
-        self.current_state = MobilityState()
+        # Initialize mobility state with configured position
+        self.current_state = MobilityState(
+            position_x=self.path_target_position[0],
+            position_y=self.path_target_position[1], 
+            position_z=self.path_target_position[2]
+        )
         self.predicted_states = deque(maxlen=100)                           
         self.mobility_history = deque(maxlen=1000)                    
         

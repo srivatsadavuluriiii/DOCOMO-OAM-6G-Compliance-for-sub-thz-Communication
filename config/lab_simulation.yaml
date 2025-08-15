@@ -1,0 +1,144 @@
+docomo_6g_system:
+  version: "2025.1_lab_simulation"
+  compliance_target: "lab_6g_maximum_throughput"
+  
+  # Lab KPI targets - Maximum performance for controlled environment
+  kpi_targets:
+    peak_data_rate_gbps: 100.0      # 100 Gbps peak for lab demos
+    user_data_rate_gbps: 50.0       # 50 Gbps user experience
+    latency_ms: 0.1                 # Ultra-low latency
+    reliability: 0.99999            # Five nines reliability
+    mobility_kmh: 20.0              # Low mobility (lab movement)
+    connection_density_per_km2: 1000000  # High density capability
+    coverage_improvement: 200.0     # 200% improvement vs 5G
+    energy_efficiency_improvement: 150   # 150x improvement
+    spectrum_efficiency_improvement: 20  # 20x improvement
+    sensing_accuracy_cm: 0.1        # Sub-cm accuracy
+    positioning_accuracy_cm: 1.0    # 1cm positioning
+    synchronization_accuracy_ns: 0.1   # 0.1ns sync
+
+  # High-frequency bands for maximum lab throughput
+  frequency_bands:
+    # Sub-THz bands - Lab environment optimized
+    sub_thz_100:
+      frequency: 100.0e9            # 100 GHz
+      bandwidth: 5.0e9              # 5 GHz bandwidth
+      target_throughput_gbps: 25.0
+      max_range_km: 0.01            # 10m range for lab
+      oam_modes: [1, 8]
+      power_dbm: 30.0               # High power for lab
+      
+    sub_thz_140:
+      frequency: 140.0e9            # 140 GHz
+      bandwidth: 8.0e9              # 8 GHz bandwidth  
+      target_throughput_gbps: 40.0
+      max_range_km: 0.005           # 5m very short range
+      oam_modes: [1, 12]
+      power_dbm: 35.0
+      
+    sub_thz_220:
+      frequency: 220.0e9            # 220 GHz
+      bandwidth: 10.0e9             # 10 GHz bandwidth
+      target_throughput_gbps: 60.0
+      max_range_km: 0.003           # 3m lab bench distances
+      oam_modes: [1, 16]
+      power_dbm: 40.0
+      
+    # THz bands - Maximum throughput
+    thz_300:
+      frequency: 300.0e9            # 300 GHz
+      bandwidth: 15.0e9             # 15 GHz bandwidth
+      target_throughput_gbps: 120.0
+      max_range_km: 0.002           # 2m very close range
+      oam_modes: [1, 20]
+      power_dbm: 45.0
+      
+    thz_600:
+      frequency: 600.0e9            # 600 GHz  
+      bandwidth: 20.0e9             # 20 GHz bandwidth
+      target_throughput_gbps: 150.0
+      max_range_km: 0.001           # 1m extremely close range
+      oam_modes: [1, 24]
+      power_dbm: 50.0
+
+  # Lab mobility model - Ultra-controlled for THz precision
+  mobility:
+    model_type: "lab_stationary"
+    path_type: "stationary"         # Minimal movement for THz stability
+    initial_position: [0.2, 0.2, 1.5]  # Start ultra close - ~0.3m from origin
+    speed_kmh: 1.0                  # Extremely slow movement
+    radius_m: 1.0                   # Ultra-small lab area (1m radius)
+    height_variation_m: 0.0         # No height changes
+    prediction_horizon_ms: 200.0    # Long prediction for stability
+    
+  # Lab environment - Controlled conditions  
+  environment:
+    scenario: "laboratory"
+    temperature_c: 22.0             # Controlled temperature
+    humidity_percent: 45.0          # Controlled humidity
+    pressure_hpa: 1013.25           # Standard pressure
+    rain_rate_mm_h: 0.0             # No weather
+    visibility_m: 1000.0            # Perfect visibility
+    wind_speed_ms: 0.0              # No wind
+    atmospheric_absorption_mode: "minimal"  # Minimal losses
+    
+  # Enhanced beamforming for lab precision
+  beamforming:
+    algorithm: "3d_massive_mimo"
+    num_antennas: 256               # Large antenna array
+    beam_steering_precision_deg: 0.1  # High precision
+    adaptive_nulling: true
+    interference_cancellation: true
+    beam_tracking_mode: "predictive"
+    
+  # Advanced OAM configuration
+  oam:
+    max_modes: 24                   # High mode count for lab
+    mode_selection: "adaptive"
+    crosstalk_mitigation: "advanced"
+    phase_correction: true
+    amplitude_balancing: true
+    
+  # High-performance RL configuration
+  reinforcement_learning:
+    training:
+      learning_rate: 0.0005         # Fine-tuned learning
+      batch_size: 64
+      replay_buffer_size: 100000
+      target_update_frequency: 1000
+      exploration_decay: 0.995
+      min_exploration: 0.01
+      max_episodes: 500
+      early_stopping_patience: 50
+      
+    reward:
+      throughput_weight: 0.4        # High throughput emphasis
+      latency_weight: 0.2
+      reliability_weight: 0.2
+      energy_weight: 0.1
+      compliance_weight: 0.1
+      
+  # Lab monitoring configuration
+  monitoring:
+    log_level: "DEBUG"
+    metrics_interval_ms: 10         # High-frequency logging
+    anomaly_detection: true
+    performance_profiling: true
+    real_time_visualization: true
+    
+  # Hardware simulation - Lab equipment
+  hardware:
+    rf_frontend: "laboratory_grade"
+    adc_resolution_bits: 16         # High resolution
+    dac_resolution_bits: 16
+    phase_noise_dbchz: -120         # Low phase noise
+    linearity_db: 60               # High linearity
+    bandwidth_ghz: 25.0             # Wide bandwidth capability
+    
+  # Lab compliance targets
+  compliance:
+    imt_2030: true
+    docomo_white_paper: true
+    lab_safety_standards: true
+    measurement_accuracy: 0.99      # 99% measurement accuracy
+    repeatability_threshold: 0.05   # 5% variance allowed

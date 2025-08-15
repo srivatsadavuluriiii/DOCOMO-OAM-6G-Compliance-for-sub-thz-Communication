@@ -1,0 +1,278 @@
+# Realistic 6G Configuration
+# Based on actual physics constraints and current technology projections
+
+realistic_6g_system:
+  version: "2025.1_realistic"
+  compliance_target: "achievable_6g_2030"
+  
+  # Realistic 6G KPIs (Achievable by 2030)
+  kpi_targets:
+    peak_data_rate_gbps: 100.0           # 100 Gbps peak (lab conditions)
+    user_data_rate_mbps: 1000.0          # 1 Gbps typical user
+    latency_ms: 1.0                      # 1 ms achievable
+    reliability: 0.999                   # 99.9% realistic
+    mobility_kmh: 100.0                  # 100 km/h supported
+    connection_density_per_km2: 1000000  # 1M devices/km² (challenging but possible)
+    energy_efficiency_improvement: 10    # 10x improvement realistic
+    spectrum_efficiency_improvement: 3   # 3x improvement achievable
+    coverage_improvement: 50             # 50% better than 5G
+    sensing_accuracy_cm: 10.0            # 10 cm realistic for mobile
+
+  # Network Topology (same as original)
+  network:
+    base_stations:
+      - [0, 0, 30]
+
+  # Realistic Multi-Band Frequency Configuration
+  frequency_bands:
+    # Coverage Layer - Sub-6 GHz
+    sub_6ghz:
+      frequency: 6.0e9
+      bandwidth: 100.0e6                 # 100 MHz realistic
+      max_range_km: 5.0                  # Reduced for realistic propagation
+      target_throughput_gbps: 0.5        # 500 Mbps realistic
+      target_latency_ms: 2.0
+      antenna_gain_dbi: 15.0             # Realistic antenna gain
+      tx_power_dbm: 40.0                 # 10W max for macro cell
+      deployment: "macro_cell"
+      oam_modes: [1, 2]                  # Limited OAM at low frequencies
+      
+    # Capacity Layer - mmWave
+    mmwave_28:
+      frequency: 28.0e9  
+      bandwidth: 400.0e6                 # 400 MHz typical allocation
+      max_range_km: 0.5                  # 500m realistic
+      target_throughput_gbps: 2.0        # 2 Gbps achievable
+      target_latency_ms: 1.0
+      antenna_gain_dbi: 25.0             # Phased array gain
+      tx_power_dbm: 30.0                 # 1W realistic for mmWave
+      deployment: "micro_cell"
+      oam_modes: [1, 2, 3]
+      
+    mmwave_60:
+      frequency: 60.0e9
+      bandwidth: 2.0e9                   # 2 GHz in unlicensed band
+      max_range_km: 0.2                  # 200m due to O2 absorption
+      target_throughput_gbps: 5.0        # 5 Gbps achievable
+      target_latency_ms: 0.5
+      antenna_gain_dbi: 30.0             # Higher gain needed
+      tx_power_dbm: 25.0                 # 316 mW typical
+      deployment: "pico_cell"
+      oam_modes: [1, 2, 3, 4]
+      
+    # High Capacity Layer - Sub-THz
+    sub_thz_140:
+      frequency: 140.0e9
+      bandwidth: 5.0e9                   # 5 GHz realistic window
+      max_range_km: 0.05                 # 50m indoor only
+      target_throughput_gbps: 20.0       # 20 Gbps with good conditions
+      target_latency_ms: 0.2
+      antenna_gain_dbi: 40.0             # High-gain lens antenna
+      tx_power_dbm: 20.0                 # 100 mW realistic
+      deployment: "femto_cell"
+      oam_modes: [1, 2, 3, 4, 5]
+      
+    sub_thz_300:
+      frequency: 300.0e9
+      bandwidth: 10.0e9                  # 10 GHz fragmented spectrum
+      max_range_km: 0.01                 # 10m max range
+      target_throughput_gbps: 50.0       # 50 Gbps in ideal conditions
+      target_latency_ms: 0.1
+      antenna_gain_dbi: 50.0             # Very high gain required
+      tx_power_dbm: 15.0                 # 32 mW achievable
+      deployment: "atto_cell"
+      oam_modes: [1, 2, 3, 4]            # Limited OAM at THz
+
+  # Realistic OAM Configuration
+  oam_system:
+    min_mode: 1
+    max_mode: 8                          # 8 modes realistic limit
+    beam_width_range: [0.01, 0.1]        # Realistic beam widths
+    mode_switching_time_us: 100          # 100 μs more realistic
+    beam_tracking_accuracy_deg: 0.5      # 0.5° achievable
+    crosstalk_threshold: -15             # -15 dB realistic isolation
+    mode_prediction_enabled: true
+    adaptive_mode_selection: true
+    
+  # Realistic Mobility Model
+  mobility:
+    max_speed_kmh: 120.0                 # Highway speeds
+    speed_bins_kmh: [0, 5, 30, 60, 120]
+    handover_threshold_db: 3.0
+    handover_hysteresis_db: 2.0
+    prediction_enabled: true
+    prediction_horizon_ms: 100           # 100ms realistic
+    beam_tracking_enabled: true
+    beam_tracking_rate_hz: 100           # 100 Hz tracking
+    
+    path:
+      model: 'circular'
+      center_m: [0, 0, 1.5]
+      radius_m: 30                       # 30m radius for testing
+      direction: 'clockwise'
+    
+    # Realistic Doppler settings
+    doppler_compensation: true
+    max_doppler_shift_khz: 50            # at 300 GHz, 120 km/h
+    
+  # Realistic Atmospheric Model
+  atmospheric:
+    model: "itu_r_p676"                  # Use proper ITU model
+    
+    # Realistic absorption values (dB/km)
+    absorption_db_per_km:
+      60_ghz: 15.0                       # O2 absorption peak
+      140_ghz: 5.0                       # Window between peaks
+      220_ghz: 10.0                      # Moderate absorption
+      300_ghz: 50.0                      # High absorption
+      600_ghz: 200.0                     # Very high absorption
+    
+    weather_effects:
+      clear:
+        additional_loss_db_km: 0.0
+      light_rain:
+        additional_loss_db_km: 5.0       # 5 dB/km for light rain
+      heavy_rain:
+        additional_loss_db_km: 50.0      # 50 dB/km for heavy rain
+      fog:
+        additional_loss_db_km: 10.0      # 10 dB/km for fog
+    
+    turbulence:
+      cn2_weak: 1e-16                    # Weak turbulence
+      cn2_moderate: 1e-14                # Moderate turbulence
+      cn2_strong: 1e-12                  # Strong turbulence
+  
+  # Realistic Hardware Constraints
+  hardware:
+    # TX Power limits by frequency (dBm)
+    tx_power_limits:
+      sub_6ghz: 40.0                     # 10W max
+      mmwave_28: 30.0                    # 1W typical
+      mmwave_60: 25.0                    # 316 mW
+      sub_thz_140: 20.0                  # 100 mW
+      sub_thz_300: 15.0                  # 32 mW
+      thz_600: 10.0                      # 10 mW max
+    
+    # Noise figures by frequency (dB)
+    noise_figures:
+      sub_6ghz: 3.0
+      mmwave: 6.0
+      sub_thz: 10.0
+      thz: 15.0
+    
+    # Phase noise (dBc/Hz @ 1kHz offset)
+    phase_noise:
+      sub_6ghz: -100
+      mmwave: -90
+      sub_thz: -80
+      thz: -70
+    
+    # Implementation losses (dB)
+    implementation_loss:
+      sub_6ghz: 3.0
+      mmwave: 5.0
+      sub_thz: 8.0
+      thz: 12.0
+  
+  # Realistic Channel Model
+  channel:
+    model: "3gpp_38901_uma"              # 3GPP Urban Macro model
+    
+    # Path loss exponents
+    path_loss_exponent:
+      los: 2.0                           # Line-of-sight
+      nlos: 3.5                          # Non-line-of-sight
+      indoor: 3.0                        # Indoor propagation
+    
+    # Shadow fading (dB)
+    shadow_fading_std:
+      los: 4.0
+      nlos: 8.0
+      indoor: 6.0
+    
+    # Multipath parameters
+    delay_spread_ns:
+      indoor: 50
+      urban: 200
+      suburban: 500
+    
+    # Human blockage loss (dB)
+    human_blockage:
+      mmwave: 20.0
+      sub_thz: 30.0
+      thz: 40.0
+  
+  # Realistic Reinforcement Learning Parameters
+  reinforcement_learning:
+    training:
+      episodes: 10000
+      max_steps_per_episode: 1000
+      
+      # Realistic reward scaling
+      reward_scale: 1.0
+      penalty_scale: 0.5
+      
+      # Focus on achievable targets
+      throughput_weight: 0.4
+      latency_weight: 0.2
+      reliability_weight: 0.2
+      energy_weight: 0.2
+      
+      # DQN parameters (same as original)
+      learning_rate: 1e-3
+      batch_size: 64
+      buffer_size: 100000
+      gamma: 0.99
+      epsilon_start: 1.0
+      epsilon_end: 0.01
+      epsilon_decay_steps: 10000
+      
+      double_dqn: true
+      dueling_dqn: true
+      
+      # Realistic target update
+      target_update_freq: 100
+      checkpoint_freq: 1000
+      eval_freq: 100
+      eval_episodes: 10
+  
+  # Realistic Interference Model
+  interference:
+    enabled: true
+    
+    # Co-channel interference
+    num_interfering_cells: 6              # First tier only
+    interferer_tx_power_dbm: 20.0         # Lower power
+    reuse_factor: 3                       # Frequency reuse
+    
+    # Adjacent channel interference
+    adjacent_channel_rejection_db: 30.0
+    
+  # Realistic Network Slicing
+  network_slicing:
+    enabled: true
+    
+    slice_types:
+      urllc:
+        name: "Ultra-Reliable Low Latency"
+        qos_targets:
+          throughput_mbps: 10.0           # 10 Mbps sufficient
+          latency_ms: 1.0
+          reliability: 0.99999            # Five 9s
+        resource_allocation: 0.2          # 20% of resources
+        
+      embb:
+        name: "Enhanced Mobile Broadband"
+        qos_targets:
+          throughput_mbps: 1000.0         # 1 Gbps target
+          latency_ms: 10.0
+          reliability: 0.99               # Two 9s
+        resource_allocation: 0.6          # 60% of resources
+        
+      mmtc:
+        name: "Massive Machine Type"
+        qos_targets:
+          throughput_mbps: 0.1            # 100 kbps per device
+          latency_ms: 1000.0              # 1 second acceptable
+          reliability: 0.9                # One 9
+        resource_allocation: 0.2          # 20% of resources

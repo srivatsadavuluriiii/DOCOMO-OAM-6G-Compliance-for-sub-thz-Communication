@@ -70,7 +70,7 @@ class MultiObjectiveReward:
         
                                  
         kpi_targets = config.get('docomo_6g_system', {}).get('kpi_targets', {})
-        self.target_throughput_gbps = kpi_targets.get('user_data_rate_gbps', 100.0)
+        self.target_throughput_gbps = kpi_targets.get('user_data_rate_gbps', 10.0)  # Realistic 10 Gbps base target
         self.target_latency_ms = kpi_targets.get('latency_ms', 0.1)
         self.target_reliability = kpi_targets.get('reliability', 0.9999999)
         self.target_mobility_kmh = kpi_targets.get('mobility_kmh', 500.0)
@@ -607,18 +607,18 @@ class MultiObjectiveReward:
                                                                           
         compliance_bonus = 0.0
         # Strong compliance bonus for consistent high performance                                                           
-        if throughput_gbps >= 500.0:
-            compliance_bonus = 10.0  # Massive bonus for 500+ Gbps
-        elif throughput_gbps >= 300.0:
-            compliance_bonus = 5.0 + 5.0 * (throughput_gbps - 300.0) / 200.0
-        elif throughput_gbps >= 100.0:
-            compliance_bonus = 2.0 + 3.0 * (throughput_gbps - 100.0) / 200.0
-        elif throughput_gbps >= 50.0:
-            compliance_bonus = 1.0 + 1.0 * (throughput_gbps - 50.0) / 50.0
+        if throughput_gbps >= 50.0:
+            compliance_bonus = 10.0  # Excellent - 50+ Gbps is realistic peak
+        elif throughput_gbps >= 20.0:
+            compliance_bonus = 5.0 + 5.0 * (throughput_gbps - 20.0) / 30.0
         elif throughput_gbps >= 10.0:
-            compliance_bonus = 0.5 * (throughput_gbps / 50.0)
+            compliance_bonus = 2.0 + 3.0 * (throughput_gbps - 10.0) / 10.0
+        elif throughput_gbps >= 5.0:
+            compliance_bonus = 1.0 + 1.0 * (throughput_gbps - 5.0) / 5.0
+        elif throughput_gbps >= 1.0:
+            compliance_bonus = 0.5 * (throughput_gbps / 5.0)
         else:
-            compliance_bonus = -2.0  # Stronger penalty for consistency
+            compliance_bonus = -2.0  # Penalty for very low throughput
         
         # Strong incentive for using optimal THz bands                                                                         
         thz_band_bonus = 0.0

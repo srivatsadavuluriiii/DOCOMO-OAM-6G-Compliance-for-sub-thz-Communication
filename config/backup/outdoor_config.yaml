@@ -1,0 +1,211 @@
+# Outdoor 6G Configuration
+# Realistic outdoor deployment scenario targeting 5 Gbps performance
+
+docomo_6g_system:
+  version: "2025.1_outdoor"
+  compliance_target: "outdoor_6g_2030"
+  deployment_scenario: "outdoor_urban"
+  
+  # Outdoor 6G KPIs (Realistic targets)
+  kpi_targets:
+    peak_data_rate_gbps: 10.0            # 10 Gbps peak (outdoor achievable)
+    user_data_rate_gbps: 5.0             # 5 Gbps target for outdoor
+    latency_ms: 1.0                      # 1 ms achievable
+    reliability: 0.999                   # 99.9% realistic
+    mobility_kmh: 120.0                  # Highway speeds supported
+    connection_density_per_km2: 100000   # 100K devices/km² (outdoor realistic)
+    energy_efficiency_improvement: 5     # 5x improvement realistic
+    spectrum_efficiency_improvement: 3   # 3x improvement achievable
+    coverage_improvement: 20             # 20% better than 5G
+    sensing_accuracy_cm: 50.0            # 50 cm realistic for outdoor
+
+  # Network Topology (Urban outdoor)
+  network:
+    base_stations:
+      - [0, 0, 30]        # Central BS at 30m height
+      - [1000, 0, 30]     # 1 km spacing
+      - [0, 1000, 30]     # Urban grid
+      - [-1000, 0, 30]
+      - [0, -1000, 30]
+
+  # Outdoor-Optimized Frequency Configuration
+  frequency_bands:
+    # Primary Coverage Layer - Sub-6 GHz
+    sub_6ghz:
+      frequency: 6.0e9
+      bandwidth: 200.0e6                 # 200 MHz allocation
+      max_range_km: 5.0                  # Excellent outdoor range
+      target_throughput_gbps: 1.5        # 1.5 Gbps realistic
+      target_latency_ms: 2.0
+      antenna_gain_dbi: 15.0             # Realistic antenna gain
+      tx_power_dbm: 40.0                 # 10W max for macro cell
+      deployment: "macro_cell"
+      atmospheric_loss_db_per_km: 0.1    # Negligible at sub-6
+      oam_modes: [1, 2]                  # Limited OAM at low frequencies
+      
+    # Primary Capacity Layer - 28 GHz mmWave
+    mmwave_28:
+      frequency: 28.0e9  
+      bandwidth: 800.0e6                 # 800 MHz allocation
+      max_range_km: 2.0                  # Good outdoor range
+      target_throughput_gbps: 5.0        # 5 Gbps target achievable
+      target_latency_ms: 1.0
+      antenna_gain_dbi: 25.0             # Phased array gain
+      tx_power_dbm: 30.0                 # 1W realistic for mmWave
+      deployment: "micro_cell"
+      atmospheric_loss_db_per_km: 2.0    # Low atmospheric loss
+      oam_modes: [1, 2, 3, 4]
+      
+    # Hot Spot Layer - 39 GHz mmWave
+    mmwave_39:
+      frequency: 39.0e9
+      bandwidth: 1.0e9                   # 1 GHz allocation
+      max_range_km: 1.0                  # Moderate outdoor range
+      target_throughput_gbps: 8.0        # 8 Gbps peak
+      target_latency_ms: 0.5
+      antenna_gain_dbi: 28.0             # Higher gain needed
+      tx_power_dbm: 30.0                 # 1W max
+      deployment: "micro_cell"
+      atmospheric_loss_db_per_km: 3.0    # Moderate loss
+      oam_modes: [1, 2, 3, 4, 5]
+      
+    # Dense Urban Layer - 60 GHz
+    mmwave_60:
+      frequency: 60.0e9
+      bandwidth: 2.0e9                   # 2 GHz in unlicensed band
+      max_range_km: 0.5                  # Limited outdoor (oxygen absorption)
+      target_throughput_gbps: 10.0       # 10 Gbps in good conditions
+      target_latency_ms: 0.3
+      antenna_gain_dbi: 30.0             # High gain needed
+      tx_power_dbm: 25.0                 # 316 mW typical
+      deployment: "pico_cell"
+      atmospheric_loss_db_per_km: 12.0   # Oxygen absorption
+      oam_modes: [1, 2, 3, 4]
+      
+
+
+  # Outdoor-Optimized Mobility Model
+  mobility:
+    max_speed_kmh: 120.0                 # Highway speeds
+    speed_bins_kmh: [0, 10, 50, 80, 120]
+    handover_threshold_db: 2.0           # More aggressive handovers
+    handover_hysteresis_db: 1.5
+    prediction_enabled: true
+    prediction_horizon_ms: 200           # Longer prediction for high speed
+    beam_tracking_enabled: true
+    beam_tracking_rate_hz: 50            # Lower rate for outdoor
+    
+    path:
+      model: 'circular'                  # Circular movement to stay in range
+      center_m: [0, 0, 1.5]             # Center at base station
+      radius_m: 300                      # 300m radius (outdoor mmWave range)
+      direction: 'clockwise'
+      speed_kmh: 80                      # Urban vehicle speed
+    
+    # Outdoor Doppler settings
+    doppler_compensation: true
+    max_doppler_shift_khz: 10            # at 28 GHz, 120 km/h
+
+  # Realistic Outdoor Atmospheric Model
+  atmospheric:
+    model: "outdoor_itu_p676"
+    
+    # Outdoor atmospheric conditions
+    conditions:
+      temperature_K: 293.15              # 20°C typical
+      pressure_hPa: 1013.25              # Sea level
+      humidity_percent: 60.0             # Moderate humidity
+      rain_rate_mm_h: 0.0                # Clear weather for test
+      wind_speed_m_s: 5.0                # Light wind
+    
+    # Realistic absorption values (dB/km) for outdoor
+    absorption_db_per_km:
+      6_ghz: 0.1                         # Excellent
+      28_ghz: 2.0                        # Good
+      39_ghz: 3.0                        # Moderate
+      60_ghz: 12.0                       # Limited (O2 absorption)
+      100_ghz: 15.0                      # High absorption
+      140_ghz: 21.0                      # Very high
+      220_ghz: 66.0                      # Unusable outdoors
+    
+    weather_effects:
+      clear:
+        additional_loss_db_km: 0.0
+      light_rain:
+        additional_loss_db_km: 2.0       # Manageable
+      heavy_rain:
+        additional_loss_db_km: 20.0      # Significant impact
+      fog:
+        additional_loss_db_km: 5.0       # Moderate impact
+
+  # Realistic Hardware Constraints for Outdoor
+  hardware:
+    # TX Power limits for outdoor deployment
+    tx_power_limits:
+      sub_6ghz: 40.0                     # 10W for macro cells
+      mmwave_28: 30.0                    # 1W for micro cells
+      mmwave_39: 30.0                    # 1W max
+      mmwave_60: 25.0                    # 316 mW
+      sub_thz_100: 20.0                  # 100 mW max
+    
+    # Noise figures for outdoor environment
+    noise_figures:
+      sub_6ghz: 3.0
+      mmwave: 6.0
+      sub_thz: 10.0
+    
+    # Implementation losses (higher for outdoor)
+    implementation_loss:
+      sub_6ghz: 4.0                      # Weather, multipath
+      mmwave: 6.0                        # Blockage, pointing
+      sub_thz: 10.0                      # Severe outdoor challenges
+
+  # Outdoor-Focused RL Parameters
+  reinforcement_learning:
+    training:
+      episodes: 5000                     # Longer training for complex outdoor
+      max_steps_per_episode: 1000
+      
+      # Outdoor reward weighting
+      reward_scale: 1.0
+      penalty_scale: 0.3                 # Less penalty for outdoor challenges
+      
+      # Prioritize range and mobility for outdoor
+      throughput_weight: 0.3             # Less emphasis vs indoor
+      latency_weight: 0.2
+      reliability_weight: 0.3            # More important outdoors
+      energy_weight: 0.1
+      mobility_weight: 0.1               # Outdoor mobility priority
+      
+      # RL parameters
+      learning_rate: 0.001
+      batch_size: 64
+      buffer_size: 100000
+      gamma: 0.99
+      epsilon_start: 1.0
+      epsilon_end: 0.01
+      epsilon_decay_steps: 10000
+      
+      double_dqn: true
+      dueling_dqn: true
+      
+      target_update_freq: 100
+      checkpoint_freq: 500
+      eval_freq: 100
+      eval_episodes: 10
+
+  # Outdoor Interference Model
+  interference:
+    enabled: true
+    outdoor_environment: true
+    
+    # Higher interference outdoors
+    num_interfering_cells: 8              # More cells visible
+    interferer_tx_power_dbm: 25.0         # Typical outdoor power
+    reuse_factor: 1                       # Aggressive reuse for capacity
+    
+    # Outdoor-specific interference
+    vehicular_interference_dbm: -85.0     # Car radar systems
+    industrial_interference_dbm: -90.0    # Industrial sources
+    adjacent_channel_rejection_db: 40.0   # Better filtering needed
+

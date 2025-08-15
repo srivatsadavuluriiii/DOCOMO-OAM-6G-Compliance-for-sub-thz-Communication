@@ -378,46 +378,67 @@ class DOCOMOTrainingManager:
                 
                 for agent_id in self.agent_ids:
                     agent_metrics = self.training_metrics['agents_metrics'][agent_id]
-                    if agent_metrics['kpis']:
-                        latest_kpis = agent_metrics['kpis'][-1]
-                        throughput = latest_kpis.get('current_throughput_gbps', 0)
-                        latency = latest_kpis.get('current_latency_ms', 0)
-                        reliability = latest_kpis.get('current_reliability', 0)
+                    
+                    # Use episode averages instead of potentially misleading current KPI values
+                    if agent_metrics['avg_throughput_gbps']:
+                        throughput = agent_metrics['avg_throughput_gbps'][-1]  # Latest episode average
+                        latency = agent_metrics['avg_latency_ms'][-1] if agent_metrics['avg_latency_ms'] else 0
                         
-                        print(f"  Agent {agent_id} KPIs: T={throughput:.3f}Gbps, L={latency:.3f}ms, R={reliability:.4f}")
-                        
-                        # Most used band for this agent
-                        total_band_uses = sum(band_usage[agent_id].values())
-                        if total_band_uses > 0:
-                            most_used_band_agent = max(band_usage[agent_id].items(), key=lambda x: x[1])
-                            try:
-                                freq_val = self.env.frequency_bands[most_used_band_agent[0]].get('frequency', 28.0e9)
-                                freq_ghz = float(freq_val) / 1e9
-                            except Exception:
-                                freq_ghz = 28.0
-                            print(f"  Agent {agent_id} Band: {most_used_band_agent[0]} ({freq_ghz:.0f} GHz) - {most_used_band_agent[1]} uses")
+                        # Get reliability from KPI tracker if available
+                        if agent_metrics['kpis']:
+                            latest_kpis = agent_metrics['kpis'][-1]
+                            reliability = latest_kpis.get('current_reliability', 0)
                         else:
-                            # No band switches occurred in this episode, show current band
-                            current_band = self.env.current_bands[agent_id]
-                            try:
-                                freq_val = self.env.frequency_bands[current_band].get('frequency', 28.0e9)
-                                freq_ghz = float(freq_val) / 1e9
-                            except Exception:
-                                freq_ghz = 28.0
-                            print(f"  Agent {agent_id} Band: {current_band} ({freq_ghz:.0f} GHz) - no switches (short episode)")
+                            reliability = 0
+                            latest_kpis = {}
+                    else:
+                        throughput = latency = reliability = 0
+                        latest_kpis = {}
                         
-                        targets = getattr(self.env.kpi_trackers[agent_id], 'docomo_targets', None)
-                        comp = self.env.kpi_trackers[agent_id].get_compliance_score() if hasattr(self.env, 'kpi_trackers') else {}
-                        overall_compliance_agent = agent_metrics['compliance'][-1] if agent_metrics['compliance'] else 0.0
-                        if targets:
-                            print(
-                                f"  Agent {agent_id} [DOCOMO] T: "
-                                f"{throughput:.3f}/{targets.user_data_rate_gbps:.0f} Gbps | "
-                                f"L: {latency:.3f}/{targets.latency_ms:.3f} ms | "
-                                f"R: {reliability:.7f}/{targets.reliability:.7f} | "
-                                f"M: {latest_kpis.get('current_mobility_kmh', 0):.1f}/{targets.mobility_kmh:.0f} km/h | "
-                                f"Compliance: {overall_compliance_agent*100:.1f}%"
-                            )
+                    print(f"  Agent {agent_id} KPIs: T={throughput:.3f}Gbps, L={latency:.3f}ms, R={reliability:.4f}")
+                        
+                    # Most used band for this agent
+                    total_band_uses = sum(band_usage[agent_id].values())
+                    if total_band_uses > 0:
+                        most_used_band_agent = max(band_usage[agent_id].items(), key=lambda x: x[1])
+                        try:
+                            freq_val = self.env.frequency_bands[most_used_band_agent[0]].get('frequency', 28.0e9)
+                            freq_ghz = float(freq_val) / 1e9
+                        except Exception:
+                            freq_ghz = 28.0
+                        # Get handover count from KPI tracker
+                        handover_count = 0
+                        if hasattr(self.env, 'kpi_trackers') and agent_id in self.env.kpi_trackers:
+                            handover_count = self.env.kpi_trackers[agent_id].session_stats.get('handover_count', 0)
+                        
+                        print(f"  Agent {agent_id} Band: {most_used_band_agent[0]} ({freq_ghz:.0f} GHz) - {most_used_band_agent[1]} uses (H: {handover_count})")
+                    else:
+                        # No band switches occurred in this episode, show current band
+                        current_band = self.env.current_bands[agent_id]
+                        try:
+                            freq_val = self.env.frequency_bands[current_band].get('frequency', 28.0e9)
+                            freq_ghz = float(freq_val) / 1e9
+                        except Exception:
+                            freq_ghz = 28.0
+                        # Get handover count from KPI tracker
+                        handover_count = 0
+                        if hasattr(self.env, 'kpi_trackers') and agent_id in self.env.kpi_trackers:
+                            handover_count = self.env.kpi_trackers[agent_id].session_stats.get('handover_count', 0)
+                        
+                        print(f"  Agent {agent_id} Band: {current_band} ({freq_ghz:.0f} GHz) - no switches (H: {handover_count})")
+                        
+                    targets = getattr(self.env.kpi_trackers[agent_id], 'docomo_targets', None)
+                    comp = self.env.kpi_trackers[agent_id].get_compliance_score() if hasattr(self.env, 'kpi_trackers') else {}
+                    overall_compliance_agent = agent_metrics['compliance'][-1] if agent_metrics['compliance'] else 0.0
+                    if targets:
+                        print(
+                            f"  Agent {agent_id} [DOCOMO] T: "
+                            f"{throughput:.3f}/{targets.user_data_rate_gbps:.0f} Gbps | "
+                            f"L: {latency:.3f}/{targets.latency_ms:.3f} ms | "
+                            f"R: {reliability:.7f}/{targets.reliability:.7f} | "
+                            f"M: {latest_kpis.get('current_mobility_kmh', 0):.1f}/{targets.mobility_kmh:.0f} km/h | "
+                            f"Compliance: {overall_compliance_agent*100:.1f}%"
+                        )
                 
             if (episode + 1) % self.args.save_interval == 0:
                 self._save_checkpoint(episode, current_total_reward)

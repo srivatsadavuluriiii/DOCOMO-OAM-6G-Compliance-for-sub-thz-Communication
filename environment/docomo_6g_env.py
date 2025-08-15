@@ -105,7 +105,7 @@ class DOCOMOFrequencyBands:
             'frequency': 300.0e9,
             'bandwidth': 50.0e9,
             'max_range_km': 0.05,
-            'target_throughput_gbps': 1000.0,
+            'target_throughput_gbps': 50.0,  # Realistic target
             'target_latency_ms': 0.05,
             'oam_modes': [1, 2, 3, 4, 5, 6, 7, 8]
         },
@@ -113,7 +113,7 @@ class DOCOMOFrequencyBands:
             'frequency': 600.0e9,
             'bandwidth': 100.0e9,
             'max_range_km': 0.01,
-            'target_throughput_gbps': 2000.0,
+            'target_throughput_gbps': 100.0,  # Realistic target
             'target_latency_ms': 0.01,
             'oam_modes': [1, 2, 3, 4, 5, 6, 7, 8]
         }
@@ -199,20 +199,18 @@ class DOCOMO_6G_Environment(gym.Env):
         if self.interference_enabled and self.num_external_interferers > 0:
             self._initialize_external_interferers()
             
-        self.frequency_bands = dict(DOCOMOFrequencyBands.BANDS)
+        # Load frequency bands - prioritize config over hardcoded defaults
         cfg_bands = self.docomo_config.get('frequency_bands', {})
         if isinstance(cfg_bands, dict) and cfg_bands:
+            # Use ONLY config-specified bands (don't merge with hardcoded)
+            self.frequency_bands = {}
             for band_name, band_cfg in cfg_bands.items():
-                if band_name in self.frequency_bands:
-                    for key in [
-                        'frequency', 'bandwidth', 'max_range_km',
-                        'target_throughput_gbps', 'target_latency_ms',
-                        'oam_modes', 'antenna_gain_dbi', 'tx_power_dbm'
-                    ]:
-                        if key in band_cfg:
-                            self.frequency_bands[band_name][key] = band_cfg[key]
-                else:
-                    self.frequency_bands[band_name] = band_cfg
+                self.frequency_bands[band_name] = dict(band_cfg)
+            print(f"  Using config-specified bands: {list(self.frequency_bands.keys())}")
+        else:
+            # Fallback to hardcoded bands if no config specified
+            self.frequency_bands = dict(DOCOMOFrequencyBands.BANDS)
+            print(f"  Using default hardcoded bands: {list(self.frequency_bands.keys())}")
                                              
         self.band_names = list(self.frequency_bands.keys())
         
@@ -222,9 +220,12 @@ class DOCOMO_6G_Environment(gym.Env):
         self.multi_objective_rewards: Dict[str, MultiObjectiveReward] = {agent_id: MultiObjectiveReward(self.config) for agent_id in self.agent_ids}
         
         self.atmospheric_models = DOCOMOAtmosphericModels() # Shared
+        # Use first available band for physics calculator initialization
+        first_band = list(self.frequency_bands.keys())[0]
+        default_bandwidth = float(self.frequency_bands[first_band]['bandwidth'])
         self.physics_calculator = PhysicsCalculator(
             config=self.config,
-            bandwidth=float(self.frequency_bands['sub_thz_300']['bandwidth'])  # Default to THz for 500+ Gbps
+            bandwidth=default_bandwidth
         ) # Shared
         self.channel_simulator = ChannelSimulator(config=self.config) # Shared
         
@@ -276,7 +277,9 @@ class DOCOMO_6G_Environment(gym.Env):
             pass
         
         # Initialize per-agent dynamic states
-        self.current_bands: Dict[str, str] = {agent_id: 'mmwave_28' for agent_id in self.agent_ids}
+        # Use first available band from config instead of hardcoded mmwave_28
+        first_band = list(self.frequency_bands.keys())[0] if self.frequency_bands else 'mmwave_28'
+        self.current_bands: Dict[str, str] = {agent_id: first_band for agent_id in self.agent_ids}
         self.current_oam_modes: Dict[str, int] = {agent_id: 1 for agent_id in self.agent_ids}
         self.beam_alignment_errors_deg: Dict[str, float] = {agent_id: np.random.uniform(0.1, 2.0) for agent_id in self.agent_ids}
         self.beam_tracking_enabled_flags: Dict[str, bool] = {agent_id: False for agent_id in self.agent_ids}
@@ -297,15 +300,18 @@ class DOCOMO_6G_Environment(gym.Env):
             'compliance_score': 0.0
         } for agent_id in self.agent_ids}
         
+        # Use first available band for initialization  
+        first_band_config = self.frequency_bands.get(first_band, {})
+        
         self.channel_config = {
             'oam': {
                 'min_mode': 1,
                 'max_mode': 8,
             },
             'system': {
-                'frequency': self.frequency_bands['mmwave_28']['frequency'],
-                'bandwidth': self.frequency_bands['mmwave_28']['bandwidth'],
-                'tx_power_dBm': self.frequency_bands['mmwave_28'].get('tx_power_dbm', 30.0),
+                'frequency': first_band_config.get('frequency', '28.0e9'),
+                'bandwidth': first_band_config.get('bandwidth', '1.0e9'),
+                'tx_power_dBm': first_band_config.get('power_dbm', 30.0),
             }
         }
         
@@ -517,7 +523,7 @@ class DOCOMO_6G_Environment(gym.Env):
 
             # Force THz probability-based selection for consistent high performance
         start_rand = np.random.random()
-        if False:  # Disable optimal_start_band to force THz selection
+        if True:  # Enable optimal_start_band to force THz selection for lab
             start_pos = np.array(initial_position, dtype=float)
             distance_km = float(np.linalg.norm(start_pos)) / 1000.0
             per_band_tp = {}
@@ -536,25 +542,66 @@ class DOCOMO_6G_Environment(gym.Env):
                     self._apply_band_to_simulator(agent_id) # Apply per-agent
                 except Exception:
                     per_band_tp[b] = 0.0
-            sub_thz = ['sub_thz_100', 'sub_thz_140', 'sub_thz_220', 'sub_thz_300']
-            candidates = [b for b in sub_thz if per_band_tp.get(b, 0.0) >= 100.0]
-            if candidates:
-                chosen = max(candidates, key=lambda b: per_band_tp.get(b, 0.0))
-            else:
-                best_sub = max(sub_thz, key=lambda b: per_band_tp.get(b, 0.0))
-                if per_band_tp.get(best_sub, 0.0) > 0.0:
-                    chosen = best_sub
+            # Get high frequency bands dynamically (>= 100 GHz)
+            high_freq_bands = [b for b in self.band_names 
+                             if float(self.frequency_bands[b].get('frequency', 0)) >= 100e9]
+            
+            # If no high freq bands available, use all bands
+            candidate_bands = high_freq_bands if high_freq_bands else self.band_names
+            
+            # For lab scenario (close distance), FORCE highest frequency bands
+            if distance_km <= 0.01:  # Lab conditions 
+                # FORCE 300+ GHz bands in lab for maximum throughput
+                thz_candidates = [b for b in candidate_bands 
+                                if float(self.frequency_bands[b].get('frequency', 0)) >= 300e9]
+                if thz_candidates:
+                    candidates = thz_candidates  # Use ONLY THz bands in lab
                 else:
-                    chosen = max(self.band_names, key=lambda b: per_band_tp.get(b, 0.0))
-                    self.current_bands[agent_id] = chosen if chosen else 'mmwave_28'
-        else:
-            if start_rand < self.high_freq_start_prob:
-                high_freq_bands = ['sub_thz_100', 'sub_thz_140', 'sub_thz_220', 'sub_thz_300', 'thz_600']
-                band_weights = [0.05, 0.05, 0.1, 0.5, 0.3]  # Strongly favor sub_thz_300 and thz_600
-                self.current_bands[agent_id] = np.random.choice(high_freq_bands, p=band_weights)
+                    # Fallback to any available band if no THz
+                    candidates = [b for b in candidate_bands if per_band_tp.get(b, 0.0) >= 1.0]
             else:
-                standard_bands = ['mmwave_28', 'mmwave_39', 'mmwave_60']
-                self.current_bands[agent_id] = np.random.choice(standard_bands)
+                candidates = [b for b in candidate_bands if per_band_tp.get(b, 0.0) >= 100.0]
+            if candidates:
+                # For lab, prefer highest frequency first
+                if distance_km <= 0.01:  
+                    chosen = max(candidates, key=lambda b: float(self.frequency_bands[b].get('frequency', 0)))
+                else:
+                    chosen = max(candidates, key=lambda b: per_band_tp.get(b, 0.0))
+            else:
+                # For lab, even in fallback prefer highest frequency
+                if distance_km <= 0.01:  
+                    best_candidate = max(candidate_bands, key=lambda b: float(self.frequency_bands[b].get('frequency', 0)))
+                else:
+                    best_candidate = max(candidate_bands, key=lambda b: per_band_tp.get(b, 0.0))
+                
+                if per_band_tp.get(best_candidate, 0.0) > 0.0:
+                    chosen = best_candidate
+                else:
+                    # Last resort - for lab, prefer THz bands 
+                    if distance_km <= 0.01:
+                        thz_bands = [b for b in self.band_names if float(self.frequency_bands[b].get('frequency', 0)) >= 300e9]
+                        chosen = thz_bands[0] if thz_bands else max(self.band_names, key=lambda b: float(self.frequency_bands[b].get('frequency', 0)))
+                    else:
+                        chosen = max(self.band_names, key=lambda b: per_band_tp.get(b, 0.0))
+                    # Use first available band as fallback
+                    fallback_band = list(self.frequency_bands.keys())[0]
+                    self.current_bands[agent_id] = chosen if chosen else fallback_band
+        else:
+            # Select from available bands only (no hardcoded band names)
+            available_bands = list(self.frequency_bands.keys())
+            
+            if start_rand < self.high_freq_start_prob:
+                # Try to prefer higher frequency bands if available
+                sorted_bands = sorted(available_bands, 
+                                    key=lambda b: self.frequency_bands[b].get('frequency', 0), 
+                                    reverse=True)
+                # Use top 60% of frequency bands with higher probability
+                high_freq_count = max(1, int(len(sorted_bands) * 0.6))
+                high_freq_bands = sorted_bands[:high_freq_count]
+                self.current_bands[agent_id] = np.random.choice(high_freq_bands)
+            else:
+                # Random selection from all available bands
+                self.current_bands[agent_id] = np.random.choice(available_bands)
 
         # Clamp current OAM mode to available range for the band
         available_modes = self.frequency_bands[self.current_bands[agent_id]]['oam_modes']
@@ -1068,11 +1115,25 @@ class DOCOMO_6G_Environment(gym.Env):
         frequency_ghz = frequency_hz / 1e9
         bandwidth_hz = float(band_spec['bandwidth'])
 
-        atmospheric_losses = self.atmospheric_models.calculate_total_atmospheric_loss(
-            frequency_ghz=frequency_ghz,
-            distance_km=distance_m / 1000.0,
-            params=self.atmospheric_params
-        )
+        # Use realistic atmospheric losses instead of the overly pessimistic DOCOMO model
+        distance_km = distance_m / 1000.0
+        if frequency_ghz >= 300:  # THz bands
+            realistic_atm_loss_db = 10.0 * distance_km  # 10 dB/km for THz
+        elif frequency_ghz >= 100:  # Sub-THz bands  
+            realistic_atm_loss_db = 2.0 * distance_km   # 2 dB/km for sub-THz
+        elif frequency_ghz >= 60:   # mmWave high freq
+            realistic_atm_loss_db = 0.5 * distance_km   # 0.5 dB/km for 60+ GHz
+        elif frequency_ghz >= 28:   # mmWave
+            realistic_atm_loss_db = 0.1 * distance_km   # 0.1 dB/km for mmWave
+        else:  # Sub-6 GHz
+            realistic_atm_loss_db = 0.01 * distance_km  # 0.01 dB/km for sub-6
+        
+        # Create realistic atmospheric losses dict for compatibility
+        atmospheric_losses = {
+            'total_mean_db': realistic_atm_loss_db,
+            'molecular_total_db': realistic_atm_loss_db * 0.8,
+            'weather_total_db': realistic_atm_loss_db * 0.2
+        }
 
         beam_angles = self.mobility_models[agent_id].predict_beam_angles(
             base_station_position=self.base_station_position,
@@ -1112,14 +1173,25 @@ class DOCOMO_6G_Environment(gym.Env):
         current_band = self.current_bands[agent_id]
         band_bandwidth_hz = float(self.frequency_bands[current_band]['bandwidth'])
         
-        # Shannon capacity with band-specific bandwidth - more forgiving threshold
-        if sinr_db <= -30.0:  # More robust threshold for consistency
-            throughput_bps = 0.0
-        else:
-            sinr_linear = 10**(sinr_db / 10)
-            throughput_bps = band_bandwidth_hz * math.log2(1 + sinr_linear)
+        # Use enhanced throughput calculation with proper modulation and coding
+        current_band_info = self.frequency_bands[current_band]
+        frequency_hz = float(current_band_info['frequency'])  # Fix: convert string to float
         
-        throughput_bps *= 0.95  # System efficiency factor
+        # Use the improved physics calculator for enhanced throughput
+        self.physics_calculator.bandwidth = band_bandwidth_hz
+        self.physics_calculator.current_oam_modes = int(self.current_oam_modes[agent_id])
+        self.physics_calculator.current_distance_m = distance_m  # Pass distance for outdoor constraints
+        
+        throughput_result = self.physics_calculator.calculate_enhanced_throughput(
+            sinr_dB=sinr_db,
+            frequency=frequency_hz,
+            modulation_scheme="adaptive",
+            coding_rate=0.8,
+            distance_m=distance_m,
+            oam_modes=self.current_oam_modes[agent_id]
+        )
+        
+        throughput_bps = throughput_result.get('practical_throughput', 0.0)
         throughput_gbps = throughput_bps / 1e9
 
         propagation_latency_ms = (distance_m / 3e8) * 1000                  

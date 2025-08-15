@@ -1,0 +1,416 @@
+{
+  "training_info": {
+    "episodes": 10,
+    "training_time": 132.77072501182556,
+    "best_reward": 1861.818048331327,
+    "best_compliance": 0.7237759798900201,
+    "device": "mps",
+    "model_parameters": 75016
+  },
+  "config": {
+    "docomo_6g_system": {
+      "version": "2025.1_lab_thz_only",
+      "compliance_target": "lab_thz_maximum",
+      "kpi_targets": {
+        "peak_data_rate_gbps": 200.0,
+        "user_data_rate_gbps": 150.0,
+        "latency_ms": 0.05,
+        "reliability": 0.9999,
+        "mobility_kmh": 5.0,
+        "connection_density_per_km2": 10,
+        "energy_efficiency_improvement": 10
+      },
+      "frequency_bands": {
+        "thz_300": {
+          "frequency": "300.0e9",
+          "bandwidth": "15.0e9",
+          "target_throughput_gbps": 120.0,
+          "max_range_km": 0.002,
+          "oam_modes": [
+            1,
+            20
+          ],
+          "power_dbm": 45.0
+        },
+        "thz_400": {
+          "frequency": "400.0e9",
+          "bandwidth": "18.0e9",
+          "target_throughput_gbps": 140.0,
+          "max_range_km": 0.002,
+          "oam_modes": [
+            1,
+            22
+          ],
+          "power_dbm": 47.0
+        },
+        "thz_600": {
+          "frequency": "600.0e9",
+          "bandwidth": "20.0e9",
+          "target_throughput_gbps": 180.0,
+          "max_range_km": 0.001,
+          "oam_modes": [
+            1,
+            24
+          ],
+          "power_dbm": 50.0
+        }
+      },
+      "mobility": {
+        "model_type": "lab_stationary",
+        "path_type": "stationary",
+        "initial_position": [
+          0.1,
+          0.1,
+          1.5
+        ],
+        "speed_kmh": 0.5,
+        "radius_m": 0.5,
+        "height_variation_m": 0.0,
+        "prediction_horizon_ms": 200.0
+      },
+      "environment": {
+        "scenario": "laboratory",
+        "temperature_c": 22.0,
+        "humidity_percent": 40.0,
+        "atmospheric_pressure_kpa": 101.3
+      },
+      "physics": {
+        "enable_advanced_physics": true,
+        "lab_optimization": true,
+        "thz_enhancement_factor": 8.0
+      },
+      "algorithm": {
+        "agent_type": "dqn",
+        "learning_rate": 0.0005,
+        "epsilon_start": 0.9,
+        "epsilon_end": 0.1,
+        "epsilon_decay": 0.995,
+        "memory_size": 50000,
+        "batch_size": 64,
+        "target_network_update_freq": 100,
+        "save_interval": 50
+      },
+      "network_slicing": {
+        "enable_slicing": true,
+        "lab_slice": {
+          "guaranteed_throughput_gbps": 100.0,
+          "latency_budget_ms": 0.1,
+          "reliability_requirement": 0.9999
+        }
+      }
+    }
+  },
+  "training_metrics": {
+    "episodes": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9
+    ],
+    "rewards": [],
+    "losses": [],
+    "agents_metrics": {
+      "agent_0": {
+        "rewards": [
+          1861.5805315336731,
+          1854.7376310578388,
+          1861.818048331327,
+          1851.2796710737457,
+          1846.1640232247646,
+          1858.0020234436072,
+          1849.0756279793547,
+          1853.11024407838,
+          1858.787642946464,
+          1847.7028829825804
+        ],
+        "losses": [
+          6.845935158729553,
+          10.073552122116089,
+          10.721124424934388,
+          11.310469117164612,
+          11.614808773994445,
+          11.991548581123352,
+          12.526323637962342,
+          13.086692161560059,
+          13.682540302276612,
+          14.41610882282257
+        ],
+        "avg_throughput_gbps": [
+          40.0,
+          40.0,
+          40.0,
+          40.0,
+          40.0,
+          40.0,
+          40.0,
+          40.0,
+          40.0,
+          40.0
+        ],
+        "avg_latency_ms": [
+          0.061326938326269204,
+          0.06713001769519039,
+          0.06412710813577198,
+          0.07752386199044105,
+          0.0691361862406362,
+          0.06676537605838098,
+          0.06691425615847937,
+          0.06413931653532864,
+          0.07024220948208224,
+          0.075518446141863
+        ],
+        "kpis": [
+          {
+            "timestamp": "2025-08-15T19:04:58.480333",
+            "current_throughput_gbps": 40.0,
+            "current_latency_ms": 0.04056012425866987,
+            "current_reliability": 0.9999999,
+            "current_mobility_kmh": 0.31508276846887034,
+            "current_energy_w": 1.3772552170424597,
+            "avg_throughput_gbps": 40.0,
+            "avg_latency_ms": 0.061326938326269204,
+            "avg_reliability": 0.9999999000000003,
+            "peak_throughput_gbps": 40.0,
+            "min_latency_ms": 0.03156016474509379,
+            "max_mobility_kmh": 0.49999585712267414,
+            "total_measurements": 200,
+            "session_duration_min": 0.2285383,
+            "handover_count": 0,
+            "error_count": 0
+          },
+          {
+            "timestamp": "2025-08-15T19:05:12.891844",
+            "current_throughput_gbps": 40.0,
+            "current_latency_ms": 0.05855725942118539,
+            "current_reliability": 0.9999999,
+            "current_mobility_kmh": 0.1615922407162597,
+            "current_energy_w": 1.5391308897149802,
+            "avg_throughput_gbps": 40.0,
+            "avg_latency_ms": 0.0642284780107298,
+            "avg_reliability": 0.9999999000000003,
+            "peak_throughput_gbps": 40.0,
+            "min_latency_ms": 0.03156016474509379,
+            "max_mobility_kmh": 0.49999585712267414,
+            "total_measurements": 400,
+            "session_duration_min": 0.4689615,
+            "handover_count": 0,
+            "error_count": 2
+          },
+          {
+            "timestamp": "2025-08-15T19:05:26.942945",
+            "current_throughput_gbps": 40.0,
+            "current_latency_ms": 0.03152474890073316,
+            "current_reliability": 0.9999999,
+            "current_mobility_kmh": 0.3897975107232128,
+            "current_energy_w": 1.2963157359836859,
+            "avg_throughput_gbps": 40.0,
+            "avg_latency_ms": 0.06419468805241052,
+            "avg_reliability": 0.9999998999999998,
+            "peak_throughput_gbps": 40.0,
+            "min_latency_ms": 0.027024753164358428,
+            "max_mobility_kmh": 0.5000095552031026,
+            "total_measurements": 600,
+            "session_duration_min": 0.7030153166666667,
+            "handover_count": 0,
+            "error_count": 4
+          },
+          {
+            "timestamp": "2025-08-15T19:05:40.994053",
+            "current_throughput_gbps": 40.0,
+            "current_latency_ms": 0.045056786502525696,
+            "current_reliability": 0.9999999,
+            "current_mobility_kmh": 0.2514567601330333,
+            "current_energy_w": 1.417703679975708,
+            "avg_throughput_gbps": 40.0,
+            "avg_latency_ms": 0.06752698153691815,
+            "avg_reliability": 0.9999999000000003,
+            "peak_throughput_gbps": 40.0,
+            "min_latency_ms": 0.027024753164358428,
+            "max_mobility_kmh": 0.5000095552031026,
+            "total_measurements": 800,
+            "session_duration_min": 0.9371924333333334,
+            "handover_count": 0,
+            "error_count": 6
+          },
+          {
+            "timestamp": "2025-08-15T19:05:53.880538",
+            "current_throughput_gbps": 40.0,
+            "current_latency_ms": 0.027060903610620503,
+            "current_reliability": 0.9999999,
+            "current_mobility_kmh": 0.4920106882567142,
+            "current_energy_w": 1.255898528657488,
+            "avg_throughput_gbps": 40.0,
+            "avg_latency_ms": 0.06784882247766176,
+            "avg_reliability": 0.9999999000000003,
+            "peak_throughput_gbps": 40.0,
+            "min_latency_ms": 0.027024753164358428,
+            "max_mobility_kmh": 0.5000095552031026,
+            "total_measurements": 1000,
+            "session_duration_min": 1.1519840333333333,
+            "handover_count": 0,
+            "error_count": 10
+          },
+          {
+            "timestamp": "2025-08-15T19:06:06.205093",
+            "current_throughput_gbps": 40.0,
+            "current_latency_ms": 0.049530636253820794,
+            "current_reliability": 0.9999999,
+            "current_mobility_kmh": 0.4998232340527268,
+            "current_energy_w": 1.4584048568195829,
+            "avg_throughput_gbps": 40.0,
+            "avg_latency_ms": 0.06893651002408412,
+            "avg_reliability": 0.9999999000000003,
+            "peak_throughput_gbps": 40.0,
+            "min_latency_ms": 0.027024753164358428,
+            "max_mobility_kmh": 0.5000095552031026,
+            "total_measurements": 1200,
+            "session_duration_min": 1.3572987333333333,
+            "handover_count": 0,
+            "error_count": 12
+          },
+          {
+            "timestamp": "2025-08-15T19:06:18.822230",
+            "current_throughput_gbps": 40.0,
+            "current_latency_ms": 0.04952240213294026,
+            "current_reliability": 0.9999999,
+            "current_mobility_kmh": 0.36561541959756116,
+            "current_energy_w": 1.458296148489874,
+            "avg_throughput_gbps": 40.0,
+            "avg_latency_ms": 0.06889335771674192,
+            "avg_reliability": 0.9999999000000003,
+            "peak_throughput_gbps": 40.0,
+            "min_latency_ms": 0.027024753164358428,
+            "max_mobility_kmh": 0.5000095552031026,
+            "total_measurements": 1400,
+            "session_duration_min": 1.5677232166666668,
+            "handover_count": 0,
+            "error_count": 14
+          },
+          {
+            "timestamp": "2025-08-15T19:06:33.269368",
+            "current_throughput_gbps": 40.0,
+            "current_latency_ms": 0.04953693876719815,
+            "current_reliability": 0.9999999,
+            "current_mobility_kmh": 0.3662438727511672,
+            "current_energy_w": 1.4582966575369285,
+            "avg_throughput_gbps": 40.0,
+            "avg_latency_ms": 0.06889579939665325,
+            "avg_reliability": 0.9999999000000003,
+            "peak_throughput_gbps": 40.0,
+            "min_latency_ms": 0.027024753164358428,
+            "max_mobility_kmh": 0.5000095552031026,
+            "total_measurements": 1600,
+            "session_duration_min": 1.8085064333333334,
+            "handover_count": 0,
+            "error_count": 18
+          },
+          {
+            "timestamp": "2025-08-15T19:06:46.951335",
+            "current_throughput_gbps": 40.0,
+            "current_latency_ms": 0.04504284078835718,
+            "current_reliability": 0.9999999,
+            "current_mobility_kmh": 0.4993602825775298,
+            "current_energy_w": 1.4179044818288877,
+            "avg_throughput_gbps": 40.0,
+            "avg_latency_ms": 0.0674394688949815,
+            "avg_reliability": 0.9999998991000002,
+            "peak_throughput_gbps": 40.0,
+            "min_latency_ms": 0.027024753164358428,
+            "max_mobility_kmh": 0.5000095552031026,
+            "total_measurements": 1800,
+            "session_duration_min": 2.0365589833333333,
+            "handover_count": 0,
+            "error_count": 20
+          },
+          {
+            "timestamp": "2025-08-15T19:06:58.592291",
+            "current_throughput_gbps": 40.0,
+            "current_latency_ms": 0.049553673992896806,
+            "current_reliability": 0.9999999,
+            "current_mobility_kmh": 0.4998650694421291,
+            "current_energy_w": 1.4584048907062481,
+            "avg_throughput_gbps": 40.0,
+            "avg_latency_ms": 0.06871592087522686,
+            "avg_reliability": 0.9999998982000002,
+            "peak_throughput_gbps": 40.0,
+            "min_latency_ms": 0.027024753164358428,
+            "max_mobility_kmh": 0.5000095552031026,
+            "total_measurements": 2000,
+            "session_duration_min": 2.2304708166666667,
+            "handover_count": 0,
+            "error_count": 25
+          }
+        ],
+        "compliance": [
+          0.7237385607788845,
+          0.6725506170123778,
+          0.7237627395333155,
+          0.7237275123415207,
+          0.7237759798900201,
+          0.7237170134819683,
+          0.7237170407427133,
+          0.7237170406150503,
+          0.7237274590652272,
+          0.7237170134734712
+        ],
+        "band_performance": {
+          "thz_300": [],
+          "thz_400": [],
+          "thz_600": []
+        }
+      }
+    }
+  },
+  "final_evaluation": {
+    "agent_0": {
+      "mean_reward": 1805.203864319227,
+      "std_reward": 17.964822337560086,
+      "min_reward": 1792.555808037439,
+      "max_reward": 1854.3920470130843,
+      "band_usage": {
+        "thz_300": 0,
+        "thz_400": 0,
+        "thz_600": 0
+      },
+      "avg_current_throughput_gbps": 40.0,
+      "avg_current_latency_ms": 0.11253551995162256,
+      "avg_current_reliability": 0.9999999,
+      "avg_current_mobility_kmh": 0.46608351175615204,
+      "avg_current_energy_w": 2.025377527644523,
+      "avg_avg_throughput_gbps": 42.04,
+      "avg_avg_latency_ms": 0.10418668795970931,
+      "avg_avg_reliability": 0.9999998993700003,
+      "avg_peak_throughput_gbps": 80.0,
+      "avg_min_latency_ms": 0.027024753164358428,
+      "avg_max_mobility_kmh": 0.5000112579730177,
+      "avg_total_measurements": 3100.0,
+      "avg_session_duration_min": 2.9878246833333337,
+      "avg_handover_count": 0.0,
+      "avg_error_count": 37.5,
+      "docomo_compliance": 0.5291211015841163,
+      "avg_episode_handovers": 0.0
+    }
+  },
+  "environment_info": {
+    "state_dim": 23,
+    "action_dim": "8",
+    "frequency_bands": [
+      "thz_300",
+      "thz_400",
+      "thz_600"
+    ],
+    "num_users": 1,
+    "current_slice": {
+      "agent_0": "default"
+    },
+    "current_qos_targets": {
+      "agent_0": {}
+    }
+  }
+}

@@ -1,0 +1,3034 @@
+{
+  "Lab Close": {
+    "thz_300_1modes": {
+      "frequency_ghz": 300.0,
+      "distance_m": 2.0,
+      "base_sinr_db": 35.0,
+      "num_modes": 1,
+      "mode_analysis": [
+        {
+          "mode_number": 1,
+          "sinr_db": 31.609975516907014,
+          "evm_rms_percent": 3.30751044352606,
+          "crosstalk_db": 0.5250428714042674,
+          "pointing_error_db": 0.6149816116887216,
+          "atmospheric_fade_db": 2.25,
+          "optimal_modulation": "256QAM",
+          "constellation_snr": 34.609975516907014
+        }
+      ],
+      "summary": {
+        "mean_sinr_db": 31.609975516907014,
+        "std_sinr_db": 0.0,
+        "min_sinr_db": 31.609975516907014,
+        "max_sinr_db": 31.609975516907014,
+        "mean_evm_percent": 3.30751044352606,
+        "modes_above_20db": 1,
+        "usable_modes": 1
+      }
+    },
+    "thz_300_5modes": {
+      "frequency_ghz": 300.0,
+      "distance_m": 2.0,
+      "base_sinr_db": 35.0,
+      "num_modes": 5,
+      "mode_analysis": [
+        {
+          "mode_number": 1,
+          "sinr_db": 31.36082817799324,
+          "evm_rms_percent": 3.4037573417330185,
+          "crosstalk_db": 0.7741902103180389,
+          "pointing_error_db": 0.6149816116887216,
+          "atmospheric_fade_db": 2.25,
+          "optimal_modulation": "256QAM",
+          "constellation_snr": 34.36082817799324
+        },
+        {
+          "mode_number": 2,
+          "sinr_db": 31.30689765369512,
+          "evm_rms_percent": 3.4249569525034222,
+          "crosstalk_db": 0.6781207346161549,
+          "pointing_error_db": 0.7149816116887215,
+          "atmospheric_fade_db": 2.3000000000000003,
+          "optimal_modulation": "256QAM",
+          "constellation_snr": 34.30689765369512
+        },
+        {
+          "mode_number": 3,
+          "sinr_db": 30.957382102759915,
+          "evm_rms_percent": 3.5655858276257093,
+          "crosstalk_db": 0.8776362855513589,
+          "pointing_error_db": 0.8149816116887216,
+          "atmospheric_fade_db": 2.35,
+          "optimal_modulation": "64QAM",
+          "constellation_snr": 33.957382102759915
+        },
+        {
+          "mode_number": 4,
+          "sinr_db": 31.16508576092336,
+          "evm_rms_percent": 3.481334163177351,
+          "crosstalk_db": 0.5199326273879163,
+          "pointing_error_db": 0.9149816116887216,
+          "atmospheric_fade_db": 2.4000000000000004,
+          "optimal_modulation": "256QAM",
+          "constellation_snr": 34.16508576092336
+        },
+        {
+          "mode_number": 5,
+          "sinr_db": 30.837286563758727,
+          "evm_rms_percent": 3.6152278323307576,
+          "crosstalk_db": 0.6977318245525586,
+          "pointing_error_db": 1.0149816116887216,
+          "atmospheric_fade_db": 2.45,
+          "optimal_modulation": "64QAM",
+          "constellation_snr": 33.837286563758724
+        }
+      ],
+      "summary": {
+        "mean_sinr_db": 31.12549605182607,
+        "std_sinr_db": 0.2005901815723214,
+        "min_sinr_db": 30.837286563758727,
+        "max_sinr_db": 31.36082817799324,
+        "mean_evm_percent": 3.4981724234740517,
+        "modes_above_20db": 5,
+        "usable_modes": 5
+      }
+    },
+    "thz_300_10modes": {
+      "frequency_ghz": 300.0,
+      "distance_m": 2.0,
+      "base_sinr_db": 35.0,
+      "num_modes": 10,
+      "mode_analysis": [
+        {
+          "mode_number": 1,
+          "sinr_db": 31.6719705503438,
+          "evm_rms_percent": 3.2839873269006783,
+          "crosstalk_db": 0.46304783796748333,
+          "pointing_error_db": 0.6149816116887216,
+          "atmospheric_fade_db": 2.25,
+          "optimal_modulation": "256QAM",
+          "constellation_snr": 34.6719705503438
+        },
+        {
+          "mode_number": 2,
+          "sinr_db": 30.819734446111102,
+          "evm_rms_percent": 3.6225407344890215,
+          "crosstalk_db": 1.165283942200173,
+          "pointing_error_db": 0.7149816116887215,
+          "atmospheric_fade_db": 2.3000000000000003,
+          "optimal_modulation": "64QAM",
+          "constellation_snr": 33.8197344461111
+        },
+        {
+          "mode_number": 3,
+          "sinr_db": 31.296706151552378,
+          "evm_rms_percent": 3.428977950187238,
+          "crosstalk_db": 0.5383122367588975,
+          "pointing_error_db": 0.8149816116887216,
+          "atmospheric_fade_db": 2.35,
+          "optimal_modulation": "256QAM",
+          "constellation_snr": 34.29670615155238
+        },
+        {
+          "mode_number": 4,
+          "sinr_db": 31.023809325461677,
+          "evm_rms_percent": 3.538421243487312,
+          "crosstalk_db": 0.661209062849604,
+          "pointing_error_db": 0.9149816116887216,
+          "atmospheric_fade_db": 2.4000000000000004,
+          "optimal_modulation": "64QAM",
+          "constellation_snr": 34.02380932546168
+        },
+        {
+          "mode_number": 5,
+          "sinr_db": 30.358863571861253,
+          "evm_rms_percent": 3.8199424621746876,
+          "crosstalk_db": 1.1761548164500328,
+          "pointing_error_db": 1.0149816116887216,
+          "atmospheric_fade_db": 2.45,
+          "optimal_modulation": "64QAM",
+          "constellation_snr": 33.35886357186125
+        },
+        {
+          "mode_number": 6,
+          "sinr_db": 30.738393705954245,
+          "evm_rms_percent": 3.656624078350081,
+          "crosstalk_db": 0.6466246823570385,
+          "pointing_error_db": 1.1149816116887217,
+          "atmospheric_fade_db": 2.5,
+          "optimal_modulation": "64QAM",
+          "constellation_snr": 33.738393705954245
+        },
+        {
+          "mode_number": 7,
+          "sinr_db": 30.053855079627542,
+          "evm_rms_percent": 3.95646425141425,
+          "crosstalk_db": 1.1811633086837359,
+          "pointing_error_db": 1.2149816116887218,
+          "atmospheric_fade_db": 2.5500000000000003,
+          "optimal_modulation": "64QAM",
+          "constellation_snr": 33.05385507962754
+        },
+        {
+          "mode_number": 8,
+          "sinr_db": 29.78310931558847,
+          "evm_rms_percent": 4.081732450998732,
+          "crosstalk_db": 1.3019090727228044,
+          "pointing_error_db": 1.3149816116887216,
+          "atmospheric_fade_db": 2.6,
+          "optimal_modulation": "64QAM",
+          "constellation_snr": 32.78310931558847
+        },
+        {
+          "mode_number": 9,
+          "sinr_db": 29.869846446032554,
+          "evm_rms_percent": 4.041175186636447,
+          "crosstalk_db": 1.0651719422787231,
+          "pointing_error_db": 1.4149816116887215,
+          "atmospheric_fade_db": 2.6500000000000004,
+          "optimal_modulation": "64QAM",
+          "constellation_snr": 32.869846446032554
+        },
+        {
+          "mode_number": 10,
+          "sinr_db": 29.7425660236558,
+          "evm_rms_percent": 4.10082936587971,
+          "crosstalk_db": 1.0424523646554733,
+          "pointing_error_db": 1.5149816116887216,
+          "atmospheric_fade_db": 2.7,
+          "optimal_modulation": "64QAM",
+          "constellation_snr": 32.7425660236558
+        }
+      ],
+      "summary": {
+        "mean_sinr_db": 30.535885461618882,
+        "std_sinr_db": 0.6428462217796781,
+        "min_sinr_db": 29.7425660236558,
+        "max_sinr_db": 31.6719705503438,
+        "mean_evm_percent": 3.7530695050518155,
+        "modes_above_20db": 10,
+        "usable_modes": 10
+      }
+    },
+    "thz_300_15modes": {
+      "frequency_ghz": 300.0,
+      "distance_m": 2.0,
+      "base_sinr_db": 35.0,
+      "num_modes": 15,
+      "mode_analysis": [
+        {
+          "mode_number": 1,
+          "sinr_db": 31.40076639093411,
+          "evm_rms_percent": 3.3881425987711773,
+          "crosstalk_db": 0.7342519973771744,
+          "pointing_error_db": 0.6149816116887216,
+          "atmospheric_fade_db": 2.25,
+          "optimal_modulation": "256QAM",
+          "constellation_snr": 34.40076639093411
+        },
+        {
+          "mode_number": 2,
+          "sinr_db": 31.40120875931586,
+          "evm_rms_percent": 3.387970046614186,
+          "crosstalk_db": 0.5838096289954177,
+          "pointing_error_db": 0.7149816116887215,
+          "atmospheric_fade_db": 2.3000000000000003,
+          "optimal_modulation": "256QAM",
+          "constellation_snr": 34.401208759315864
+        },
+        {
+          "mode_number": 3,
+          "sinr_db": 31.07954270766676,
+          "evm_rms_percent": 3.5157894987309493,
+          "crosstalk_db": 0.7554756806445158,
+          "pointing_error_db": 0.8149816116887216,
+          "atmospheric_fade_db": 2.35,
+          "optimal_modulation": "64QAM",
+          "constellation_snr": 34.07954270766676
+        },
+        {
+          "mode_number": 4,
+          "sinr_db": 30.676501531762568,
+          "evm_rms_percent": 3.682772770374842,
+          "crosstalk_db": 1.0085168565487082,
+          "pointing_error_db": 0.9149816116887216,
+          "atmospheric_fade_db": 2.4000000000000004,
+          "optimal_modulation": "64QAM",
+          "constellation_snr": 33.67650153176257
+        },
+        {
+          "mode_number": 5,
+          "sinr_db": 30.53340529035923,
+          "evm_rms_percent": 3.7439473734921225,
+          "crosstalk_db": 1.0016130979520554,
+          "pointing_error_db": 1.0149816116887216,
+          "atmospheric_fade_db": 2.45,
+          "optimal_modulation": "64QAM",
+          "constellation_snr": 33.53340529035923
+        },
+        {
+          "mode_number": 6,
+          "sinr_db": 30.554374298857994,
+          "evm_rms_percent": 3.7349198380013435,
+          "crosstalk_db": 0.8306440894532902,
+          "pointing_error_db": 1.1149816116887217,
+          "atmospheric_fade_db": 2.5,
+          "optimal_modulation": "64QAM",
+          "constellation_snr": 33.554374298857994
+        },
+        {
+          "mode_number": 7,
+          "sinr_db": 30.54317459106713,
+          "evm_rms_percent": 3.7397388021199087,
+          "crosstalk_db": 0.6918437972441501,
+          "pointing_error_db": 1.2149816116887218,
+          "atmospheric_fade_db": 2.5500000000000003,
+          "optimal_modulation": "64QAM",
+          "constellation_snr": 33.54317459106713
+        },
+        {
+          "mode_number": 8,
+          "sinr_db": 30.24926583609841,
+          "evm_rms_percent": 3.8684475081744494,
+          "crosstalk_db": 0.8357525522128669,
+          "pointing_error_db": 1.3149816116887216,
+          "atmospheric_fade_db": 2.6,
+          "optimal_modulation": "64QAM",
+          "constellation_snr": 33.24926583609841
+        },
+        {
+          "mode_number": 9,
+          "sinr_db": 29.93540790715558,
+          "evm_rms_percent": 4.010787055702286,
+          "crosstalk_db": 0.9996104811557023,
+          "pointing_error_db": 1.4149816116887215,
+          "atmospheric_fade_db": 2.6500000000000004,
+          "optimal_modulation": "64QAM",
+          "constellation_snr": 32.93540790715558
+        },
+        {
+          "mode_number": 10,
+          "sinr_db": 29.52788565716249,
+          "evm_rms_percent": 4.2034483670600515,
+          "crosstalk_db": 1.2571327311487848,
+          "pointing_error_db": 1.5149816116887216,
+          "atmospheric_fade_db": 2.7,
+          "optimal_modulation": "64QAM",
+          "constellation_snr": 32.527885657162486
+        },
+        {
+          "mode_number": 11,
+          "sinr_db": 29.543734643359564,
+          "evm_rms_percent": 4.195785403983407,
+          "crosstalk_db": 1.0912837449517199,
+          "pointing_error_db": 1.6149816116887217,
+          "atmospheric_fade_db": 2.75,
+          "optimal_modulation": "64QAM",
+          "constellation_snr": 32.543734643359564
+        },
+        {
+          "mode_number": 12,
+          "sinr_db": 29.501699232751758,
+          "evm_rms_percent": 4.216140144201462,
+          "crosstalk_db": 0.9833191555595225,
+          "pointing_error_db": 1.7149816116887218,
+          "atmospheric_fade_db": 2.8000000000000003,
+          "optimal_modulation": "64QAM",
+          "constellation_snr": 32.50169923275176
+        },
+        {
+          "mode_number": 13,
+          "sinr_db": 29.4652193929534,
+          "evm_rms_percent": 4.233884734196746,
+          "crosstalk_db": 0.8697989953578735,
+          "pointing_error_db": 1.8149816116887216,
+          "atmospheric_fade_db": 2.85,
+          "optimal_modulation": "64QAM",
+          "constellation_snr": 32.4652193929534
+        },
+        {
+          "mode_number": 14,
+          "sinr_db": 29.16689887728407,
+          "evm_rms_percent": 4.381825275305567,
+          "crosstalk_db": 1.0181195110272077,
+          "pointing_error_db": 1.9149816116887217,
+          "atmospheric_fade_db": 2.9000000000000004,
+          "optimal_modulation": "64QAM",
+          "constellation_snr": 32.16689887728407
+        },
+        {
+          "mode_number": 15,
+          "sinr_db": 28.853079625847066,
+          "evm_rms_percent": 4.543034330844505,
+          "crosstalk_db": 1.1819387624642166,
+          "pointing_error_db": 2.0149816116887216,
+          "atmospheric_fade_db": 2.95,
+          "optimal_modulation": "64QAM",
+          "constellation_snr": 31.853079625847066
+        }
+      ],
+      "summary": {
+        "mean_sinr_db": 30.162144316171734,
+        "std_sinr_db": 0.7781294521788373,
+        "min_sinr_db": 28.853079625847066,
+        "max_sinr_db": 31.40120875931586,
+        "mean_evm_percent": 3.9231089165048667,
+        "modes_above_20db": 15,
+        "usable_modes": 15
+      }
+    },
+    "thz_400_1modes": {
+      "frequency_ghz": 400.0,
+      "distance_m": 2.0,
+      "base_sinr_db": 35.0,
+      "num_modes": 1,
+      "mode_analysis": [
+        {
+          "mode_number": 1,
+          "sinr_db": 31.757545220562285,
+          "evm_rms_percent": 3.251791855423888,
+          "crosstalk_db": 0.31500379944484824,
+          "pointing_error_db": 0.6774509799928716,
+          "atmospheric_fade_db": 2.25,
+          "optimal_modulation": "256QAM",
+          "constellation_snr": 34.757545220562285
+        }
+      ],
+      "summary": {
+        "mean_sinr_db": 31.757545220562285,
+        "std_sinr_db": 0.0,
+        "min_sinr_db": 31.757545220562285,
+        "max_sinr_db": 31.757545220562285,
+        "mean_evm_percent": 3.251791855423888,
+        "modes_above_20db": 1,
+        "usable_modes": 1
+      }
+    },
+    "thz_400_5modes": {
+      "frequency_ghz": 400.0,
+      "distance_m": 2.0,
+      "base_sinr_db": 35.0,
+      "num_modes": 5,
+      "mode_analysis": [
+        {
+          "mode_number": 1,
+          "sinr_db": 31.622529530094006,
+          "evm_rms_percent": 3.3027334386435623,
+          "crosstalk_db": 0.45001948991312324,
+          "pointing_error_db": 0.6774509799928716,
+          "atmospheric_fade_db": 2.25,
+          "optimal_modulation": "256QAM",
+          "constellation_snr": 34.622529530094006
+        },
+        {
+          "mode_number": 2,
+          "sinr_db": 31.28794043884106,
+          "evm_rms_percent": 3.4324401870786265,
+          "crosstalk_db": 0.6346085811660676,
+          "pointing_error_db": 0.7774509799928717,
+          "atmospheric_fade_db": 2.3000000000000003,
+          "optimal_modulation": "256QAM",
+          "constellation_snr": 34.28794043884106
+        },
+        {
+          "mode_number": 3,
+          "sinr_db": 31.326563286586733,
+          "evm_rms_percent": 3.4172113146095646,
+          "crosstalk_db": 0.44598573342039544,
+          "pointing_error_db": 0.8774509799928717,
+          "atmospheric_fade_db": 2.35,
+          "optimal_modulation": "256QAM",
+          "constellation_snr": 34.32656328658673
+        },
+        {
+          "mode_number": 4,
+          "sinr_db": 31.12952631519608,
+          "evm_rms_percent": 3.495615724116059,
+          "crosstalk_db": 0.4930227048110466,
+          "pointing_error_db": 0.9774509799928717,
+          "atmospheric_fade_db": 2.4000000000000004,
+          "optimal_modulation": "256QAM",
+          "constellation_snr": 34.12952631519608
+        },
+        {
+          "mode_number": 5,
+          "sinr_db": 30.665110588905254,
+          "evm_rms_percent": 3.687605640165793,
+          "crosstalk_db": 0.8074384311018743,
+          "pointing_error_db": 1.0774509799928715,
+          "atmospheric_fade_db": 2.45,
+          "optimal_modulation": "64QAM",
+          "constellation_snr": 33.66511058890525
+        }
+      ],
+      "summary": {
+        "mean_sinr_db": 31.206334031924627,
+        "std_sinr_db": 0.3140559226143238,
+        "min_sinr_db": 30.665110588905254,
+        "max_sinr_db": 31.622529530094006,
+        "mean_evm_percent": 3.4671212609227213,
+        "modes_above_20db": 5,
+        "usable_modes": 5
+      }
+    },
+    "thz_400_10modes": {
+      "frequency_ghz": 400.0,
+      "distance_m": 2.0,
+      "base_sinr_db": 35.0,
+      "num_modes": 10,
+      "mode_analysis": [
+        {
+          "mode_number": 1,
+          "sinr_db": 31.359877332653824,
+          "evm_rms_percent": 3.404129971836938,
+          "crosstalk_db": 0.7126716873533088,
+          "pointing_error_db": 0.6774509799928716,
+          "atmospheric_fade_db": 2.25,
+          "optimal_modulation": "256QAM",
+          "constellation_snr": 34.359877332653824
+        },
+        {
+          "mode_number": 2,
+          "sinr_db": 31.329844483126653,
+          "evm_rms_percent": 3.4159206668071023,
+          "crosstalk_db": 0.5927045368804774,
+          "pointing_error_db": 0.7774509799928717,
+          "atmospheric_fade_db": 2.3000000000000003,
+          "optimal_modulation": "256QAM",
+          "constellation_snr": 34.32984448312665
+        },
+        {
+          "mode_number": 3,
+          "sinr_db": 31.2222516623428,
+          "evm_rms_percent": 3.4584971082042366,
+          "crosstalk_db": 0.5502973576643277,
+          "pointing_error_db": 0.8774509799928717,
+          "atmospheric_fade_db": 2.35,
+          "optimal_modulation": "256QAM",
+          "constellation_snr": 34.2222516623428
+        },
+        {
+          "mode_number": 4,
+          "sinr_db": 30.080626807543318,
+          "evm_rms_percent": 3.9442883753085556,
+          "crosstalk_db": 1.5419222124638117,
+          "pointing_error_db": 0.9774509799928717,
+          "atmospheric_fade_db": 2.4000000000000004,
+          "optimal_modulation": "64QAM",
+          "constellation_snr": 33.08062680754332
+        },
+        {
+          "mode_number": 5,
+          "sinr_db": 30.867080073966424,
+          "evm_rms_percent": 3.602848466026045,
+          "crosstalk_db": 0.6054689460407068,
+          "pointing_error_db": 1.0774509799928715,
+          "atmospheric_fade_db": 2.45,
+          "optimal_modulation": "64QAM",
+          "constellation_snr": 33.86708007396642
+        },
+        {
+          "mode_number": 6,
+          "sinr_db": 30.374984415320633,
+          "evm_rms_percent": 3.812859297862453,
+          "crosstalk_db": 0.9475646046865009,
+          "pointing_error_db": 1.1774509799928716,
+          "atmospheric_fade_db": 2.5,
+          "optimal_modulation": "64QAM",
+          "constellation_snr": 33.37498441532063
+        },
+        {
+          "mode_number": 7,
+          "sinr_db": 30.444140268576188,
+          "evm_rms_percent": 3.782622369769113,
+          "crosstalk_db": 0.7284087514309396,
+          "pointing_error_db": 1.2774509799928717,
+          "atmospheric_fade_db": 2.5500000000000003,
+          "optimal_modulation": "64QAM",
+          "constellation_snr": 33.44414026857619
+        },
+        {
+          "mode_number": 8,
+          "sinr_db": 30.07311244638847,
+          "evm_rms_percent": 3.947702145559896,
+          "crosstalk_db": 0.9494365736186524,
+          "pointing_error_db": 1.3774509799928718,
+          "atmospheric_fade_db": 2.6,
+          "optimal_modulation": "64QAM",
+          "constellation_snr": 33.07311244638847
+        },
+        {
+          "mode_number": 9,
+          "sinr_db": 29.78614213284623,
+          "evm_rms_percent": 4.080307497632137,
+          "crosstalk_db": 1.0864068871608947,
+          "pointing_error_db": 1.4774509799928717,
+          "atmospheric_fade_db": 2.6500000000000004,
+          "optimal_modulation": "64QAM",
+          "constellation_snr": 32.78614213284623
+        },
+        {
+          "mode_number": 10,
+          "sinr_db": 29.995855825647343,
+          "evm_rms_percent": 3.9829715905623164,
+          "crosstalk_db": 0.7266931943597832,
+          "pointing_error_db": 1.5774509799928715,
+          "atmospheric_fade_db": 2.7,
+          "optimal_modulation": "64QAM",
+          "constellation_snr": 32.99585582564734
+        }
+      ],
+      "summary": {
+        "mean_sinr_db": 30.55339154484119,
+        "std_sinr_db": 0.5653786372211727,
+        "min_sinr_db": 29.78614213284623,
+        "max_sinr_db": 31.359877332653824,
+        "mean_evm_percent": 3.7432147489568792,
+        "modes_above_20db": 10,
+        "usable_modes": 10
+      }
+    },
+    "thz_400_15modes": {
+      "frequency_ghz": 400.0,
+      "distance_m": 2.0,
+      "base_sinr_db": 35.0,
+      "num_modes": 15,
+      "mode_analysis": [
+        {
+          "mode_number": 1,
+          "sinr_db": 31.418533981196177,
+          "evm_rms_percent": 3.381219001631217,
+          "crosstalk_db": 0.6540150388109552,
+          "pointing_error_db": 0.6774509799928716,
+          "atmospheric_fade_db": 2.25,
+          "optimal_modulation": "256QAM",
+          "constellation_snr": 34.41853398119618
+        },
+        {
+          "mode_number": 2,
+          "sinr_db": 31.264695863615653,
+          "evm_rms_percent": 3.441638147347948,
+          "crosstalk_db": 0.6578531563914733,
+          "pointing_error_db": 0.7774509799928717,
+          "atmospheric_fade_db": 2.3000000000000003,
+          "optimal_modulation": "256QAM",
+          "constellation_snr": 34.26469586361566
+        },
+        {
+          "mode_number": 3,
+          "sinr_db": 31.196872514611698,
+          "evm_rms_percent": 3.4686172075734545,
+          "crosstalk_db": 0.5756765053954291,
+          "pointing_error_db": 0.8774509799928717,
+          "atmospheric_fade_db": 2.35,
+          "optimal_modulation": "256QAM",
+          "constellation_snr": 34.1968725146117
+        },
+        {
+          "mode_number": 4,
+          "sinr_db": 30.59776937607782,
+          "evm_rms_percent": 3.71630655337888,
+          "crosstalk_db": 1.024779643929309,
+          "pointing_error_db": 0.9774509799928717,
+          "atmospheric_fade_db": 2.4000000000000004,
+          "optimal_modulation": "64QAM",
+          "constellation_snr": 33.59776937607782
+        },
+        {
+          "mode_number": 5,
+          "sinr_db": 30.80015736775859,
+          "evm_rms_percent": 3.630714767148342,
+          "crosstalk_db": 0.6723916522485337,
+          "pointing_error_db": 1.0774509799928715,
+          "atmospheric_fade_db": 2.45,
+          "optimal_modulation": "64QAM",
+          "constellation_snr": 33.80015736775859
+        },
+        {
+          "mode_number": 6,
+          "sinr_db": 30.47812172723254,
+          "evm_rms_percent": 3.7678526778262413,
+          "crosstalk_db": 0.8444272927745924,
+          "pointing_error_db": 1.1774509799928716,
+          "atmospheric_fade_db": 2.5,
+          "optimal_modulation": "64QAM",
+          "constellation_snr": 33.47812172723254
+        },
+        {
+          "mode_number": 7,
+          "sinr_db": 30.17881389348347,
+          "evm_rms_percent": 3.8999523905845477,
+          "crosstalk_db": 0.9937351265236566,
+          "pointing_error_db": 1.2774509799928717,
+          "atmospheric_fade_db": 2.5500000000000003,
+          "optimal_modulation": "64QAM",
+          "constellation_snr": 33.178813893483465
+        },
+        {
+          "mode_number": 8,
+          "sinr_db": 29.87409610951225,
+          "evm_rms_percent": 4.039198482485815,
+          "crosstalk_db": 1.1484529104948749,
+          "pointing_error_db": 1.3774509799928718,
+          "atmospheric_fade_db": 2.6,
+          "optimal_modulation": "64QAM",
+          "constellation_snr": 32.87409610951225
+        },
+        {
+          "mode_number": 9,
+          "sinr_db": 29.781165995577823,
+          "evm_rms_percent": 4.082645771347535,
+          "crosstalk_db": 1.0913830244293017,
+          "pointing_error_db": 1.4774509799928717,
+          "atmospheric_fade_db": 2.6500000000000004,
+          "optimal_modulation": "64QAM",
+          "constellation_snr": 32.78116599557782
+        },
+        {
+          "mode_number": 10,
+          "sinr_db": 29.1055073648228,
+          "evm_rms_percent": 4.41290554465851,
+          "crosstalk_db": 1.6170416551843312,
+          "pointing_error_db": 1.5774509799928715,
+          "atmospheric_fade_db": 2.7,
+          "optimal_modulation": "64QAM",
+          "constellation_snr": 32.1055073648228
+        },
+        {
+          "mode_number": 11,
+          "sinr_db": 29.77670724459152,
+          "evm_rms_percent": 4.08474206483547,
+          "crosstalk_db": 0.795841775415609,
+          "pointing_error_db": 1.6774509799928716,
+          "atmospheric_fade_db": 2.75,
+          "optimal_modulation": "64QAM",
+          "constellation_snr": 32.77670724459152
+        },
+        {
+          "mode_number": 12,
+          "sinr_db": 29.046714958537937,
+          "evm_rms_percent": 4.442876611316708,
+          "crosstalk_db": 1.3758340614691895,
+          "pointing_error_db": 1.7774509799928717,
+          "atmospheric_fade_db": 2.8000000000000003,
+          "optimal_modulation": "64QAM",
+          "constellation_snr": 32.04671495853793
+        },
+        {
+          "mode_number": 13,
+          "sinr_db": 29.439539094066987,
+          "evm_rms_percent": 4.24642096453297,
+          "crosstalk_db": 0.833009925940137,
+          "pointing_error_db": 1.8774509799928718,
+          "atmospheric_fade_db": 2.85,
+          "optimal_modulation": "64QAM",
+          "constellation_snr": 32.43953909406699
+        },
+        {
+          "mode_number": 14,
+          "sinr_db": 29.241200877620926,
+          "evm_rms_percent": 4.344501546154192,
+          "crosstalk_db": 0.8813481423862035,
+          "pointing_error_db": 1.977450979992872,
+          "atmospheric_fade_db": 2.9000000000000004,
+          "optimal_modulation": "64QAM",
+          "constellation_snr": 32.241200877620926
+        },
+        {
+          "mode_number": 15,
+          "sinr_db": 29.065535910704472,
+          "evm_rms_percent": 4.433260021388391,
+          "crosstalk_db": 0.9070131093026497,
+          "pointing_error_db": 2.0774509799928715,
+          "atmospheric_fade_db": 2.95,
+          "optimal_modulation": "64QAM",
+          "constellation_snr": 32.06553591070447
+        }
+      ],
+      "summary": {
+        "mean_sinr_db": 30.084362151960715,
+        "std_sinr_db": 0.8075140132423626,
+        "min_sinr_db": 29.046714958537937,
+        "max_sinr_db": 31.418533981196177,
+        "mean_evm_percent": 3.959523450147348,
+        "modes_above_20db": 15,
+        "usable_modes": 15
+      }
+    }
+  },
+  "Lab Standard": {
+    "thz_300_1modes": {
+      "frequency_ghz": 300.0,
+      "distance_m": 10.0,
+      "base_sinr_db": 25.0,
+      "num_modes": 1,
+      "mode_analysis": [
+        {
+          "mode_number": 1,
+          "sinr_db": 20.906138432151128,
+          "evm_rms_percent": 11.342089720095839,
+          "crosstalk_db": 0.42887995616014873,
+          "pointing_error_db": 0.6149816116887216,
+          "atmospheric_fade_db": 3.05,
+          "optimal_modulation": "16QAM",
+          "constellation_snr": 23.906138432151128
+        }
+      ],
+      "summary": {
+        "mean_sinr_db": 20.906138432151128,
+        "std_sinr_db": 0.0,
+        "min_sinr_db": 20.906138432151128,
+        "max_sinr_db": 20.906138432151128,
+        "mean_evm_percent": 11.342089720095839,
+        "modes_above_20db": 1,
+        "usable_modes": 1
+      }
+    },
+    "thz_300_5modes": {
+      "frequency_ghz": 300.0,
+      "distance_m": 10.0,
+      "base_sinr_db": 25.0,
+      "num_modes": 5,
+      "mode_analysis": [
+        {
+          "mode_number": 1,
+          "sinr_db": 20.945324591719,
+          "evm_rms_percent": 11.291035436276747,
+          "crosstalk_db": 0.3896937965922742,
+          "pointing_error_db": 0.6149816116887216,
+          "atmospheric_fade_db": 3.05,
+          "optimal_modulation": "16QAM",
+          "constellation_snr": 23.945324591719
+        },
+        {
+          "mode_number": 2,
+          "sinr_db": 20.530770747354463,
+          "evm_rms_percent": 11.842992728652577,
+          "crosstalk_db": 0.6542476409568155,
+          "pointing_error_db": 0.7149816116887215,
+          "atmospheric_fade_db": 3.1,
+          "optimal_modulation": "16QAM",
+          "constellation_snr": 23.530770747354463
+        },
+        {
+          "mode_number": 3,
+          "sinr_db": 20.538093574512917,
+          "evm_rms_percent": 11.833012445075122,
+          "crosstalk_db": 0.4969248137983614,
+          "pointing_error_db": 0.8149816116887216,
+          "atmospheric_fade_db": 3.15,
+          "optimal_modulation": "16QAM",
+          "constellation_snr": 23.538093574512917
+        },
+        {
+          "mode_number": 4,
+          "sinr_db": 20.208685178911225,
+          "evm_rms_percent": 12.290392175376457,
+          "crosstalk_db": 0.6763332094000563,
+          "pointing_error_db": 0.9149816116887216,
+          "atmospheric_fade_db": 3.2,
+          "optimal_modulation": "16QAM",
+          "constellation_snr": 23.208685178911225
+        },
+        {
+          "mode_number": 5,
+          "sinr_db": 20.092054305663527,
+          "evm_rms_percent": 12.456535920508182,
+          "crosstalk_db": 0.64296408264775,
+          "pointing_error_db": 1.0149816116887216,
+          "atmospheric_fade_db": 3.25,
+          "optimal_modulation": "16QAM",
+          "constellation_snr": 23.092054305663527
+        }
+      ],
+      "summary": {
+        "mean_sinr_db": 20.462985679632226,
+        "std_sinr_db": 0.29837750124760704,
+        "min_sinr_db": 20.092054305663527,
+        "max_sinr_db": 20.945324591719,
+        "mean_evm_percent": 11.942793741177816,
+        "modes_above_20db": 5,
+        "usable_modes": 5
+      }
+    },
+    "thz_300_10modes": {
+      "frequency_ghz": 300.0,
+      "distance_m": 10.0,
+      "base_sinr_db": 25.0,
+      "num_modes": 10,
+      "mode_analysis": [
+        {
+          "mode_number": 1,
+          "sinr_db": 20.865595532114995,
+          "evm_rms_percent": 11.39515464436389,
+          "crosstalk_db": 0.46942285619628205,
+          "pointing_error_db": 0.6149816116887216,
+          "atmospheric_fade_db": 3.05,
+          "optimal_modulation": "16QAM",
+          "constellation_snr": 23.865595532114995
+        },
+        {
+          "mode_number": 2,
+          "sinr_db": 20.302671347572076,
+          "evm_rms_percent": 12.158120198437773,
+          "crosstalk_db": 0.8823470407392024,
+          "pointing_error_db": 0.7149816116887215,
+          "atmospheric_fade_db": 3.1,
+          "optimal_modulation": "16QAM",
+          "constellation_snr": 23.302671347572076
+        },
+        {
+          "mode_number": 3,
+          "sinr_db": 20.35803252600612,
+          "evm_rms_percent": 12.080874526136283,
+          "crosstalk_db": 0.6769858623051586,
+          "pointing_error_db": 0.8149816116887216,
+          "atmospheric_fade_db": 3.15,
+          "optimal_modulation": "16QAM",
+          "constellation_snr": 23.35803252600612
+        },
+        {
+          "mode_number": 4,
+          "sinr_db": 19.785123965737764,
+          "evm_rms_percent": 12.904577842924473,
+          "crosstalk_db": 1.0998944225735177,
+          "pointing_error_db": 0.9149816116887216,
+          "atmospheric_fade_db": 3.2,
+          "optimal_modulation": "QPSK",
+          "constellation_snr": 22.785123965737764
+        },
+        {
+          "mode_number": 5,
+          "sinr_db": 20.125304461920898,
+          "evm_rms_percent": 12.40894263575444,
+          "crosstalk_db": 0.6097139263903797,
+          "pointing_error_db": 1.0149816116887216,
+          "atmospheric_fade_db": 3.25,
+          "optimal_modulation": "16QAM",
+          "constellation_snr": 23.125304461920898
+        },
+        {
+          "mode_number": 6,
+          "sinr_db": 19.623074131986556,
+          "evm_rms_percent": 13.147594268631702,
+          "crosstalk_db": 0.961944256324722,
+          "pointing_error_db": 1.1149816116887217,
+          "atmospheric_fade_db": 3.3,
+          "optimal_modulation": "QPSK",
+          "constellation_snr": 22.623074131986556
+        },
+        {
+          "mode_number": 7,
+          "sinr_db": 19.563286389099208,
+          "evm_rms_percent": 13.238405527389046,
+          "crosstalk_db": 0.8717319992120703,
+          "pointing_error_db": 1.2149816116887218,
+          "atmospheric_fade_db": 3.35,
+          "optimal_modulation": "QPSK",
+          "constellation_snr": 22.563286389099208
+        },
+        {
+          "mode_number": 8,
+          "sinr_db": 19.369676656548464,
+          "evm_rms_percent": 13.536804822364761,
+          "crosstalk_db": 0.915341731762817,
+          "pointing_error_db": 1.3149816116887216,
+          "atmospheric_fade_db": 3.4,
+          "optimal_modulation": "QPSK",
+          "constellation_snr": 22.369676656548464
+        },
+        {
+          "mode_number": 9,
+          "sinr_db": 19.053212878360313,
+          "evm_rms_percent": 14.03910286314641,
+          "crosstalk_db": 1.0818055099509667,
+          "pointing_error_db": 1.4149816116887215,
+          "atmospheric_fade_db": 3.45,
+          "optimal_modulation": "QPSK",
+          "constellation_snr": 22.053212878360313
+        },
+        {
+          "mode_number": 10,
+          "sinr_db": 19.069789311518786,
+          "evm_rms_percent": 14.012335734207731,
+          "crosstalk_db": 0.9152290767924924,
+          "pointing_error_db": 1.5149816116887216,
+          "atmospheric_fade_db": 3.5,
+          "optimal_modulation": "QPSK",
+          "constellation_snr": 22.069789311518786
+        }
+      ],
+      "summary": {
+        "mean_sinr_db": 19.811576720086514,
+        "std_sinr_db": 0.5628223198818563,
+        "min_sinr_db": 19.053212878360313,
+        "max_sinr_db": 20.865595532114995,
+        "mean_evm_percent": 12.892191306335652,
+        "modes_above_20db": 4,
+        "usable_modes": 10
+      }
+    },
+    "thz_300_15modes": {
+      "frequency_ghz": 300.0,
+      "distance_m": 10.0,
+      "base_sinr_db": 25.0,
+      "num_modes": 15,
+      "mode_analysis": [
+        {
+          "mode_number": 1,
+          "sinr_db": 20.905988217585282,
+          "evm_rms_percent": 11.342285872923762,
+          "crosstalk_db": 0.42903017072599264,
+          "pointing_error_db": 0.6149816116887216,
+          "atmospheric_fade_db": 3.05,
+          "optimal_modulation": "16QAM",
+          "constellation_snr": 23.905988217585282
+        },
+        {
+          "mode_number": 2,
+          "sinr_db": 20.623446586384937,
+          "evm_rms_percent": 11.717303272727895,
+          "crosstalk_db": 0.5615718019263429,
+          "pointing_error_db": 0.7149816116887215,
+          "atmospheric_fade_db": 3.1,
+          "optimal_modulation": "16QAM",
+          "constellation_snr": 23.623446586384937
+        },
+        {
+          "mode_number": 3,
+          "sinr_db": 20.481050241360432,
+          "evm_rms_percent": 11.910979794885202,
+          "crosstalk_db": 0.5539681469508476,
+          "pointing_error_db": 0.8149816116887216,
+          "atmospheric_fade_db": 3.15,
+          "optimal_modulation": "16QAM",
+          "constellation_snr": 23.481050241360432
+        },
+        {
+          "mode_number": 4,
+          "sinr_db": 20.19938081861826,
+          "evm_rms_percent": 12.30356474743834,
+          "crosstalk_db": 0.6856375696930233,
+          "pointing_error_db": 0.9149816116887216,
+          "atmospheric_fade_db": 3.2,
+          "optimal_modulation": "16QAM",
+          "constellation_snr": 23.19938081861826
+        },
+        {
+          "mode_number": 5,
+          "sinr_db": 19.968856659976804,
+          "evm_rms_percent": 12.6344740282482,
+          "crosstalk_db": 0.7661617283344724,
+          "pointing_error_db": 1.0149816116887216,
+          "atmospheric_fade_db": 3.25,
+          "optimal_modulation": "QPSK",
+          "constellation_snr": 22.968856659976804
+        },
+        {
+          "mode_number": 6,
+          "sinr_db": 19.484603576176443,
+          "evm_rms_percent": 13.358873002063888,
+          "crosstalk_db": 1.1004148121348323,
+          "pointing_error_db": 1.1149816116887217,
+          "atmospheric_fade_db": 3.3,
+          "optimal_modulation": "QPSK",
+          "constellation_snr": 22.484603576176443
+        },
+        {
+          "mode_number": 7,
+          "sinr_db": 19.472652879934675,
+          "evm_rms_percent": 13.377265788310957,
+          "crosstalk_db": 0.9623655083766018,
+          "pointing_error_db": 1.2149816116887218,
+          "atmospheric_fade_db": 3.35,
+          "optimal_modulation": "QPSK",
+          "constellation_snr": 22.472652879934675
+        },
+        {
+          "mode_number": 8,
+          "sinr_db": 19.34606438360672,
+          "evm_rms_percent": 13.573654194757292,
+          "crosstalk_db": 0.9389540047045576,
+          "pointing_error_db": 1.3149816116887216,
+          "atmospheric_fade_db": 3.4,
+          "optimal_modulation": "QPSK",
+          "constellation_snr": 22.34606438360672
+        },
+        {
+          "mode_number": 9,
+          "sinr_db": 18.952192119796607,
+          "evm_rms_percent": 14.203337078946568,
+          "crosstalk_db": 1.1828262685146724,
+          "pointing_error_db": 1.4149816116887215,
+          "atmospheric_fade_db": 3.45,
+          "optimal_modulation": "QPSK",
+          "constellation_snr": 21.952192119796607
+        },
+        {
+          "mode_number": 10,
+          "sinr_db": 19.07474386457531,
+          "evm_rms_percent": 14.00434518090335,
+          "crosstalk_db": 0.9102745237359676,
+          "pointing_error_db": 1.5149816116887216,
+          "atmospheric_fade_db": 3.5,
+          "optimal_modulation": "QPSK",
+          "constellation_snr": 22.07474386457531
+        },
+        {
+          "mode_number": 11,
+          "sinr_db": 18.77357232703899,
+          "evm_rms_percent": 14.498443606217714,
+          "crosstalk_db": 1.0614460612722865,
+          "pointing_error_db": 1.6149816116887217,
+          "atmospheric_fade_db": 3.55,
+          "optimal_modulation": "QPSK",
+          "constellation_snr": 21.77357232703899
+        },
+        {
+          "mode_number": 12,
+          "sinr_db": 18.62227742180165,
+          "evm_rms_percent": 14.753196568807155,
+          "crosstalk_db": 1.0627409665096297,
+          "pointing_error_db": 1.7149816116887218,
+          "atmospheric_fade_db": 3.6,
+          "optimal_modulation": "QPSK",
+          "constellation_snr": 21.62227742180165
+        },
+        {
+          "mode_number": 13,
+          "sinr_db": 18.70225038116143,
+          "evm_rms_percent": 14.61798395783656,
+          "crosstalk_db": 0.8327680071498477,
+          "pointing_error_db": 1.8149816116887216,
+          "atmospheric_fade_db": 3.65,
+          "optimal_modulation": "QPSK",
+          "constellation_snr": 21.70225038116143
+        },
+        {
+          "mode_number": 14,
+          "sinr_db": 18.48942106571984,
+          "evm_rms_percent": 14.980590987601403,
+          "crosstalk_db": 0.8955973225914431,
+          "pointing_error_db": 1.9149816116887217,
+          "atmospheric_fade_db": 3.7,
+          "optimal_modulation": "QPSK",
+          "constellation_snr": 21.48942106571984
+        },
+        {
+          "mode_number": 15,
+          "sinr_db": 18.325402221198143,
+          "evm_rms_percent": 15.266162782663653,
+          "crosstalk_db": 0.9096161671131342,
+          "pointing_error_db": 2.0149816116887216,
+          "atmospheric_fade_db": 3.75,
+          "optimal_modulation": "QPSK",
+          "constellation_snr": 21.325402221198143
+        }
+      ],
+      "summary": {
+        "mean_sinr_db": 19.4281268509957,
+        "std_sinr_db": 0.803074680652792,
+        "min_sinr_db": 18.325402221198143,
+        "max_sinr_db": 20.905988217585282,
+        "mean_evm_percent": 13.502830724288797,
+        "modes_above_20db": 4,
+        "usable_modes": 15
+      }
+    },
+    "thz_400_1modes": {
+      "frequency_ghz": 400.0,
+      "distance_m": 10.0,
+      "base_sinr_db": 25.0,
+      "num_modes": 1,
+      "mode_analysis": [
+        {
+          "mode_number": 1,
+          "sinr_db": 20.554863220939687,
+          "evm_rms_percent": 11.810188761032084,
+          "crosstalk_db": 0.7176857990674391,
+          "pointing_error_db": 0.6774509799928716,
+          "atmospheric_fade_db": 3.05,
+          "optimal_modulation": "16QAM",
+          "constellation_snr": 23.554863220939687
+        }
+      ],
+      "summary": {
+        "mean_sinr_db": 20.554863220939687,
+        "std_sinr_db": 0.0,
+        "min_sinr_db": 20.554863220939687,
+        "max_sinr_db": 20.554863220939687,
+        "mean_evm_percent": 11.810188761032084,
+        "modes_above_20db": 1,
+        "usable_modes": 1
+      }
+    },
+    "thz_400_5modes": {
+      "frequency_ghz": 400.0,
+      "distance_m": 10.0,
+      "base_sinr_db": 25.0,
+      "num_modes": 5,
+      "mode_analysis": [
+        {
+          "mode_number": 1,
+          "sinr_db": 20.822164526494156,
+          "evm_rms_percent": 11.452275148174198,
+          "crosstalk_db": 0.45038449351297116,
+          "pointing_error_db": 0.6774509799928716,
+          "atmospheric_fade_db": 3.05,
+          "optimal_modulation": "16QAM",
+          "constellation_snr": 23.822164526494156
+        },
+        {
+          "mode_number": 2,
+          "sinr_db": 20.635623817416313,
+          "evm_rms_percent": 11.700887644259879,
+          "crosstalk_db": 0.4869252025908154,
+          "pointing_error_db": 0.7774509799928717,
+          "atmospheric_fade_db": 3.1,
+          "optimal_modulation": "16QAM",
+          "constellation_snr": 23.635623817416313
+        },
+        {
+          "mode_number": 3,
+          "sinr_db": 20.060400425593553,
+          "evm_rms_percent": 12.502013937296368,
+          "crosstalk_db": 0.9121485944135777,
+          "pointing_error_db": 0.8774509799928717,
+          "atmospheric_fade_db": 3.15,
+          "optimal_modulation": "QPSK",
+          "constellation_snr": 23.060400425593553
+        },
+        {
+          "mode_number": 4,
+          "sinr_db": 20.162406362734917,
+          "evm_rms_percent": 12.35605070597819,
+          "crosstalk_db": 0.6601426572722133,
+          "pointing_error_db": 0.9774509799928717,
+          "atmospheric_fade_db": 3.2,
+          "optimal_modulation": "16QAM",
+          "constellation_snr": 23.162406362734917
+        },
+        {
+          "mode_number": 5,
+          "sinr_db": 20.0686163769762,
+          "evm_rms_percent": 12.490193918971334,
+          "crosstalk_db": 0.6039326430309302,
+          "pointing_error_db": 1.0774509799928715,
+          "atmospheric_fade_db": 3.25,
+          "optimal_modulation": "16QAM",
+          "constellation_snr": 23.0686163769762
+        }
+      ],
+      "summary": {
+        "mean_sinr_db": 20.349842301843026,
+        "std_sinr_db": 0.3170981584166373,
+        "min_sinr_db": 20.060400425593553,
+        "max_sinr_db": 20.822164526494156,
+        "mean_evm_percent": 12.100284270935994,
+        "modes_above_20db": 5,
+        "usable_modes": 5
+      }
+    },
+    "thz_400_10modes": {
+      "frequency_ghz": 400.0,
+      "distance_m": 10.0,
+      "base_sinr_db": 25.0,
+      "num_modes": 10,
+      "mode_analysis": [
+        {
+          "mode_number": 1,
+          "sinr_db": 20.766187709195982,
+          "evm_rms_percent": 11.526318460834768,
+          "crosstalk_db": 0.506361310811143,
+          "pointing_error_db": 0.6774509799928716,
+          "atmospheric_fade_db": 3.05,
+          "optimal_modulation": "16QAM",
+          "constellation_snr": 23.766187709195982
+        },
+        {
+          "mode_number": 2,
+          "sinr_db": 20.54474151706723,
+          "evm_rms_percent": 11.823959245708949,
+          "crosstalk_db": 0.5778075029398981,
+          "pointing_error_db": 0.7774509799928717,
+          "atmospheric_fade_db": 3.1,
+          "optimal_modulation": "16QAM",
+          "constellation_snr": 23.54474151706723
+        },
+        {
+          "mode_number": 3,
+          "sinr_db": 20.20561883474848,
+          "evm_rms_percent": 12.294731768305528,
+          "crosstalk_db": 0.7669301852586479,
+          "pointing_error_db": 0.8774509799928717,
+          "atmospheric_fade_db": 3.15,
+          "optimal_modulation": "16QAM",
+          "constellation_snr": 23.20561883474848
+        },
+        {
+          "mode_number": 4,
+          "sinr_db": 20.092386610721782,
+          "evm_rms_percent": 12.456059367053545,
+          "crosstalk_db": 0.7301624092853494,
+          "pointing_error_db": 0.9774509799928717,
+          "atmospheric_fade_db": 3.2,
+          "optimal_modulation": "16QAM",
+          "constellation_snr": 23.092386610721782
+        },
+        {
+          "mode_number": 5,
+          "sinr_db": 19.52636889927491,
+          "evm_rms_percent": 13.29479224336867,
+          "crosstalk_db": 1.1461801207322184,
+          "pointing_error_db": 1.0774509799928715,
+          "atmospheric_fade_db": 3.25,
+          "optimal_modulation": "QPSK",
+          "constellation_snr": 22.52636889927491
+        },
+        {
+          "mode_number": 6,
+          "sinr_db": 19.86000905145802,
+          "evm_rms_percent": 12.793799709308072,
+          "crosstalk_db": 0.662539968549105,
+          "pointing_error_db": 1.1774509799928716,
+          "atmospheric_fade_db": 3.3,
+          "optimal_modulation": "QPSK",
+          "constellation_snr": 22.86000905145802
+        },
+        {
+          "mode_number": 7,
+          "sinr_db": 19.603446341374834,
+          "evm_rms_percent": 13.177337913692838,
+          "crosstalk_db": 0.7691026786322954,
+          "pointing_error_db": 1.2774509799928717,
+          "atmospheric_fade_db": 3.35,
+          "optimal_modulation": "QPSK",
+          "constellation_snr": 22.603446341374834
+        },
+        {
+          "mode_number": 8,
+          "sinr_db": 19.46167207097613,
+          "evm_rms_percent": 13.39418818744028,
+          "crosstalk_db": 0.760876949030996,
+          "pointing_error_db": 1.3774509799928718,
+          "atmospheric_fade_db": 3.4,
+          "optimal_modulation": "QPSK",
+          "constellation_snr": 22.46167207097613
+        },
+        {
+          "mode_number": 9,
+          "sinr_db": 19.071501803358434,
+          "evm_rms_percent": 14.009573363713423,
+          "crosstalk_db": 1.001047216648698,
+          "pointing_error_db": 1.4774509799928717,
+          "atmospheric_fade_db": 3.45,
+          "optimal_modulation": "QPSK",
+          "constellation_snr": 22.071501803358434
+        },
+        {
+          "mode_number": 10,
+          "sinr_db": 19.026813693425456,
+          "evm_rms_percent": 14.08183707653598,
+          "crosstalk_db": 0.8957353265816733,
+          "pointing_error_db": 1.5774509799928715,
+          "atmospheric_fade_db": 3.5,
+          "optimal_modulation": "QPSK",
+          "constellation_snr": 22.026813693425456
+        }
+      ],
+      "summary": {
+        "mean_sinr_db": 19.81587465316013,
+        "std_sinr_db": 0.5563951851651265,
+        "min_sinr_db": 19.026813693425456,
+        "max_sinr_db": 20.766187709195982,
+        "mean_evm_percent": 12.885259733596206,
+        "modes_above_20db": 4,
+        "usable_modes": 10
+      }
+    },
+    "thz_400_15modes": {
+      "frequency_ghz": 400.0,
+      "distance_m": 10.0,
+      "base_sinr_db": 25.0,
+      "num_modes": 15,
+      "mode_analysis": [
+        {
+          "mode_number": 1,
+          "sinr_db": 20.885957412513548,
+          "evm_rms_percent": 11.368472861164316,
+          "crosstalk_db": 0.386591607493577,
+          "pointing_error_db": 0.6774509799928716,
+          "atmospheric_fade_db": 3.05,
+          "optimal_modulation": "16QAM",
+          "constellation_snr": 23.885957412513548
+        },
+        {
+          "mode_number": 2,
+          "sinr_db": 20.46162212544726,
+          "evm_rms_percent": 11.937651431180658,
+          "crosstalk_db": 0.6609268945598663,
+          "pointing_error_db": 0.7774509799928717,
+          "atmospheric_fade_db": 3.1,
+          "optimal_modulation": "16QAM",
+          "constellation_snr": 23.46162212544726
+        },
+        {
+          "mode_number": 3,
+          "sinr_db": 19.796105987196285,
+          "evm_rms_percent": 12.888272225020527,
+          "crosstalk_db": 1.1764430328108442,
+          "pointing_error_db": 0.8774509799928717,
+          "atmospheric_fade_db": 3.15,
+          "optimal_modulation": "QPSK",
+          "constellation_snr": 22.796105987196285
+        },
+        {
+          "mode_number": 4,
+          "sinr_db": 19.817676978281934,
+          "evm_rms_percent": 12.856304529516933,
+          "crosstalk_db": 1.0048720417251953,
+          "pointing_error_db": 0.9774509799928717,
+          "atmospheric_fade_db": 3.2,
+          "optimal_modulation": "QPSK",
+          "constellation_snr": 22.817676978281934
+        },
+        {
+          "mode_number": 5,
+          "sinr_db": 19.454769606796503,
+          "evm_rms_percent": 13.40483645178593,
+          "crosstalk_db": 1.2177794132106259,
+          "pointing_error_db": 1.0774509799928715,
+          "atmospheric_fade_db": 3.25,
+          "optimal_modulation": "QPSK",
+          "constellation_snr": 22.454769606796503
+        },
+        {
+          "mode_number": 6,
+          "sinr_db": 19.597769237912335,
+          "evm_rms_percent": 13.185953446100578,
+          "crosstalk_db": 0.9247797820947932,
+          "pointing_error_db": 1.1774509799928716,
+          "atmospheric_fade_db": 3.3,
+          "optimal_modulation": "QPSK",
+          "constellation_snr": 22.597769237912335
+        },
+        {
+          "mode_number": 7,
+          "sinr_db": 19.480593018354174,
+          "evm_rms_percent": 13.365042652585155,
+          "crosstalk_db": 0.891956001652953,
+          "pointing_error_db": 1.2774509799928717,
+          "atmospheric_fade_db": 3.35,
+          "optimal_modulation": "QPSK",
+          "constellation_snr": 22.480593018354174
+        },
+        {
+          "mode_number": 8,
+          "sinr_db": 19.354892371452053,
+          "evm_rms_percent": 13.55986548851495,
+          "crosstalk_db": 0.867656648555077,
+          "pointing_error_db": 1.3774509799928718,
+          "atmospheric_fade_db": 3.4,
+          "optimal_modulation": "QPSK",
+          "constellation_snr": 22.354892371452053
+        },
+        {
+          "mode_number": 9,
+          "sinr_db": 18.69286316986781,
+          "evm_rms_percent": 14.633790776415816,
+          "crosstalk_db": 1.3796858501393219,
+          "pointing_error_db": 1.4774509799928717,
+          "atmospheric_fade_db": 3.45,
+          "optimal_modulation": "QPSK",
+          "constellation_snr": 21.69286316986781
+        },
+        {
+          "mode_number": 10,
+          "sinr_db": 18.84637137878106,
+          "evm_rms_percent": 14.377435603194881,
+          "crosstalk_db": 1.076177641226068,
+          "pointing_error_db": 1.5774509799928715,
+          "atmospheric_fade_db": 3.5,
+          "optimal_modulation": "QPSK",
+          "constellation_snr": 21.84637137878106
+        },
+        {
+          "mode_number": 11,
+          "sinr_db": 18.430122415771493,
+          "evm_rms_percent": 15.083213526577662,
+          "crosstalk_db": 1.3424266042356328,
+          "pointing_error_db": 1.6774509799928716,
+          "atmospheric_fade_db": 3.55,
+          "optimal_modulation": "QPSK",
+          "constellation_snr": 21.430122415771493
+        },
+        {
+          "mode_number": 12,
+          "sinr_db": 17.991837330528657,
+          "evm_rms_percent": 15.863833150108047,
+          "crosstalk_db": 1.6307116894784721,
+          "pointing_error_db": 1.7774509799928717,
+          "atmospheric_fade_db": 3.6,
+          "optimal_modulation": "QPSK",
+          "constellation_snr": 20.991837330528657
+        },
+        {
+          "mode_number": 13,
+          "sinr_db": 18.443043465228804,
+          "evm_rms_percent": 15.060792557750034,
+          "crosstalk_db": 1.0295055547783267,
+          "pointing_error_db": 1.8774509799928718,
+          "atmospheric_fade_db": 3.65,
+          "optimal_modulation": "QPSK",
+          "constellation_snr": 21.443043465228804
+        },
+        {
+          "mode_number": 14,
+          "sinr_db": 18.20205318068626,
+          "evm_rms_percent": 15.484505511077405,
+          "crosstalk_db": 1.1204958393208713,
+          "pointing_error_db": 1.977450979992872,
+          "atmospheric_fade_db": 3.7,
+          "optimal_modulation": "QPSK",
+          "constellation_snr": 21.20205318068626
+        },
+        {
+          "mode_number": 15,
+          "sinr_db": 18.220315076546015,
+          "evm_rms_percent": 15.451983871797765,
+          "crosstalk_db": 0.9522339434611128,
+          "pointing_error_db": 2.0774509799928715,
+          "atmospheric_fade_db": 3.75,
+          "optimal_modulation": "QPSK",
+          "constellation_snr": 21.220315076546015
+        }
+      ],
+      "summary": {
+        "mean_sinr_db": 19.178399517024282,
+        "std_sinr_db": 0.8347908469536477,
+        "min_sinr_db": 17.991837330528657,
+        "max_sinr_db": 20.885957412513548,
+        "mean_evm_percent": 13.901463605519375,
+        "modes_above_20db": 2,
+        "usable_modes": 15
+      }
+    }
+  },
+  "Indoor": {
+    "thz_300_1modes": {
+      "frequency_ghz": 300.0,
+      "distance_m": 50.0,
+      "base_sinr_db": 15.0,
+      "num_modes": 1,
+      "mode_analysis": [
+        {
+          "mode_number": 1,
+          "sinr_db": 7.112369971373755,
+          "evm_rms_percent": 55.51131321495056,
+          "crosstalk_db": 0.2226484169375248,
+          "pointing_error_db": 0.6149816116887216,
+          "atmospheric_fade_db": 7.05,
+          "optimal_modulation": "BPSK",
+          "constellation_snr": 10.112369971373756
+        }
+      ],
+      "summary": {
+        "mean_sinr_db": 7.112369971373755,
+        "std_sinr_db": 0.0,
+        "min_sinr_db": 7.112369971373755,
+        "max_sinr_db": 7.112369971373755,
+        "mean_evm_percent": 55.51131321495056,
+        "modes_above_20db": 0,
+        "usable_modes": 0
+      }
+    },
+    "thz_300_5modes": {
+      "frequency_ghz": 300.0,
+      "distance_m": 50.0,
+      "base_sinr_db": 15.0,
+      "num_modes": 5,
+      "mode_analysis": [
+        {
+          "mode_number": 1,
+          "sinr_db": 6.911775202087301,
+          "evm_rms_percent": 56.80822763494628,
+          "crosstalk_db": 0.4232431862239783,
+          "pointing_error_db": 0.6149816116887216,
+          "atmospheric_fade_db": 7.05,
+          "optimal_modulation": "BPSK",
+          "constellation_snr": 9.911775202087302
+        },
+        {
+          "mode_number": 2,
+          "sinr_db": 6.657947049466296,
+          "evm_rms_percent": 58.492831834428976,
+          "crosstalk_db": 0.5270713388449835,
+          "pointing_error_db": 0.7149816116887215,
+          "atmospheric_fade_db": 7.1,
+          "optimal_modulation": "BPSK",
+          "constellation_snr": 9.657947049466296
+        },
+        {
+          "mode_number": 3,
+          "sinr_db": 6.105357165819788,
+          "evm_rms_percent": 62.33502553363718,
+          "crosstalk_db": 0.9296612224914893,
+          "pointing_error_db": 0.8149816116887216,
+          "atmospheric_fade_db": 7.15,
+          "optimal_modulation": "BPSK",
+          "constellation_snr": 9.105357165819788
+        },
+        {
+          "mode_number": 4,
+          "sinr_db": 6.1975981178745245,
+          "evm_rms_percent": 61.67655305419981,
+          "crosstalk_db": 0.6874202704367528,
+          "pointing_error_db": 0.9149816116887216,
+          "atmospheric_fade_db": 7.2,
+          "optimal_modulation": "BPSK",
+          "constellation_snr": 9.197598117874524
+        },
+        {
+          "mode_number": 5,
+          "sinr_db": 5.992286230183673,
+          "evm_rms_percent": 63.15179343256355,
+          "crosstalk_db": 0.7427321581276058,
+          "pointing_error_db": 1.0149816116887216,
+          "atmospheric_fade_db": 7.25,
+          "optimal_modulation": "BPSK",
+          "constellation_snr": 8.992286230183673
+        }
+      ],
+      "summary": {
+        "mean_sinr_db": 6.372992753086316,
+        "std_sinr_db": 0.3517996647497283,
+        "min_sinr_db": 5.992286230183673,
+        "max_sinr_db": 6.911775202087301,
+        "mean_evm_percent": 60.49288629795516,
+        "modes_above_20db": 0,
+        "usable_modes": 0
+      }
+    },
+    "thz_300_10modes": {
+      "frequency_ghz": 300.0,
+      "distance_m": 50.0,
+      "base_sinr_db": 15.0,
+      "num_modes": 10,
+      "mode_analysis": [
+        {
+          "mode_number": 1,
+          "sinr_db": 6.815594508809505,
+          "evm_rms_percent": 57.4407728462509,
+          "crosstalk_db": 0.5194238795017745,
+          "pointing_error_db": 0.6149816116887216,
+          "atmospheric_fade_db": 7.05,
+          "optimal_modulation": "BPSK",
+          "constellation_snr": 9.815594508809504
+        },
+        {
+          "mode_number": 2,
+          "sinr_db": 6.738627426737851,
+          "evm_rms_percent": 57.95202669177724,
+          "crosstalk_db": 0.4463909615734279,
+          "pointing_error_db": 0.7149816116887215,
+          "atmospheric_fade_db": 7.1,
+          "optimal_modulation": "BPSK",
+          "constellation_snr": 9.738627426737851
+        },
+        {
+          "mode_number": 3,
+          "sinr_db": 6.285047139790947,
+          "evm_rms_percent": 61.05871258413446,
+          "crosstalk_db": 0.74997124852033,
+          "pointing_error_db": 0.8149816116887216,
+          "atmospheric_fade_db": 7.15,
+          "optimal_modulation": "BPSK",
+          "constellation_snr": 9.285047139790947
+        },
+        {
+          "mode_number": 4,
+          "sinr_db": 6.095610443102362,
+          "evm_rms_percent": 62.40501297822957,
+          "crosstalk_db": 0.7894079452089158,
+          "pointing_error_db": 0.9149816116887216,
+          "atmospheric_fade_db": 7.2,
+          "optimal_modulation": "BPSK",
+          "constellation_snr": 9.095610443102363
+        },
+        {
+          "mode_number": 5,
+          "sinr_db": 6.0342727080748215,
+          "evm_rms_percent": 62.847262377577145,
+          "crosstalk_db": 0.7007456802364569,
+          "pointing_error_db": 1.0149816116887216,
+          "atmospheric_fade_db": 7.25,
+          "optimal_modulation": "BPSK",
+          "constellation_snr": 9.034272708074822
+        },
+        {
+          "mode_number": 6,
+          "sinr_db": 5.774110094701547,
+          "evm_rms_percent": 64.75815922379358,
+          "crosstalk_db": 0.810908293609731,
+          "pointing_error_db": 1.1149816116887217,
+          "atmospheric_fade_db": 7.3,
+          "optimal_modulation": "BPSK",
+          "constellation_snr": 8.774110094701548
+        },
+        {
+          "mode_number": 7,
+          "sinr_db": 5.577118855414303,
+          "evm_rms_percent": 66.24362000189667,
+          "crosstalk_db": 0.8578995328969745,
+          "pointing_error_db": 1.2149816116887218,
+          "atmospheric_fade_db": 7.35,
+          "optimal_modulation": "BPSK",
+          "constellation_snr": 8.577118855414303
+        },
+        {
+          "mode_number": 8,
+          "sinr_db": 5.090140837458707,
+          "evm_rms_percent": 70.06368222893929,
+          "crosstalk_db": 1.194877550852571,
+          "pointing_error_db": 1.3149816116887216,
+          "atmospheric_fade_db": 7.4,
+          "optimal_modulation": "BPSK",
+          "constellation_snr": 8.090140837458707
+        },
+        {
+          "mode_number": 9,
+          "sinr_db": 4.724805075993781,
+          "evm_rms_percent": 73.07347256766819,
+          "crosstalk_db": 1.4102133123174962,
+          "pointing_error_db": 1.4149816116887215,
+          "atmospheric_fade_db": 7.45,
+          "optimal_modulation": "BPSK",
+          "constellation_snr": 7.724805075993781
+        },
+        {
+          "mode_number": 10,
+          "sinr_db": 5.262594197662871,
+          "evm_rms_percent": 68.68632652687073,
+          "crosstalk_db": 0.7224241906484079,
+          "pointing_error_db": 1.5149816116887216,
+          "atmospheric_fade_db": 7.5,
+          "optimal_modulation": "BPSK",
+          "constellation_snr": 8.262594197662871
+        }
+      ],
+      "summary": {
+        "mean_sinr_db": 5.83979212877467,
+        "std_sinr_db": 0.6537013786515963,
+        "min_sinr_db": 4.724805075993781,
+        "max_sinr_db": 6.815594508809505,
+        "mean_evm_percent": 64.45290480271377,
+        "modes_above_20db": 0,
+        "usable_modes": 0
+      }
+    },
+    "thz_300_15modes": {
+      "frequency_ghz": 300.0,
+      "distance_m": 50.0,
+      "base_sinr_db": 15.0,
+      "num_modes": 15,
+      "mode_analysis": [
+        {
+          "mode_number": 1,
+          "sinr_db": 6.9220352640362455,
+          "evm_rms_percent": 56.74116348261344,
+          "crosstalk_db": 0.41298312427503403,
+          "pointing_error_db": 0.6149816116887216,
+          "atmospheric_fade_db": 7.05,
+          "optimal_modulation": "BPSK",
+          "constellation_snr": 9.922035264036246
+        },
+        {
+          "mode_number": 2,
+          "sinr_db": 6.408833519790562,
+          "evm_rms_percent": 60.1947096557153,
+          "crosstalk_db": 0.7761848685207173,
+          "pointing_error_db": 0.7149816116887215,
+          "atmospheric_fade_db": 7.1,
+          "optimal_modulation": "BPSK",
+          "constellation_snr": 9.408833519790562
+        },
+        {
+          "mode_number": 3,
+          "sinr_db": 6.489292812482887,
+          "evm_rms_percent": 59.639687528139554,
+          "crosstalk_db": 0.5457255758283908,
+          "pointing_error_db": 0.8149816116887216,
+          "atmospheric_fade_db": 7.15,
+          "optimal_modulation": "BPSK",
+          "constellation_snr": 9.489292812482887
+        },
+        {
+          "mode_number": 4,
+          "sinr_db": 6.22023401018427,
+          "evm_rms_percent": 61.51602991957959,
+          "crosstalk_db": 0.6647843781270074,
+          "pointing_error_db": 0.9149816116887216,
+          "atmospheric_fade_db": 7.2,
+          "optimal_modulation": "BPSK",
+          "constellation_snr": 9.22023401018427
+        },
+        {
+          "mode_number": 5,
+          "sinr_db": 5.972253987381709,
+          "evm_rms_percent": 63.297608317439376,
+          "crosstalk_db": 0.7627644009295687,
+          "pointing_error_db": 1.0149816116887216,
+          "atmospheric_fade_db": 7.25,
+          "optimal_modulation": "BPSK",
+          "constellation_snr": 8.972253987381709
+        },
+        {
+          "mode_number": 6,
+          "sinr_db": 5.443816460333784,
+          "evm_rms_percent": 67.26810245590042,
+          "crosstalk_db": 1.1412019279774952,
+          "pointing_error_db": 1.1149816116887217,
+          "atmospheric_fade_db": 7.3,
+          "optimal_modulation": "BPSK",
+          "constellation_snr": 8.443816460333785
+        },
+        {
+          "mode_number": 7,
+          "sinr_db": 5.695841782323081,
+          "evm_rms_percent": 65.34433023266982,
+          "crosstalk_db": 0.7391766059881991,
+          "pointing_error_db": 1.2149816116887218,
+          "atmospheric_fade_db": 7.35,
+          "optimal_modulation": "BPSK",
+          "constellation_snr": 8.69584178232308
+        },
+        {
+          "mode_number": 8,
+          "sinr_db": 5.280533586472853,
+          "evm_rms_percent": 68.54461172358045,
+          "crosstalk_db": 1.0044848018384247,
+          "pointing_error_db": 1.3149816116887216,
+          "atmospheric_fade_db": 7.4,
+          "optimal_modulation": "BPSK",
+          "constellation_snr": 8.280533586472853
+        },
+        {
+          "mode_number": 9,
+          "sinr_db": 5.013427698618753,
+          "evm_rms_percent": 70.6852201690161,
+          "crosstalk_db": 1.1215906896925256,
+          "pointing_error_db": 1.4149816116887215,
+          "atmospheric_fade_db": 7.45,
+          "optimal_modulation": "BPSK",
+          "constellation_snr": 8.013427698618752
+        },
+        {
+          "mode_number": 10,
+          "sinr_db": 5.195910516727896,
+          "evm_rms_percent": 69.21567748875893,
+          "crosstalk_db": 0.7891078715833829,
+          "pointing_error_db": 1.5149816116887216,
+          "atmospheric_fade_db": 7.5,
+          "optimal_modulation": "BPSK",
+          "constellation_snr": 8.195910516727896
+        },
+        {
+          "mode_number": 11,
+          "sinr_db": 4.511657856967029,
+          "evm_rms_percent": 74.88884061585027,
+          "crosstalk_db": 1.3233605313442505,
+          "pointing_error_db": 1.6149816116887217,
+          "atmospheric_fade_db": 7.55,
+          "optimal_modulation": "BPSK",
+          "constellation_snr": 7.511657856967029
+        },
+        {
+          "mode_number": 12,
+          "sinr_db": 4.812988933483149,
+          "evm_rms_percent": 72.33534436292658,
+          "crosstalk_db": 0.8720294548281294,
+          "pointing_error_db": 1.7149816116887218,
+          "atmospheric_fade_db": 7.6,
+          "optimal_modulation": "BPSK",
+          "constellation_snr": 7.812988933483149
+        },
+        {
+          "mode_number": 13,
+          "sinr_db": 4.555901519001269,
+          "evm_rms_percent": 74.50834623774274,
+          "crosstalk_db": 0.9791168693100091,
+          "pointing_error_db": 1.8149816116887216,
+          "atmospheric_fade_db": 7.65,
+          "optimal_modulation": "BPSK",
+          "constellation_snr": 7.555901519001269
+        },
+        {
+          "mode_number": 14,
+          "sinr_db": 4.344846917589348,
+          "evm_rms_percent": 76.3409665301625,
+          "crosstalk_db": 1.0401714707219294,
+          "pointing_error_db": 1.9149816116887217,
+          "atmospheric_fade_db": 7.7,
+          "optimal_modulation": "BPSK",
+          "constellation_snr": 7.344846917589348
+        },
+        {
+          "mode_number": 15,
+          "sinr_db": 3.834044637470324,
+          "evm_rms_percent": 80.96508350381524,
+          "crosstalk_db": 1.4009737508409539,
+          "pointing_error_db": 2.0149816116887216,
+          "atmospheric_fade_db": 7.75,
+          "optimal_modulation": "BPSK",
+          "constellation_snr": 6.834044637470324
+        }
+      ],
+      "summary": {
+        "mean_sinr_db": 5.380107966857545,
+        "std_sinr_db": 0.8649402161665611,
+        "min_sinr_db": 3.834044637470324,
+        "max_sinr_db": 6.9220352640362455,
+        "mean_evm_percent": 68.09904814826069,
+        "modes_above_20db": 0,
+        "usable_modes": 0
+      }
+    },
+    "thz_400_1modes": {
+      "frequency_ghz": 400.0,
+      "distance_m": 50.0,
+      "base_sinr_db": 15.0,
+      "num_modes": 1,
+      "mode_analysis": [
+        {
+          "mode_number": 1,
+          "sinr_db": 6.79192652977098,
+          "evm_rms_percent": 57.59750531609308,
+          "crosstalk_db": 0.48062249023614834,
+          "pointing_error_db": 0.6774509799928716,
+          "atmospheric_fade_db": 7.05,
+          "optimal_modulation": "BPSK",
+          "constellation_snr": 9.79192652977098
+        }
+      ],
+      "summary": {
+        "mean_sinr_db": 6.79192652977098,
+        "std_sinr_db": 0.0,
+        "min_sinr_db": 6.79192652977098,
+        "max_sinr_db": 6.79192652977098,
+        "mean_evm_percent": 57.59750531609308,
+        "modes_above_20db": 0,
+        "usable_modes": 0
+      }
+    },
+    "thz_400_5modes": {
+      "frequency_ghz": 400.0,
+      "distance_m": 50.0,
+      "base_sinr_db": 15.0,
+      "num_modes": 5,
+      "mode_analysis": [
+        {
+          "mode_number": 1,
+          "sinr_db": 6.936005665422054,
+          "evm_rms_percent": 56.649974241665944,
+          "crosstalk_db": 0.33654335458507556,
+          "pointing_error_db": 0.6774509799928716,
+          "atmospheric_fade_db": 7.05,
+          "optimal_modulation": "BPSK",
+          "constellation_snr": 9.936005665422055
+        },
+        {
+          "mode_number": 2,
+          "sinr_db": 6.654516340758002,
+          "evm_rms_percent": 58.51593960016258,
+          "crosstalk_db": 0.4680326792491275,
+          "pointing_error_db": 0.7774509799928717,
+          "atmospheric_fade_db": 7.1,
+          "optimal_modulation": "BPSK",
+          "constellation_snr": 9.654516340758002
+        },
+        {
+          "mode_number": 3,
+          "sinr_db": 6.038000709118485,
+          "evm_rms_percent": 62.82029399588889,
+          "crosstalk_db": 0.9345483108886421,
+          "pointing_error_db": 0.8774509799928717,
+          "atmospheric_fade_db": 7.15,
+          "optimal_modulation": "BPSK",
+          "constellation_snr": 9.038000709118485
+        },
+        {
+          "mode_number": 4,
+          "sinr_db": 5.769923989926547,
+          "evm_rms_percent": 64.78937649513614,
+          "crosstalk_db": 1.052625030080581,
+          "pointing_error_db": 0.9774509799928717,
+          "atmospheric_fade_db": 7.2,
+          "optimal_modulation": "BPSK",
+          "constellation_snr": 8.769923989926546
+        },
+        {
+          "mode_number": 5,
+          "sinr_db": 5.89331686041972,
+          "evm_rms_percent": 63.87547709750547,
+          "crosstalk_db": 0.7792321595874079,
+          "pointing_error_db": 1.0774509799928715,
+          "atmospheric_fade_db": 7.25,
+          "optimal_modulation": "BPSK",
+          "constellation_snr": 8.89331686041972
+        }
+      ],
+      "summary": {
+        "mean_sinr_db": 6.258352713128962,
+        "std_sinr_db": 0.4553082342087572,
+        "min_sinr_db": 5.769923989926547,
+        "max_sinr_db": 6.936005665422054,
+        "mean_evm_percent": 61.33021228607181,
+        "modes_above_20db": 0,
+        "usable_modes": 0
+      }
+    },
+    "thz_400_10modes": {
+      "frequency_ghz": 400.0,
+      "distance_m": 50.0,
+      "base_sinr_db": 15.0,
+      "num_modes": 10,
+      "mode_analysis": [
+        {
+          "mode_number": 1,
+          "sinr_db": 6.744386719973444,
+          "evm_rms_percent": 57.913613575701184,
+          "crosstalk_db": 0.5281623000336848,
+          "pointing_error_db": 0.6774509799928716,
+          "atmospheric_fade_db": 7.05,
+          "optimal_modulation": "BPSK",
+          "constellation_snr": 9.744386719973445
+        },
+        {
+          "mode_number": 2,
+          "sinr_db": 6.593565773272855,
+          "evm_rms_percent": 58.928001333192675,
+          "crosstalk_db": 0.5289832467342716,
+          "pointing_error_db": 0.7774509799928717,
+          "atmospheric_fade_db": 7.1,
+          "optimal_modulation": "BPSK",
+          "constellation_snr": 9.593565773272855
+        },
+        {
+          "mode_number": 3,
+          "sinr_db": 6.140336214421813,
+          "evm_rms_percent": 62.08450020247225,
+          "crosstalk_db": 0.8322128055853149,
+          "pointing_error_db": 0.8774509799928717,
+          "atmospheric_fade_db": 7.15,
+          "optimal_modulation": "BPSK",
+          "constellation_snr": 9.140336214421813
+        },
+        {
+          "mode_number": 4,
+          "sinr_db": 6.094694122557404,
+          "evm_rms_percent": 62.411596761153135,
+          "crosstalk_db": 0.727854897449725,
+          "pointing_error_db": 0.9774509799928717,
+          "atmospheric_fade_db": 7.2,
+          "optimal_modulation": "BPSK",
+          "constellation_snr": 9.094694122557403
+        },
+        {
+          "mode_number": 5,
+          "sinr_db": 6.047720932070227,
+          "evm_rms_percent": 62.75003225582719,
+          "crosstalk_db": 0.624828087936902,
+          "pointing_error_db": 1.0774509799928715,
+          "atmospheric_fade_db": 7.25,
+          "optimal_modulation": "BPSK",
+          "constellation_snr": 9.047720932070227
+        },
+        {
+          "mode_number": 6,
+          "sinr_db": 5.73929816228988,
+          "evm_rms_percent": 65.01822242788262,
+          "crosstalk_db": 0.7832508577172489,
+          "pointing_error_db": 1.1774509799928716,
+          "atmospheric_fade_db": 7.3,
+          "optimal_modulation": "BPSK",
+          "constellation_snr": 8.73929816228988
+        },
+        {
+          "mode_number": 7,
+          "sinr_db": 5.4307072314535265,
+          "evm_rms_percent": 67.36970387830408,
+          "crosstalk_db": 0.9418417885536019,
+          "pointing_error_db": 1.2774509799928717,
+          "atmospheric_fade_db": 7.35,
+          "optimal_modulation": "BPSK",
+          "constellation_snr": 8.430707231453527
+        },
+        {
+          "mode_number": 8,
+          "sinr_db": 5.4785091974524,
+          "evm_rms_percent": 66.99995949196611,
+          "crosstalk_db": 0.7440398225547281,
+          "pointing_error_db": 1.3774509799928718,
+          "atmospheric_fade_db": 7.4,
+          "optimal_modulation": "BPSK",
+          "constellation_snr": 8.4785091974524
+        },
+        {
+          "mode_number": 9,
+          "sinr_db": 4.982108830655645,
+          "evm_rms_percent": 70.94055118359061,
+          "crosstalk_db": 1.0904401893514832,
+          "pointing_error_db": 1.4774509799928717,
+          "atmospheric_fade_db": 7.45,
+          "optimal_modulation": "BPSK",
+          "constellation_snr": 7.982108830655645
+        },
+        {
+          "mode_number": 10,
+          "sinr_db": 5.078885773883892,
+          "evm_rms_percent": 70.15452868930043,
+          "crosstalk_db": 0.8436632461232367,
+          "pointing_error_db": 1.5774509799928715,
+          "atmospheric_fade_db": 7.5,
+          "optimal_modulation": "BPSK",
+          "constellation_snr": 8.078885773883892
+        }
+      ],
+      "summary": {
+        "mean_sinr_db": 5.833021295803109,
+        "std_sinr_db": 0.5663142033035271,
+        "min_sinr_db": 4.982108830655645,
+        "max_sinr_db": 6.744386719973444,
+        "mean_evm_percent": 64.45707097993902,
+        "modes_above_20db": 0,
+        "usable_modes": 0
+      }
+    },
+    "thz_400_15modes": {
+      "frequency_ghz": 400.0,
+      "distance_m": 50.0,
+      "base_sinr_db": 15.0,
+      "num_modes": 15,
+      "mode_analysis": [
+        {
+          "mode_number": 1,
+          "sinr_db": 6.184922958911339,
+          "evm_rms_percent": 61.76662221562144,
+          "crosstalk_db": 1.0876260610957893,
+          "pointing_error_db": 0.6774509799928716,
+          "atmospheric_fade_db": 7.05,
+          "optimal_modulation": "BPSK",
+          "constellation_snr": 9.18492295891134
+        },
+        {
+          "mode_number": 2,
+          "sinr_db": 6.50943925105789,
+          "evm_rms_percent": 59.50151688699435,
+          "crosstalk_db": 0.6131097689492379,
+          "pointing_error_db": 0.7774509799928717,
+          "atmospheric_fade_db": 7.1,
+          "optimal_modulation": "BPSK",
+          "constellation_snr": 9.50943925105789
+        },
+        {
+          "mode_number": 3,
+          "sinr_db": 6.080948629039282,
+          "evm_rms_percent": 62.51044182970225,
+          "crosstalk_db": 0.8916003909678459,
+          "pointing_error_db": 0.8774509799928717,
+          "atmospheric_fade_db": 7.15,
+          "optimal_modulation": "BPSK",
+          "constellation_snr": 9.080948629039282
+        },
+        {
+          "mode_number": 4,
+          "sinr_db": 6.030771830650941,
+          "evm_rms_percent": 62.872598286408234,
+          "crosstalk_db": 0.791777189356187,
+          "pointing_error_db": 0.9774509799928717,
+          "atmospheric_fade_db": 7.2,
+          "optimal_modulation": "BPSK",
+          "constellation_snr": 9.030771830650941
+        },
+        {
+          "mode_number": 5,
+          "sinr_db": 5.920531378799934,
+          "evm_rms_percent": 63.67565647038369,
+          "crosstalk_db": 0.7520176412071937,
+          "pointing_error_db": 1.0774509799928715,
+          "atmospheric_fade_db": 7.25,
+          "optimal_modulation": "BPSK",
+          "constellation_snr": 8.920531378799934
+        },
+        {
+          "mode_number": 6,
+          "sinr_db": 5.685984493101402,
+          "evm_rms_percent": 65.41852914836777,
+          "crosstalk_db": 0.8365645269057265,
+          "pointing_error_db": 1.1774509799928716,
+          "atmospheric_fade_db": 7.3,
+          "optimal_modulation": "BPSK",
+          "constellation_snr": 8.685984493101401
+        },
+        {
+          "mode_number": 7,
+          "sinr_db": 5.645803855256704,
+          "evm_rms_percent": 65.72185414273713,
+          "crosstalk_db": 0.726745164750426,
+          "pointing_error_db": 1.2774509799928717,
+          "atmospheric_fade_db": 7.35,
+          "optimal_modulation": "BPSK",
+          "constellation_snr": 8.645803855256704
+        },
+        {
+          "mode_number": 8,
+          "sinr_db": 5.372697419494877,
+          "evm_rms_percent": 67.82114679334734,
+          "crosstalk_db": 0.8498516005122505,
+          "pointing_error_db": 1.3774509799928718,
+          "atmospheric_fade_db": 7.4,
+          "optimal_modulation": "BPSK",
+          "constellation_snr": 8.372697419494877
+        },
+        {
+          "mode_number": 9,
+          "sinr_db": 5.174934396350456,
+          "evm_rms_percent": 69.38303293202063,
+          "crosstalk_db": 0.8976146236566722,
+          "pointing_error_db": 1.4774509799928717,
+          "atmospheric_fade_db": 7.45,
+          "optimal_modulation": "BPSK",
+          "constellation_snr": 8.174934396350455
+        },
+        {
+          "mode_number": 10,
+          "sinr_db": 4.618567884126547,
+          "evm_rms_percent": 73.97272300706885,
+          "crosstalk_db": 1.3039811358805822,
+          "pointing_error_db": 1.5774509799928715,
+          "atmospheric_fade_db": 7.5,
+          "optimal_modulation": "BPSK",
+          "constellation_snr": 7.618567884126547
+        },
+        {
+          "mode_number": 11,
+          "sinr_db": 4.66586993455718,
+          "evm_rms_percent": 73.5709735939555,
+          "crosstalk_db": 1.1066790854499486,
+          "pointing_error_db": 1.6774509799928716,
+          "atmospheric_fade_db": 7.55,
+          "optimal_modulation": "BPSK",
+          "constellation_snr": 7.66586993455718
+        },
+        {
+          "mode_number": 12,
+          "sinr_db": 4.628879698038572,
+          "evm_rms_percent": 73.88495533162349,
+          "crosstalk_db": 0.9936693219685568,
+          "pointing_error_db": 1.7774509799928717,
+          "atmospheric_fade_db": 7.6,
+          "optimal_modulation": "BPSK",
+          "constellation_snr": 7.628879698038572
+        },
+        {
+          "mode_number": 13,
+          "sinr_db": 4.438300587361542,
+          "evm_rms_percent": 75.52399775066422,
+          "crosstalk_db": 1.0342484326455852,
+          "pointing_error_db": 1.8774509799928718,
+          "atmospheric_fade_db": 7.65,
+          "optimal_modulation": "BPSK",
+          "constellation_snr": 7.438300587361542
+        },
+        {
+          "mode_number": 14,
+          "sinr_db": 4.491226126925741,
+          "evm_rms_percent": 75.06520822812152,
+          "crosstalk_db": 0.8313228930813861,
+          "pointing_error_db": 1.977450979992872,
+          "atmospheric_fade_db": 7.7,
+          "optimal_modulation": "BPSK",
+          "constellation_snr": 7.491226126925741
+        },
+        {
+          "mode_number": 15,
+          "sinr_db": 4.058044532292866,
+          "evm_rms_percent": 78.90377349042501,
+          "crosstalk_db": 1.1145044877142627,
+          "pointing_error_db": 2.0774509799928715,
+          "atmospheric_fade_db": 7.75,
+          "optimal_modulation": "BPSK",
+          "constellation_snr": 7.058044532292866
+        }
+      ],
+      "summary": {
+        "mean_sinr_db": 5.300461531731018,
+        "std_sinr_db": 0.7447708548919688,
+        "min_sinr_db": 4.058044532292866,
+        "max_sinr_db": 6.50943925105789,
+        "mean_evm_percent": 68.6395353404961,
+        "modes_above_20db": 0,
+        "usable_modes": 0
+      }
+    }
+  },
+  "Outdoor": {
+    "thz_300_1modes": {
+      "frequency_ghz": 300.0,
+      "distance_m": 200.0,
+      "base_sinr_db": 10.0,
+      "num_modes": 1,
+      "mode_analysis": [
+        {
+          "mode_number": 1,
+          "sinr_db": -13.23983638136227,
+          "evm_rms_percent": 100.0,
+          "crosstalk_db": 0.5748547696735481,
+          "pointing_error_db": 0.6149816116887216,
+          "atmospheric_fade_db": 22.05,
+          "optimal_modulation": "BPSK",
+          "constellation_snr": -10.23983638136227
+        }
+      ],
+      "summary": {
+        "mean_sinr_db": -13.23983638136227,
+        "std_sinr_db": 0.0,
+        "min_sinr_db": -13.23983638136227,
+        "max_sinr_db": -13.23983638136227,
+        "mean_evm_percent": 100.0,
+        "modes_above_20db": 0,
+        "usable_modes": 0
+      }
+    },
+    "thz_300_5modes": {
+      "frequency_ghz": 300.0,
+      "distance_m": 200.0,
+      "base_sinr_db": 10.0,
+      "num_modes": 5,
+      "mode_analysis": [
+        {
+          "mode_number": 1,
+          "sinr_db": -12.979204437137822,
+          "evm_rms_percent": 100.0,
+          "crosstalk_db": 0.3142228254490996,
+          "pointing_error_db": 0.6149816116887216,
+          "atmospheric_fade_db": 22.05,
+          "optimal_modulation": "BPSK",
+          "constellation_snr": -9.979204437137822
+        },
+        {
+          "mode_number": 2,
+          "sinr_db": -13.575899206239287,
+          "evm_rms_percent": 100.0,
+          "crosstalk_db": 0.760917594550564,
+          "pointing_error_db": 0.7149816116887215,
+          "atmospheric_fade_db": 22.1,
+          "optimal_modulation": "BPSK",
+          "constellation_snr": -10.575899206239287
+        },
+        {
+          "mode_number": 3,
+          "sinr_db": -13.433813838121912,
+          "evm_rms_percent": 100.0,
+          "crosstalk_db": 0.4688322264331915,
+          "pointing_error_db": 0.8149816116887216,
+          "atmospheric_fade_db": 22.15,
+          "optimal_modulation": "BPSK",
+          "constellation_snr": -10.433813838121912
+        },
+        {
+          "mode_number": 4,
+          "sinr_db": -13.684926001641173,
+          "evm_rms_percent": 100.0,
+          "crosstalk_db": 0.569944389952452,
+          "pointing_error_db": 0.9149816116887216,
+          "atmospheric_fade_db": 22.2,
+          "optimal_modulation": "BPSK",
+          "constellation_snr": -10.684926001641173
+        },
+        {
+          "mode_number": 5,
+          "sinr_db": -13.951376082781257,
+          "evm_rms_percent": 100.0,
+          "crosstalk_db": 0.6863944710925359,
+          "pointing_error_db": 1.0149816116887216,
+          "atmospheric_fade_db": 22.25,
+          "optimal_modulation": "BPSK",
+          "constellation_snr": -10.951376082781257
+        }
+      ],
+      "summary": {
+        "mean_sinr_db": -13.525043913184291,
+        "std_sinr_db": 0.3213008938925851,
+        "min_sinr_db": -13.951376082781257,
+        "max_sinr_db": -12.979204437137822,
+        "mean_evm_percent": 100.0,
+        "modes_above_20db": 0,
+        "usable_modes": 0
+      }
+    },
+    "thz_300_10modes": {
+      "frequency_ghz": 300.0,
+      "distance_m": 200.0,
+      "base_sinr_db": 10.0,
+      "num_modes": 10,
+      "mode_analysis": [
+        {
+          "mode_number": 1,
+          "sinr_db": -13.073007735997647,
+          "evm_rms_percent": 100.0,
+          "crosstalk_db": 0.40802612430892565,
+          "pointing_error_db": 0.6149816116887216,
+          "atmospheric_fade_db": 22.05,
+          "optimal_modulation": "BPSK",
+          "constellation_snr": -10.073007735997647
+        },
+        {
+          "mode_number": 2,
+          "sinr_db": -13.261317985125372,
+          "evm_rms_percent": 100.0,
+          "crosstalk_db": 0.4463363734366493,
+          "pointing_error_db": 0.7149816116887215,
+          "atmospheric_fade_db": 22.1,
+          "optimal_modulation": "BPSK",
+          "constellation_snr": -10.261317985125372
+        },
+        {
+          "mode_number": 3,
+          "sinr_db": -13.524356787734625,
+          "evm_rms_percent": 100.0,
+          "crosstalk_db": 0.5593751760459036,
+          "pointing_error_db": 0.8149816116887216,
+          "atmospheric_fade_db": 22.15,
+          "optimal_modulation": "BPSK",
+          "constellation_snr": -10.524356787734625
+        },
+        {
+          "mode_number": 4,
+          "sinr_db": -13.843983996251596,
+          "evm_rms_percent": 100.0,
+          "crosstalk_db": 0.7290023845628752,
+          "pointing_error_db": 0.9149816116887216,
+          "atmospheric_fade_db": 22.2,
+          "optimal_modulation": "BPSK",
+          "constellation_snr": -10.843983996251596
+        },
+        {
+          "mode_number": 5,
+          "sinr_db": -14.046085869686639,
+          "evm_rms_percent": 100.0,
+          "crosstalk_db": 0.7811042579979168,
+          "pointing_error_db": 1.0149816116887216,
+          "atmospheric_fade_db": 22.25,
+          "optimal_modulation": "BPSK",
+          "constellation_snr": -11.046085869686639
+        },
+        {
+          "mode_number": 6,
+          "sinr_db": -14.191496388908272,
+          "evm_rms_percent": 100.0,
+          "crosstalk_db": 0.7765147772195496,
+          "pointing_error_db": 1.1149816116887217,
+          "atmospheric_fade_db": 22.3,
+          "optimal_modulation": "BPSK",
+          "constellation_snr": -11.191496388908272
+        },
+        {
+          "mode_number": 7,
+          "sinr_db": -14.39380179890663,
+          "evm_rms_percent": 100.0,
+          "crosstalk_db": 0.8288201872179062,
+          "pointing_error_db": 1.2149816116887218,
+          "atmospheric_fade_db": 22.35,
+          "optimal_modulation": "BPSK",
+          "constellation_snr": -11.39380179890663
+        },
+        {
+          "mode_number": 8,
+          "sinr_db": -14.878905924889178,
+          "evm_rms_percent": 100.0,
+          "crosstalk_db": 1.163924313200457,
+          "pointing_error_db": 1.3149816116887216,
+          "atmospheric_fade_db": 22.4,
+          "optimal_modulation": "BPSK",
+          "constellation_snr": -11.878905924889178
+        },
+        {
+          "mode_number": 9,
+          "sinr_db": -14.688146709951722,
+          "evm_rms_percent": 100.0,
+          "crosstalk_db": 0.8231650982630004,
+          "pointing_error_db": 1.4149816116887215,
+          "atmospheric_fade_db": 22.45,
+          "optimal_modulation": "BPSK",
+          "constellation_snr": -11.688146709951722
+        },
+        {
+          "mode_number": 10,
+          "sinr_db": -15.372208987462445,
+          "evm_rms_percent": 100.0,
+          "crosstalk_db": 1.3572273757737228,
+          "pointing_error_db": 1.5149816116887216,
+          "atmospheric_fade_db": 22.5,
+          "optimal_modulation": "BPSK",
+          "constellation_snr": -12.372208987462445
+        }
+      ],
+      "summary": {
+        "mean_sinr_db": -14.127331218491411,
+        "std_sinr_db": 0.6939931194948034,
+        "min_sinr_db": -15.372208987462445,
+        "max_sinr_db": -13.073007735997647,
+        "mean_evm_percent": 100.0,
+        "modes_above_20db": 0,
+        "usable_modes": 0
+      }
+    },
+    "thz_300_15modes": {
+      "frequency_ghz": 300.0,
+      "distance_m": 200.0,
+      "base_sinr_db": 10.0,
+      "num_modes": 15,
+      "mode_analysis": [
+        {
+          "mode_number": 1,
+          "sinr_db": -13.266459255922097,
+          "evm_rms_percent": 100.0,
+          "crosstalk_db": 0.6014776442333754,
+          "pointing_error_db": 0.6149816116887216,
+          "atmospheric_fade_db": 22.05,
+          "optimal_modulation": "BPSK",
+          "constellation_snr": -10.266459255922097
+        },
+        {
+          "mode_number": 2,
+          "sinr_db": -13.49372002580591,
+          "evm_rms_percent": 100.0,
+          "crosstalk_db": 0.6787384141171879,
+          "pointing_error_db": 0.7149816116887215,
+          "atmospheric_fade_db": 22.1,
+          "optimal_modulation": "BPSK",
+          "constellation_snr": -10.49372002580591
+        },
+        {
+          "mode_number": 3,
+          "sinr_db": -13.579170901531601,
+          "evm_rms_percent": 100.0,
+          "crosstalk_db": 0.6141892898428802,
+          "pointing_error_db": 0.8149816116887216,
+          "atmospheric_fade_db": 22.15,
+          "optimal_modulation": "BPSK",
+          "constellation_snr": -10.579170901531601
+        },
+        {
+          "mode_number": 4,
+          "sinr_db": -14.003475729410594,
+          "evm_rms_percent": 100.0,
+          "crosstalk_db": 0.8884941177218729,
+          "pointing_error_db": 0.9149816116887216,
+          "atmospheric_fade_db": 22.2,
+          "optimal_modulation": "BPSK",
+          "constellation_snr": -11.003475729410594
+        },
+        {
+          "mode_number": 5,
+          "sinr_db": -14.186717038076864,
+          "evm_rms_percent": 100.0,
+          "crosstalk_db": 0.9217354263881434,
+          "pointing_error_db": 1.0149816116887216,
+          "atmospheric_fade_db": 22.25,
+          "optimal_modulation": "BPSK",
+          "constellation_snr": -11.186717038076864
+        },
+        {
+          "mode_number": 6,
+          "sinr_db": -14.249172645469033,
+          "evm_rms_percent": 100.0,
+          "crosstalk_db": 0.8341910337803116,
+          "pointing_error_db": 1.1149816116887217,
+          "atmospheric_fade_db": 22.3,
+          "optimal_modulation": "BPSK",
+          "constellation_snr": -11.249172645469033
+        },
+        {
+          "mode_number": 7,
+          "sinr_db": -14.62181202178682,
+          "evm_rms_percent": 100.0,
+          "crosstalk_db": 1.0568304100980963,
+          "pointing_error_db": 1.2149816116887218,
+          "atmospheric_fade_db": 22.35,
+          "optimal_modulation": "BPSK",
+          "constellation_snr": -11.62181202178682
+        },
+        {
+          "mode_number": 8,
+          "sinr_db": -14.44645061080369,
+          "evm_rms_percent": 100.0,
+          "crosstalk_db": 0.7314689991149724,
+          "pointing_error_db": 1.3149816116887216,
+          "atmospheric_fade_db": 22.4,
+          "optimal_modulation": "BPSK",
+          "constellation_snr": -11.44645061080369
+        },
+        {
+          "mode_number": 9,
+          "sinr_db": -14.647384727339254,
+          "evm_rms_percent": 100.0,
+          "crosstalk_db": 0.7824031156505332,
+          "pointing_error_db": 1.4149816116887215,
+          "atmospheric_fade_db": 22.45,
+          "optimal_modulation": "BPSK",
+          "constellation_snr": -11.647384727339254
+        },
+        {
+          "mode_number": 10,
+          "sinr_db": -14.890790247667688,
+          "evm_rms_percent": 100.0,
+          "crosstalk_db": 0.8758086359789661,
+          "pointing_error_db": 1.5149816116887216,
+          "atmospheric_fade_db": 22.5,
+          "optimal_modulation": "BPSK",
+          "constellation_snr": -11.890790247667688
+        },
+        {
+          "mode_number": 11,
+          "sinr_db": -15.10885467876399,
+          "evm_rms_percent": 100.0,
+          "crosstalk_db": 0.9438730670752681,
+          "pointing_error_db": 1.6149816116887217,
+          "atmospheric_fade_db": 22.55,
+          "optimal_modulation": "BPSK",
+          "constellation_snr": -12.10885467876399
+        },
+        {
+          "mode_number": 12,
+          "sinr_db": -15.117723165781523,
+          "evm_rms_percent": 100.0,
+          "crosstalk_db": 0.8027415540928001,
+          "pointing_error_db": 1.7149816116887218,
+          "atmospheric_fade_db": 22.6,
+          "optimal_modulation": "BPSK",
+          "constellation_snr": -12.117723165781523
+        },
+        {
+          "mode_number": 13,
+          "sinr_db": -15.49913647313861,
+          "evm_rms_percent": 100.0,
+          "crosstalk_db": 1.034154861449889,
+          "pointing_error_db": 1.8149816116887216,
+          "atmospheric_fade_db": 22.65,
+          "optimal_modulation": "BPSK",
+          "constellation_snr": -12.49913647313861
+        },
+        {
+          "mode_number": 14,
+          "sinr_db": -15.618575003352053,
+          "evm_rms_percent": 100.0,
+          "crosstalk_db": 1.0035933916633322,
+          "pointing_error_db": 1.9149816116887217,
+          "atmospheric_fade_db": 22.7,
+          "optimal_modulation": "BPSK",
+          "constellation_snr": -12.618575003352053
+        },
+        {
+          "mode_number": 15,
+          "sinr_db": -15.639259144868229,
+          "evm_rms_percent": 100.0,
+          "crosstalk_db": 0.874277533179507,
+          "pointing_error_db": 2.0149816116887216,
+          "atmospheric_fade_db": 22.75,
+          "optimal_modulation": "BPSK",
+          "constellation_snr": -12.639259144868229
+        }
+      ],
+      "summary": {
+        "mean_sinr_db": -14.55791344464786,
+        "std_sinr_db": 0.7407771524322403,
+        "min_sinr_db": -15.639259144868229,
+        "max_sinr_db": -13.266459255922097,
+        "mean_evm_percent": 100.0,
+        "modes_above_20db": 0,
+        "usable_modes": 0
+      }
+    },
+    "thz_400_1modes": {
+      "frequency_ghz": 400.0,
+      "distance_m": 200.0,
+      "base_sinr_db": 10.0,
+      "num_modes": 1,
+      "mode_analysis": [
+        {
+          "mode_number": 1,
+          "sinr_db": -13.112018377916952,
+          "evm_rms_percent": 100.0,
+          "crosstalk_db": 0.3845673979240791,
+          "pointing_error_db": 0.6774509799928716,
+          "atmospheric_fade_db": 22.05,
+          "optimal_modulation": "BPSK",
+          "constellation_snr": -10.112018377916952
+        }
+      ],
+      "summary": {
+        "mean_sinr_db": -13.112018377916952,
+        "std_sinr_db": 0.0,
+        "min_sinr_db": -13.112018377916952,
+        "max_sinr_db": -13.112018377916952,
+        "mean_evm_percent": 100.0,
+        "modes_above_20db": 0,
+        "usable_modes": 0
+      }
+    },
+    "thz_400_5modes": {
+      "frequency_ghz": 400.0,
+      "distance_m": 200.0,
+      "base_sinr_db": 10.0,
+      "num_modes": 5,
+      "mode_analysis": [
+        {
+          "mode_number": 1,
+          "sinr_db": -13.295668947182682,
+          "evm_rms_percent": 100.0,
+          "crosstalk_db": 0.5682179671898104,
+          "pointing_error_db": 0.6774509799928716,
+          "atmospheric_fade_db": 22.05,
+          "optimal_modulation": "BPSK",
+          "constellation_snr": -10.295668947182682
+        },
+        {
+          "mode_number": 2,
+          "sinr_db": -13.44409281057338,
+          "evm_rms_percent": 100.0,
+          "crosstalk_db": 0.5666418305805058,
+          "pointing_error_db": 0.7774509799928717,
+          "atmospheric_fade_db": 22.1,
+          "optimal_modulation": "BPSK",
+          "constellation_snr": -10.44409281057338
+        },
+        {
+          "mode_number": 3,
+          "sinr_db": -13.525272725417919,
+          "evm_rms_percent": 100.0,
+          "crosstalk_db": 0.49782174542504765,
+          "pointing_error_db": 0.8774509799928717,
+          "atmospheric_fade_db": 22.15,
+          "optimal_modulation": "BPSK",
+          "constellation_snr": -10.525272725417919
+        },
+        {
+          "mode_number": 4,
+          "sinr_db": -14.132019867855774,
+          "evm_rms_percent": 100.0,
+          "crosstalk_db": 0.9545688878629028,
+          "pointing_error_db": 0.9774509799928717,
+          "atmospheric_fade_db": 22.2,
+          "optimal_modulation": "BPSK",
+          "constellation_snr": -11.132019867855774
+        },
+        {
+          "mode_number": 5,
+          "sinr_db": -14.02557927416726,
+          "evm_rms_percent": 100.0,
+          "crosstalk_db": 0.6981282941743893,
+          "pointing_error_db": 1.0774509799928715,
+          "atmospheric_fade_db": 22.25,
+          "optimal_modulation": "BPSK",
+          "constellation_snr": -11.02557927416726
+        }
+      ],
+      "summary": {
+        "mean_sinr_db": -13.684526725039404,
+        "std_sinr_db": 0.33194807701050005,
+        "min_sinr_db": -14.132019867855774,
+        "max_sinr_db": -13.295668947182682,
+        "mean_evm_percent": 100.0,
+        "modes_above_20db": 0,
+        "usable_modes": 0
+      }
+    },
+    "thz_400_10modes": {
+      "frequency_ghz": 400.0,
+      "distance_m": 200.0,
+      "base_sinr_db": 10.0,
+      "num_modes": 10,
+      "mode_analysis": [
+        {
+          "mode_number": 1,
+          "sinr_db": -13.476238940075353,
+          "evm_rms_percent": 100.0,
+          "crosstalk_db": 0.7487879600824818,
+          "pointing_error_db": 0.6774509799928716,
+          "atmospheric_fade_db": 22.05,
+          "optimal_modulation": "BPSK",
+          "constellation_snr": -10.476238940075353
+        },
+        {
+          "mode_number": 2,
+          "sinr_db": -13.573330637273212,
+          "evm_rms_percent": 100.0,
+          "crosstalk_db": 0.6958796572803391,
+          "pointing_error_db": 0.7774509799928717,
+          "atmospheric_fade_db": 22.1,
+          "optimal_modulation": "BPSK",
+          "constellation_snr": -10.573330637273212
+        },
+        {
+          "mode_number": 3,
+          "sinr_db": -13.723605715250518,
+          "evm_rms_percent": 100.0,
+          "crosstalk_db": 0.6961547352576474,
+          "pointing_error_db": 0.8774509799928717,
+          "atmospheric_fade_db": 22.15,
+          "optimal_modulation": "BPSK",
+          "constellation_snr": -10.723605715250518
+        },
+        {
+          "mode_number": 4,
+          "sinr_db": -13.939485080709014,
+          "evm_rms_percent": 100.0,
+          "crosstalk_db": 0.7620341007161426,
+          "pointing_error_db": 0.9774509799928717,
+          "atmospheric_fade_db": 22.2,
+          "optimal_modulation": "BPSK",
+          "constellation_snr": -10.939485080709014
+        },
+        {
+          "mode_number": 5,
+          "sinr_db": -14.195537550359155,
+          "evm_rms_percent": 100.0,
+          "crosstalk_db": 0.8680865703662843,
+          "pointing_error_db": 1.0774509799928715,
+          "atmospheric_fade_db": 22.25,
+          "optimal_modulation": "BPSK",
+          "constellation_snr": -11.195537550359155
+        },
+        {
+          "mode_number": 6,
+          "sinr_db": -14.129399971185004,
+          "evm_rms_percent": 100.0,
+          "crosstalk_db": 0.651948991192131,
+          "pointing_error_db": 1.1774509799928716,
+          "atmospheric_fade_db": 22.3,
+          "optimal_modulation": "BPSK",
+          "constellation_snr": -11.129399971185004
+        },
+        {
+          "mode_number": 7,
+          "sinr_db": -14.628434434625774,
+          "evm_rms_percent": 100.0,
+          "crosstalk_db": 1.0009834546329022,
+          "pointing_error_db": 1.2774509799928717,
+          "atmospheric_fade_db": 22.35,
+          "optimal_modulation": "BPSK",
+          "constellation_snr": -11.628434434625774
+        },
+        {
+          "mode_number": 8,
+          "sinr_db": -14.605953777136934,
+          "evm_rms_percent": 100.0,
+          "crosstalk_db": 0.8285027971440636,
+          "pointing_error_db": 1.3774509799928718,
+          "atmospheric_fade_db": 22.4,
+          "optimal_modulation": "BPSK",
+          "constellation_snr": -11.605953777136934
+        },
+        {
+          "mode_number": 9,
+          "sinr_db": -14.68079239794347,
+          "evm_rms_percent": 100.0,
+          "crosstalk_db": 0.7533414179505997,
+          "pointing_error_db": 1.4774509799928717,
+          "atmospheric_fade_db": 22.45,
+          "optimal_modulation": "BPSK",
+          "constellation_snr": -11.68079239794347
+        },
+        {
+          "mode_number": 10,
+          "sinr_db": -14.83589502213727,
+          "evm_rms_percent": 100.0,
+          "crosstalk_db": 0.7584440421443983,
+          "pointing_error_db": 1.5774509799928715,
+          "atmospheric_fade_db": 22.5,
+          "optimal_modulation": "BPSK",
+          "constellation_snr": -11.83589502213727
+        }
+      ],
+      "summary": {
+        "mean_sinr_db": -14.17886735266957,
+        "std_sinr_db": 0.4685915953681202,
+        "min_sinr_db": -14.83589502213727,
+        "max_sinr_db": -13.476238940075353,
+        "mean_evm_percent": 100.0,
+        "modes_above_20db": 0,
+        "usable_modes": 0
+      }
+    },
+    "thz_400_15modes": {
+      "frequency_ghz": 400.0,
+      "distance_m": 200.0,
+      "base_sinr_db": 10.0,
+      "num_modes": 15,
+      "mode_analysis": [
+        {
+          "mode_number": 1,
+          "sinr_db": -13.511396739828621,
+          "evm_rms_percent": 100.0,
+          "crosstalk_db": 0.7839457598357487,
+          "pointing_error_db": 0.6774509799928716,
+          "atmospheric_fade_db": 22.05,
+          "optimal_modulation": "BPSK",
+          "constellation_snr": -10.511396739828621
+        },
+        {
+          "mode_number": 2,
+          "sinr_db": -13.707300739156466,
+          "evm_rms_percent": 100.0,
+          "crosstalk_db": 0.8298497591635943,
+          "pointing_error_db": 0.7774509799928717,
+          "atmospheric_fade_db": 22.1,
+          "optimal_modulation": "BPSK",
+          "constellation_snr": -10.707300739156466
+        },
+        {
+          "mode_number": 3,
+          "sinr_db": -14.110264582260672,
+          "evm_rms_percent": 100.0,
+          "crosstalk_db": 1.0828136022678025,
+          "pointing_error_db": 0.8774509799928717,
+          "atmospheric_fade_db": 22.15,
+          "optimal_modulation": "BPSK",
+          "constellation_snr": -11.110264582260672
+        },
+        {
+          "mode_number": 4,
+          "sinr_db": -13.988674394765388,
+          "evm_rms_percent": 100.0,
+          "crosstalk_db": 0.8112234147725175,
+          "pointing_error_db": 0.9774509799928717,
+          "atmospheric_fade_db": 22.2,
+          "optimal_modulation": "BPSK",
+          "constellation_snr": -10.988674394765388
+        },
+        {
+          "mode_number": 5,
+          "sinr_db": -14.271858668885457,
+          "evm_rms_percent": 100.0,
+          "crosstalk_db": 0.9444076888925852,
+          "pointing_error_db": 1.0774509799928715,
+          "atmospheric_fade_db": 22.25,
+          "optimal_modulation": "BPSK",
+          "constellation_snr": -11.271858668885457
+        },
+        {
+          "mode_number": 6,
+          "sinr_db": -14.382189891849036,
+          "evm_rms_percent": 100.0,
+          "crosstalk_db": 0.904738911856164,
+          "pointing_error_db": 1.1774509799928716,
+          "atmospheric_fade_db": 22.3,
+          "optimal_modulation": "BPSK",
+          "constellation_snr": -11.382189891849036
+        },
+        {
+          "mode_number": 7,
+          "sinr_db": -14.683146722777629,
+          "evm_rms_percent": 100.0,
+          "crosstalk_db": 1.055695742784754,
+          "pointing_error_db": 1.2774509799928717,
+          "atmospheric_fade_db": 22.35,
+          "optimal_modulation": "BPSK",
+          "constellation_snr": -11.683146722777629
+        },
+        {
+          "mode_number": 8,
+          "sinr_db": -14.739563182584142,
+          "evm_rms_percent": 100.0,
+          "crosstalk_db": 0.9621122025912718,
+          "pointing_error_db": 1.3774509799928718,
+          "atmospheric_fade_db": 22.4,
+          "optimal_modulation": "BPSK",
+          "constellation_snr": -11.739563182584142
+        },
+        {
+          "mode_number": 9,
+          "sinr_db": -14.709769293785042,
+          "evm_rms_percent": 100.0,
+          "crosstalk_db": 0.7823183137921708,
+          "pointing_error_db": 1.4774509799928717,
+          "atmospheric_fade_db": 22.45,
+          "optimal_modulation": "BPSK",
+          "constellation_snr": -11.709769293785042
+        },
+        {
+          "mode_number": 10,
+          "sinr_db": -15.45455060115358,
+          "evm_rms_percent": 100.0,
+          "crosstalk_db": 1.377099621160708,
+          "pointing_error_db": 1.5774509799928715,
+          "atmospheric_fade_db": 22.5,
+          "optimal_modulation": "BPSK",
+          "constellation_snr": -12.45455060115358
+        },
+        {
+          "mode_number": 11,
+          "sinr_db": -15.242796254781554,
+          "evm_rms_percent": 100.0,
+          "crosstalk_db": 1.0153452747886833,
+          "pointing_error_db": 1.6774509799928716,
+          "atmospheric_fade_db": 22.55,
+          "optimal_modulation": "BPSK",
+          "constellation_snr": -12.242796254781554
+        },
+        {
+          "mode_number": 12,
+          "sinr_db": -15.238097739517531,
+          "evm_rms_percent": 100.0,
+          "crosstalk_db": 0.8606467595246596,
+          "pointing_error_db": 1.7774509799928717,
+          "atmospheric_fade_db": 22.6,
+          "optimal_modulation": "BPSK",
+          "constellation_snr": -12.238097739517531
+        },
+        {
+          "mode_number": 13,
+          "sinr_db": -15.352838269461854,
+          "evm_rms_percent": 100.0,
+          "crosstalk_db": 0.8253872894689831,
+          "pointing_error_db": 1.8774509799928718,
+          "atmospheric_fade_db": 22.65,
+          "optimal_modulation": "BPSK",
+          "constellation_snr": -12.352838269461854
+        },
+        {
+          "mode_number": 14,
+          "sinr_db": -15.957135737705178,
+          "evm_rms_percent": 100.0,
+          "crosstalk_db": 1.2796847577123063,
+          "pointing_error_db": 1.977450979992872,
+          "atmospheric_fade_db": 22.7,
+          "optimal_modulation": "BPSK",
+          "constellation_snr": -12.957135737705178
+        },
+        {
+          "mode_number": 15,
+          "sinr_db": -16.30250219296765,
+          "evm_rms_percent": 100.0,
+          "crosstalk_db": 1.4750512129747793,
+          "pointing_error_db": 2.0774509799928715,
+          "atmospheric_fade_db": 22.75,
+          "optimal_modulation": "BPSK",
+          "constellation_snr": -13.302502192967651
+        }
+      ],
+      "summary": {
+        "mean_sinr_db": -14.776805667431988,
+        "std_sinr_db": 0.7822144950664214,
+        "min_sinr_db": -16.30250219296765,
+        "max_sinr_db": -13.511396739828621,
+        "mean_evm_percent": 100.0,
+        "modes_above_20db": 0,
+        "usable_modes": 0
+      }
+    }
+  }
+}

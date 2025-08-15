@@ -423,15 +423,15 @@ class ChannelSimulator:
             freq_GHz = self.frequency / 1e9
                                            
             if freq_GHz < 60:
-                gamma_oxygen = 0.02         
-                gamma_water = 0.01          
+                gamma_oxygen = 0.5          # Realistic O2 absorption
+                gamma_water = 0.2           # Water vapor contribution
             elif freq_GHz < 200:
-                gamma_oxygen = 0.1          # Reduced for advanced 6G systems
-                gamma_water = 0.1           
+                gamma_oxygen = 5.0          # Increased absorption
+                gamma_water = 2.0           # Higher water vapor impact
             else:
-                # THz bands - advanced 6G beamforming with atmospheric compensation
-                gamma_oxygen = 0.1          # Even lower with adaptive atmospheric compensation  
-                gamma_water = 0.2           # Advanced humidity control systems           
+                # THz bands - severe atmospheric absorption
+                gamma_oxygen = 50.0         # Realistic THz O2 absorption
+                gamma_water = 20.0          # Realistic THz H2O absorption           
             gamma_total = gamma_oxygen + gamma_water
         
                                 

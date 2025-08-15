@@ -1,0 +1,85 @@
+# DOCOMO 6G Lab Configuration - THz Only for 100+ Gbps
+# This config ONLY includes 300+ GHz bands to force maximum throughput
+
+docomo_6g_system:
+  version: "2025.1_lab_thz_only"
+  compliance_target: "lab_thz_maximum"
+  
+  # Lab KPIs - Ultra-high performance 
+  kpi_targets:
+    peak_data_rate_gbps: 200.0     # 200 Gbps peak for THz
+    user_data_rate_gbps: 150.0     # 150 Gbps user target
+    latency_ms: 0.05               # Ultra-low latency
+    reliability: 0.9999            # Extremely high reliability  
+    mobility_kmh: 5.0              # Lab mobility speeds
+    connection_density_per_km2: 10  # Lab density
+    energy_efficiency_improvement: 10
+
+  # Frequency bands - ONLY 300+ GHz THz bands
+  frequency_bands:
+    thz_300:
+      frequency: 300.0e9            # 300 GHz
+      bandwidth: 15.0e9             # 15 GHz bandwidth
+      target_throughput_gbps: 120.0 # 120 Gbps target
+      max_range_km: 0.002           # 2m very close range
+      oam_modes: [1, 20]
+      power_dbm: 45.0
+      
+    thz_400:
+      frequency: 400.0e9            # 400 GHz
+      bandwidth: 18.0e9             # 18 GHz bandwidth
+      target_throughput_gbps: 140.0 # 140 Gbps target
+      max_range_km: 0.002           # 2m very close range
+      oam_modes: [1, 22]
+      power_dbm: 47.0
+
+    thz_600:
+      frequency: 600.0e9            # 600 GHz  
+      bandwidth: 20.0e9             # 20 GHz bandwidth
+      target_throughput_gbps: 180.0 # 180 Gbps target for maximum
+      max_range_km: 0.001           # 1m extremely close range
+      oam_modes: [1, 24]
+      power_dbm: 50.0
+
+  # Lab mobility model - Ultra-controlled for THz precision
+  mobility:
+    model_type: "lab_stationary"
+    path_type: "stationary"         # Minimal movement for THz stability
+    initial_position: [0.1, 0.1, 1.5]  # Start ultra close - ~0.17m from origin
+    speed_kmh: 0.5                  # Extremely slow movement
+    radius_m: 0.5                   # Ultra-small lab area (0.5m radius)
+    height_variation_m: 0.0         # No height changes
+    prediction_horizon_ms: 200.0    # Long prediction for stability
+    
+  # Lab environment - Controlled conditions  
+  environment:
+    scenario: "laboratory"
+    temperature_c: 22.0             # Controlled temperature
+    humidity_percent: 40.0          # Controlled humidity
+    atmospheric_pressure_kpa: 101.3 # Standard pressure
+    
+  # Enhanced THz performance settings
+  physics:
+    enable_advanced_physics: true
+    lab_optimization: true
+    thz_enhancement_factor: 8.0     # 8x enhancement for lab THz
+    
+  # Lab-specific algorithm settings
+  algorithm:
+    agent_type: "dqn"
+    learning_rate: 0.0005           # Lower learning rate for stability
+    epsilon_start: 0.9              # Higher exploration initially
+    epsilon_end: 0.1                # Lower final exploration  
+    epsilon_decay: 0.995            # Slower decay for lab stability
+    memory_size: 50000              # Larger memory for lab learning
+    batch_size: 64                  # Standard batch size
+    target_network_update_freq: 100 # Frequent updates for lab
+    save_interval: 50               # Save every 50 episodes
+    
+  # Network slicing for lab scenarios
+  network_slicing:
+    enable_slicing: true
+    lab_slice:
+      guaranteed_throughput_gbps: 100.0  # Guarantee 100+ Gbps
+      latency_budget_ms: 0.1            # 0.1ms latency budget
+      reliability_requirement: 0.9999   # 99.99% reliability

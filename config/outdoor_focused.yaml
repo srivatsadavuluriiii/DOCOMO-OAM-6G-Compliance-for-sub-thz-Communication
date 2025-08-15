@@ -1,0 +1,116 @@
+# Outdoor-Focused 6G Configuration
+# Only includes outdoor-viable frequency bands
+
+docomo_6g_system:
+  version: "2025.1_outdoor_focused"
+  compliance_target: "outdoor_6g_realistic"
+  
+  # Outdoor 6G KPIs
+  kpi_targets:
+    peak_data_rate_gbps: 10.0            # 10 Gbps peak achievable
+    user_data_rate_gbps: 6.0             # 6 Gbps improved target
+    latency_ms: 1.0
+    reliability: 0.999
+    mobility_kmh: 120.0
+    connection_density_per_km2: 100000
+    energy_efficiency_improvement: 5
+    spectrum_efficiency_improvement: 3
+
+  # Network Topology
+  network:
+    base_stations:
+      - [0, 0, 30]
+
+  # Outdoor-Only Frequency Bands
+  frequency_bands:
+    # Coverage Layer
+    sub_6ghz:
+      frequency: 6.0e9
+      bandwidth: 200.0e6
+      max_range_km: 5.0
+      target_throughput_gbps: 1.5
+      target_latency_ms: 2.0
+      oam_modes: [1, 2]
+      
+    # Primary Capacity - 28 GHz mmWave  
+    mmwave_28:
+      frequency: 28.0e9
+      bandwidth: 1.2e9                   # 1.2 GHz for 5 Gbps target
+      max_range_km: 2.0
+      target_throughput_gbps: 5.0        # Our target!
+      target_latency_ms: 1.0
+      oam_modes: [1, 2, 3, 4]
+      
+    # High Capacity - 39 GHz
+    mmwave_39:
+      frequency: 39.0e9
+      bandwidth: 1.0e9
+      max_range_km: 1.0
+      target_throughput_gbps: 5.0        # 5 Gbps achievable
+      target_latency_ms: 0.5
+      oam_modes: [1, 2, 3, 4, 5]
+      
+    # Hot Spots - 60 GHz (limited range)
+    mmwave_60:
+      frequency: 60.0e9
+      bandwidth: 2.0e9
+      max_range_km: 0.3                  # 300m max for reliable outdoor
+      target_throughput_gbps: 8.0
+      target_latency_ms: 0.3
+      oam_modes: [1, 2, 3, 4]
+
+  # Optimized Mobility for Outdoor Testing
+  mobility:
+    max_speed_kmh: 80.0                  # Urban speeds
+    path:
+      model: 'circular'
+      center_m: [0, 0, 1.5]
+      radius_m: 250                      # 250m radius - good for all bands
+      direction: 'clockwise'
+
+  # Realistic Atmospheric
+  atmospheric:
+    model: "outdoor_realistic"
+    absorption_db_per_km:
+      6_ghz: 0.1
+      28_ghz: 2.0
+      39_ghz: 3.0
+      60_ghz: 12.0
+
+  # Outdoor Hardware
+  hardware:
+    tx_power_limits:
+      sub_6ghz: 40.0
+      mmwave_28: 30.0
+      mmwave_39: 30.0
+      mmwave_60: 25.0
+
+  # RL Configuration for Outdoor
+  reinforcement_learning:
+    training:
+      episodes: 200
+      max_steps_per_episode: 500
+      
+      # Prioritize throughput achievement
+      throughput_weight: 0.5
+      latency_weight: 0.2
+      reliability_weight: 0.2
+      energy_weight: 0.1
+      
+      learning_rate: 0.001
+      batch_size: 64
+      buffer_size: 50000
+      gamma: 0.99
+      epsilon_start: 1.0
+      epsilon_end: 0.01
+      epsilon_decay_steps: 5000
+      
+      double_dqn: true
+      dueling_dqn: true
+      target_update_freq: 50
+      checkpoint_freq: 50
+      eval_freq: 50
+
+  # Minimal Interference for Testing
+  interference:
+    enabled: false
