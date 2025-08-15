@@ -41,6 +41,7 @@ class DQNModel(nn.Module):
         
         for hidden_dim in hidden_layers:
             feature_layers.append(nn.Linear(prev_dim, hidden_dim))
+            feature_layers.append(nn.LayerNorm(hidden_dim))  # Use LayerNorm instead of BatchNorm
             
             if activation == "relu":
                 feature_layers.append(nn.ReLU())
@@ -52,6 +53,9 @@ class DQNModel(nn.Module):
                 feature_layers.append(nn.ReLU())
                 self.activation = "relu"
             
+            # Only use dropout during training, not inference
+            if len(hidden_layers) > 1:  # Only add dropout for deeper networks
+                feature_layers.append(nn.Dropout(0.1))
             prev_dim = hidden_dim
         
         self.feature_layer = nn.Sequential(*feature_layers)

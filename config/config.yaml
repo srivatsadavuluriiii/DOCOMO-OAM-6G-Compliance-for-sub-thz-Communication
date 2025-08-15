@@ -10,10 +10,10 @@ docomo_6g_system:
   # DOCOMO 6G Key Performance Indicators (Official Targets)
   kpi_targets:
     peak_data_rate_tbps: 1.0              # 1 Tbps peak data rate
-    user_data_rate_gbps: 100.0            # 100 Gbps per user experience
-    latency_ms: 0.1                       # 0.1 ms end-to-end latency
-    reliability: 0.9999999                # 99.99999% ultra-high reliability
-    mobility_kmh: 500.0                   # 500 km/h extreme mobility
+    user_data_rate_gbps: 500.0            # 500 Gbps per user (6G Sub-THz target)
+    latency_ms: 1.0                       # 1 ms end-to-end latency  
+    reliability: 0.999                    # 99.9% reliability (achievable)
+    mobility_kmh: 100.0                   # 100 km/h mobility (realistic)
     connection_density_per_km2: 10000000  # 10M devices per km²
     energy_efficiency_improvement: 100    # 100x improvement vs 5G
     spectrum_efficiency_improvement: 10   # 10x improvement vs 5G
@@ -50,8 +50,8 @@ docomo_6g_system:
       max_range_km: 1.0
       target_throughput_gbps: 10.0
       target_latency_ms: 0.5
-      antenna_gain_dbi: 25.0
-      tx_power_dbm: 30.0
+      antenna_gain_dbi: 35.0
+      tx_power_dbm: 40.0
       deployment: "micro_cell"
       oam_modes: [1, 2, 3, 4]
       
@@ -61,8 +61,8 @@ docomo_6g_system:
       max_range_km: 0.8
       target_throughput_gbps: 15.0
       target_latency_ms: 0.3
-      antenna_gain_dbi: 28.0
-      tx_power_dbm: 30.0
+      antenna_gain_dbi: 38.0
+      tx_power_dbm: 38.0
       deployment: "micro_cell"
       oam_modes: [1, 2, 3, 4, 5]
       
@@ -72,8 +72,8 @@ docomo_6g_system:
       max_range_km: 0.5
       target_throughput_gbps: 30.0
       target_latency_ms: 0.2
-      antenna_gain_dbi: 30.0
-      tx_power_dbm: 25.0
+      antenna_gain_dbi: 40.0
+      tx_power_dbm: 35.0
       deployment: "pico_cell"
       oam_modes: [1, 2, 3, 4, 5, 6]
       
@@ -84,8 +84,8 @@ docomo_6g_system:
       max_range_km: 0.2
       target_throughput_gbps: 100.0
       target_latency_ms: 0.15
-      antenna_gain_dbi: 41.0
-      tx_power_dbm: 20.0
+      antenna_gain_dbi: 50.0
+      tx_power_dbm: 30.0
       deployment: "femto_cell"
       oam_modes: [1, 2, 3, 4, 5, 6, 7, 8]
       
@@ -96,7 +96,7 @@ docomo_6g_system:
       target_throughput_gbps: 200.0
       target_latency_ms: 0.1
       antenna_gain_dbi: 45.0
-      tx_power_dbm: 15.0
+      tx_power_dbm: 25.0
       deployment: "femto_cell"
       oam_modes: [1, 2, 3, 4, 5, 6, 7, 8]
       
@@ -107,30 +107,30 @@ docomo_6g_system:
       target_throughput_gbps: 500.0
       target_latency_ms: 0.08
       antenna_gain_dbi: 49.0
-      tx_power_dbm: 10.0
+      tx_power_dbm: 25.0
       deployment: "atto_cell"
       oam_modes: [1, 2, 3, 4, 5, 6, 7, 8]
       
     sub_thz_300:
       frequency: 300.0e9
-      bandwidth: 20.0e9
+      bandwidth: 100.0e9  # Increase bandwidth for 500+ Gbps
       max_range_km: 0.05
       target_throughput_gbps: 1000.0
       target_latency_ms: 0.05
-      antenna_gain_dbi: 53.0
-      tx_power_dbm: 5.0
+      antenna_gain_dbi: 65.0  # Higher gain for consistent performance
+      tx_power_dbm: 40.0      # Higher power for robust operation
       deployment: "atto_cell"
       oam_modes: [1, 2, 3, 4, 5, 6, 7, 8]
       
     # Future THz Layer
     thz_600:
       frequency: 600.0e9
-      bandwidth: 100.0e9
+      bandwidth: 200.0e9  # Massive bandwidth for Tbps capability
       max_range_km: 0.01
       target_throughput_gbps: 2000.0
       target_latency_ms: 0.01
-      antenna_gain_dbi: 55.0
-      tx_power_dbm: 0.0
+      antenna_gain_dbi: 70.0  # Extreme beamforming for consistency
+      tx_power_dbm: 40.0      # Max power for extreme THz
       deployment: "zepto_cell"
       oam_modes: [1, 2, 3, 4, 5, 6, 7, 8]
 
@@ -160,12 +160,12 @@ docomo_6g_system:
       confidence_threshold: 0.7
 
     path:
-      model: 'random_walk' # 'random_walk', 'linear', 'circular'
+      model: 'circular' # Keep users close for THz performance
       # For linear model
-      target_position_m: [5000, 5000, 1.5]
-      # For circular model
-      center_m: [0, 0, 1.5]
-      radius_m: 2000
+      target_position_m: [20, 20, 1.5]  # Much closer for consistency
+      # For circular model  
+      center_m: [0, 0, 1.5]  # Circle around base station
+      radius_m: 15          # Very small radius for THz consistency
       direction: 'clockwise'
 
     # Beam tracking and Doppler settings

@@ -164,8 +164,8 @@ class DOCOMOTrainingManager:
                     'batch_size': 64,
                     'target_update_freq': 10,
                     'epsilon_start': 1.0,
-                    'epsilon_end': 0.01,
-                                    'epsilon_decay_steps': 10000
+                    'epsilon_end': 0.2,  # Maintain higher exploration
+                    'epsilon_decay_steps': 100000  # Much slower decay for consistency
             }
         }
     
@@ -212,7 +212,9 @@ class DOCOMOTrainingManager:
         print(f"    Best reward: {self.best_reward:.4f}")
         print(f"    Best DOCOMO compliance: {self.best_compliance:.1%}")
         print(f"    Final epsilon: {self.epsilon:.4f}")
-        print(f"    Buffer size: {len(self.agent.replay_buffer)}")
+        # Print buffer sizes for all agents
+        total_buffer_size = sum(len(agent.replay_buffer) for agent in self.agents.values())
+        print(f"    Total buffer size: {total_buffer_size} (avg: {total_buffer_size/len(self.agents):.0f} per agent)")
         
         final_metrics = {}
         if int(self.args.eval_episodes) > 0:
@@ -382,16 +384,27 @@ class DOCOMOTrainingManager:
                         latency = latest_kpis.get('current_latency_ms', 0)
                         reliability = latest_kpis.get('current_reliability', 0)
                         
-                        print(f"  Agent {agent_id} KPIs: T={throughput:.1f}Gbps, L={latency:.3f}ms, R={reliability:.4f}")
+                        print(f"  Agent {agent_id} KPIs: T={throughput:.3f}Gbps, L={latency:.3f}ms, R={reliability:.4f}")
                         
                         # Most used band for this agent
-                        most_used_band_agent = max(band_usage[agent_id].items(), key=lambda x: x[1])
-                        try:
-                            freq_val = self.env.frequency_bands[most_used_band_agent[0]].get('frequency', 28.0e9)
-                            freq_ghz = float(freq_val) / 1e9
-                        except Exception:
-                            freq_ghz = 28.0
-                        print(f"  Agent {agent_id} Band: {most_used_band_agent[0]} ({freq_ghz:.0f} GHz) - {most_used_band_agent[1]} uses")
+                        total_band_uses = sum(band_usage[agent_id].values())
+                        if total_band_uses > 0:
+                            most_used_band_agent = max(band_usage[agent_id].items(), key=lambda x: x[1])
+                            try:
+                                freq_val = self.env.frequency_bands[most_used_band_agent[0]].get('frequency', 28.0e9)
+                                freq_ghz = float(freq_val) / 1e9
+                            except Exception:
+                                freq_ghz = 28.0
+                            print(f"  Agent {agent_id} Band: {most_used_band_agent[0]} ({freq_ghz:.0f} GHz) - {most_used_band_agent[1]} uses")
+                        else:
+                            # No band switches occurred in this episode, show current band
+                            current_band = self.env.current_bands[agent_id]
+                            try:
+                                freq_val = self.env.frequency_bands[current_band].get('frequency', 28.0e9)
+                                freq_ghz = float(freq_val) / 1e9
+                            except Exception:
+                                freq_ghz = 28.0
+                            print(f"  Agent {agent_id} Band: {current_band} ({freq_ghz:.0f} GHz) - no switches (short episode)")
                         
                         targets = getattr(self.env.kpi_trackers[agent_id], 'docomo_targets', None)
                         comp = self.env.kpi_trackers[agent_id].get_compliance_score() if hasattr(self.env, 'kpi_trackers') else {}
@@ -399,7 +412,7 @@ class DOCOMOTrainingManager:
                         if targets:
                             print(
                                 f"  Agent {agent_id} [DOCOMO] T: "
-                                f"{throughput:.1f}/{targets.user_data_rate_gbps:.0f} Gbps | "
+                                f"{throughput:.3f}/{targets.user_data_rate_gbps:.0f} Gbps | "
                                 f"L: {latency:.3f}/{targets.latency_ms:.3f} ms | "
                                 f"R: {reliability:.7f}/{targets.reliability:.7f} | "
                                 f"M: {latest_kpis.get('current_mobility_kmh', 0):.1f}/{targets.mobility_kmh:.0f} km/h | "
@@ -566,7 +579,7 @@ class DOCOMOTrainingManager:
                 'best_reward': best_reward,
                 'best_compliance': best_compliance,
                 'device': str(self.device),
-                'model_parameters': sum(p.numel() for p in self.agent.policy_net.parameters())
+                'model_parameters': sum(p.numel() for p in self.agents[self.agent_ids[0]].policy_net.parameters())
             },
             'config': self.config,
             'training_metrics': self.training_metrics,

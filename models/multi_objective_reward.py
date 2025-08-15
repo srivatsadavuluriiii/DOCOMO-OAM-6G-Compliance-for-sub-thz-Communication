@@ -94,8 +94,8 @@ class MultiObjectiveReward:
         self.current_qos_targets = {}
         self.current_reward_weights = {}
                                                                              
-        self.reward_scale = 3.0                                                     
-        self.penalty_scale = 1.5                                           
+        self.reward_scale = 1.0  # Reduce reward scale to stabilize learning                                                     
+        self.penalty_scale = 0.5  # Reduce penalty scale                                           
         
                                      
         self.physics_bonus_enabled = True
@@ -606,15 +606,27 @@ class MultiObjectiveReward:
         
                                                                           
         compliance_bonus = 0.0
-        if throughput_gbps >= 100.0:
-                                                            
-            compliance_bonus = min(3.0, 2.0 + 0.02 * (throughput_gbps - 100.0))
+        # Strong compliance bonus for consistent high performance                                                           
+        if throughput_gbps >= 500.0:
+            compliance_bonus = 10.0  # Massive bonus for 500+ Gbps
+        elif throughput_gbps >= 300.0:
+            compliance_bonus = 5.0 + 5.0 * (throughput_gbps - 300.0) / 200.0
+        elif throughput_gbps >= 100.0:
+            compliance_bonus = 2.0 + 3.0 * (throughput_gbps - 100.0) / 200.0
         elif throughput_gbps >= 50.0:
-            compliance_bonus = 0.6 + 0.6 * (throughput_gbps - 50.0) / 50.0
-        elif throughput_gbps >= 20.0:
-            compliance_bonus = 0.2 * (throughput_gbps / 100.0)
+            compliance_bonus = 1.0 + 1.0 * (throughput_gbps - 50.0) / 50.0
+        elif throughput_gbps >= 10.0:
+            compliance_bonus = 0.5 * (throughput_gbps / 50.0)
+        else:
+            compliance_bonus = -2.0  # Stronger penalty for consistency
         
-                                                                         
+        # Strong incentive for using optimal THz bands                                                                         
+        thz_band_bonus = 0.0
+        if current_band in ['sub_thz_300', 'thz_600']:
+            thz_band_bonus = 2.0  # Strong bonus for using optimal bands
+        elif current_band in ['sub_thz_100', 'sub_thz_140', 'sub_thz_220']:
+            thz_band_bonus = 1.0  # Medium bonus for sub-THz bands
+        
         band_switch_bonus = 0.0
         if action_info.get('high_freq_bonus', 0.0) > 0:
             band_switch_bonus = min(action_info['high_freq_bonus'] * 0.5, 0.5)
@@ -636,7 +648,7 @@ class MultiObjectiveReward:
             sinr_db_val = float(action_info.get('sinr_db', 0.0))
             is_low_band = current_band in ['sub_6ghz', 'mmwave_28', 'mmwave_39']
             good_sinr = sinr_db_val > self.low_band_good_sinr_threshold_db
-            if is_low_band and good_sinr and throughput_gbps < 80.0:
+            if is_low_band and good_sinr and throughput_gbps < 400.0:
                                                                        
                 self.low_band_good_sinr_streak = min(self.low_band_good_sinr_streak + 1, 50)
                 scale = min(0.02 * self.low_band_good_sinr_streak, 0.6)                        
@@ -661,6 +673,7 @@ class MultiObjectiveReward:
             total_reward + 
             frequency_bonus + 
             compliance_bonus + 
+            thz_band_bonus +    # Add THz band incentive
             band_switch_bonus + 
             beam_bonus + 
             prediction_bonus +

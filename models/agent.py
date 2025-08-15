@@ -44,7 +44,7 @@ class Agent:
         state_dim: int,
         action_dim: int,
         hidden_layers: List[int] = [128, 128],
-        learning_rate: float = 1e-4,
+        learning_rate: float = 1e-3,  # Increase learning rate to match reward scale
         gamma: float = 0.99,
         buffer_capacity: int = 50000,
         batch_size: int = 64,
@@ -94,6 +94,10 @@ class Agent:
             self.device = device
         
                              
+        # Store dimensions first (needed for replay buffer initialization)
+        self.state_dim = state_dim
+        self.action_dim = action_dim
+        
         self.policy_net = DQNModel(state_dim, action_dim, hidden_layers, dueling=dueling_dqn).to(self.device)
         self.target_net = DQNModel(state_dim, action_dim, hidden_layers, dueling=dueling_dqn).to(self.device)
         
@@ -115,8 +119,6 @@ class Agent:
         self.gamma = gamma
         self.batch_size = batch_size
         self.target_update_freq = target_update_freq
-        self.state_dim = state_dim
-        self.action_dim = action_dim
         
                            
         self.episode_count = 0
@@ -196,9 +198,8 @@ class Agent:
         self.optimizer.zero_grad()
         loss.backward()
         
-                                                       
-        for param in self.policy_net.parameters():
-            param.grad.data.clamp_(-1, 1)
+        # Gradient clipping - more reasonable bounds                                                       
+        torch.nn.utils.clip_grad_norm_(self.policy_net.parameters(), max_norm=1.0)
         
         self.optimizer.step()
         
